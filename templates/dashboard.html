@@ -258,6 +258,11 @@
   .device-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; font-size: 13px; color: var(--muted); }
   .device-meta span { display: flex; align-items: center; gap: 6px; }
 
+  /* Oni avatar */
+  .oni-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+  .oni-card-top { display: flex; align-items: center; gap: 14px; }
+  .oni-card-top .card-right { flex: 1; }
+
   /* Activity Calendar */
   .calendar-grid { display: grid; grid-template-columns: repeat(53, 1fr); gap: 2px; }
   .calendar-cell { width: 12px; height: 12px; border-radius: 2px; cursor: default; transition: transform 0.1s; }
@@ -342,6 +347,7 @@
 
 <!-- Header -->
 <header>
+  <img src="/static/oni.jpg" alt="Oni" style="width:32px;height:32px;border-radius:50%;object-fit:cover">
   <h1>OnlyCat Dashboard</h1>
   <div class="header-right">
     <span id="sync-text">Loading...</span>
@@ -354,9 +360,14 @@
 <!-- Summary Cards -->
 <div class="summary-row">
   <div class="summary-card accent-green">
-    <div class="card-label"><span class="card-icon">&#x1F431;</span> Oni Status</div>
-    <div class="card-value status-unknown" id="oni-status-value">Unknown</div>
-    <div class="card-sub" id="oni-status-sub">--</div>
+    <div class="oni-card-top">
+      <img src="/static/oni.jpg" alt="Oni" class="oni-avatar">
+      <div class="card-right">
+        <div class="card-label">Oni Status</div>
+        <div class="card-value status-unknown" id="oni-status-value">Unknown</div>
+        <div class="card-sub" id="oni-status-sub">--</div>
+      </div>
+    </div>
   </div>
   <div class="summary-card accent-blue">
     <div class="card-label">Events Today</div>
