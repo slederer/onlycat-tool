@@ -11,6 +11,7 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
 import uvicorn
@@ -34,6 +35,7 @@ SYNC_INTERVAL_HOURS = int(os.environ.get("SYNC_INTERVAL_HOURS", "24"))
 LATITUDE = os.environ.get("LATITUDE", "48.8631")
 LONGITUDE = os.environ.get("LONGITUDE", "2.3839")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+TZ = ZoneInfo(os.environ.get("TIMEZONE", "Europe/Paris"))
 
 CLASSIFICATION = {
     0: "Unknown", 1: "Clear", 2: "Suspicious", 3: "Contraband",
@@ -52,7 +54,7 @@ sync_lock = asyncio.Lock()
 
 async def build_analytics() -> dict:
     """Compute comprehensive analytics from all stored events."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(TZ)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week_start = today_start - timedelta(days=today_start.weekday())  # Monday
     month_start = today_start.replace(day=1)
@@ -64,14 +66,14 @@ async def build_analytics() -> dict:
 
     pet_map = {p["rfid_code"]: p for p in pets_raw}
 
-    # Parse all events with datetime objects
+    # Parse all events with datetime objects (converted to local timezone)
     parsed = []
     for ev in all_events:
         ts = ev.get("timestamp")
         if not ts:
             continue
         try:
-            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(TZ)
         except (ValueError, TypeError):
             continue
         parsed.append((dt, ev))
@@ -542,7 +544,7 @@ def _build_device_stats(devices_raw, parsed, parsed_chrono, today_start, week_st
         for dt, _ in dev_events:
             if dt >= thirty_days_ago:
                 daily_counts[dt.strftime("%m/%d")] += 1
-        now = parsed_chrono[-1][0] if parsed_chrono else datetime.now(timezone.utc)
+        now = parsed_chrono[-1][0] if parsed_chrono else datetime.now(TZ)
         daily_labels = [(now - timedelta(days=29 - i)).strftime("%m/%d") for i in range(30)]
         daily_values = [daily_counts.get(label, 0) for label in daily_labels]
 
@@ -582,7 +584,7 @@ def _build_device_stats(devices_raw, parsed, parsed_chrono, today_start, week_st
 
 async def _fetch_weather() -> dict | None:
     """Fetch 30-day weather from Open-Meteo, with daily cache."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(TZ)
     cache_date = await store.get_meta("weather_cache_date")
     if cache_date == now.strftime("%Y-%m-%d"):
         cached = await store.get_meta("weather_cache")
@@ -675,12 +677,13 @@ async def build_state() -> dict:
         "charts": charts,
         "last_sync": last_sync,
         "analytics": analytics,
+        "timezone": str(TZ),
     }
 
 
 async def _build_chart_data():
     """Aggregate events from DB into daily, weekly, and monthly buckets."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(TZ)
     cutoff = (now - timedelta(days=30)).isoformat()
     all_events = await store.get_since(cutoff)
 
@@ -690,7 +693,7 @@ async def _build_chart_data():
         if not ts:
             continue
         try:
-            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(TZ)
         except (ValueError, TypeError):
             continue
         parsed.append((dt, ev))
@@ -941,7 +944,7 @@ async def get_diary():
     """Generate AI diary entry for today using Claude."""
     if not ANTHROPIC_API_KEY:
         return {"diary": None, "error": "Set ANTHROPIC_API_KEY to enable AI diary"}
-    today_key = f"diary_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+    today_key = f"diary_{datetime.now(TZ).strftime('%Y-%m-%d')}"
     cached = await store.get_meta(today_key)
     if cached:
         return {"diary": cached}

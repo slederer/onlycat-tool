@@ -11,6 +11,7 @@ services:
       - SYNC_INTERVAL_HOURS=24
       - LATITUDE=48.8631
       - LONGITUDE=2.3839
+      - TIMEZONE=Europe/Paris
     volumes:
       - onlycat_data:/data
 
