@@ -1,18 +1,22 @@
 """OnlyCat Dashboard — cat activity monitor with daily sync."""
 
 import asyncio
+import csv
+import io
 import json
 import logging
+import math
 import os
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import httpx
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 
 from event_store import EventStore
@@ -25,6 +29,8 @@ logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 SYNC_INTERVAL_HOURS = int(os.environ.get("SYNC_INTERVAL_HOURS", "24"))
+LATITUDE = os.environ.get("LATITUDE", "40.7128")
+LONGITUDE = os.environ.get("LONGITUDE", "-74.0060")
 
 CLASSIFICATION = {
     0: "Unknown", 1: "Clear", 2: "Suspicious", 3: "Contraband",
@@ -181,6 +187,129 @@ async def build_analytics() -> dict:
         d.get("connectivity", {}).get("connected", False) for d in devices_raw
     )
 
+    # --- Trip tracking ---
+    oni_events_chrono = [
+        (dt, ev) for dt, ev in parsed_chrono
+        if resident_code and resident_code in (ev.get("rfidCodes") or [])
+    ]
+    trips: list[dict] = []
+    trip_start = None
+    for dt, ev in oni_events_chrono:
+        trigger = ev.get("eventTriggerSource")
+        if trigger == 2:  # Indoor motion = leaving
+            trip_start = dt
+        elif trigger == 3 and trip_start:  # Outdoor motion = returning
+            duration = (dt - trip_start).total_seconds() / 60
+            if 0 < duration < 24 * 60:  # Sanity: between 0 and 24h
+                trips.append({
+                    "left_at": trip_start.isoformat(),
+                    "returned_at": dt.isoformat(),
+                    "duration_minutes": round(duration),
+                })
+            trip_start = None
+
+    # Current trip (if Oni is outside)
+    current_trip_start = None
+    if oni_status == "outside" and trip_start:
+        current_trip_start = trip_start.isoformat()
+
+    avg_trip_minutes = round(sum(t["duration_minutes"] for t in trips) / len(trips)) if trips else 0
+    longest_trip_minutes = max((t["duration_minutes"] for t in trips), default=0)
+    trips_today = [t for t in trips if datetime.fromisoformat(t["returned_at"]).replace(tzinfo=timezone.utc) >= today_start]
+    time_outside_today = sum(t["duration_minutes"] for t in trips_today)
+    total_trips = len(trips)
+
+    # --- Records & milestones ---
+    events_by_day: dict[str, int] = defaultdict(int)
+    for dt, _ in parsed:
+        events_by_day[dt.strftime("%Y-%m-%d")] += 1
+    busiest_day = max(events_by_day, key=events_by_day.get) if events_by_day else None
+    busiest_day_count = events_by_day.get(busiest_day, 0) if busiest_day else 0
+
+    events_by_hour_slot: dict[str, int] = defaultdict(int)
+    for dt, _ in parsed:
+        events_by_hour_slot[dt.strftime("%Y-%m-%d %H:00")] += 1
+    busiest_hour_count = max(events_by_hour_slot.values(), default=0)
+
+    # Contraband-free streak (current)
+    contraband_dates = {dt.date() for dt, ev in parsed if ev.get("eventClassification") == 3}
+    current_streak = 0
+    check_date = now.date()
+    while check_date not in contraband_dates and current_streak < 999:
+        current_streak += 1
+        check_date -= timedelta(days=1)
+
+    # Longest contraband-free streak
+    all_dates = sorted({dt.date() for dt, _ in parsed})
+    longest_streak = 0
+    streak = 0
+    for d in all_dates:
+        if d not in contraband_dates:
+            streak += 1
+            longest_streak = max(longest_streak, streak)
+        else:
+            streak = 0
+
+    # --- Moon phases (last 30 days) ---
+    def moon_phase(dt_val):
+        ref = datetime(2000, 1, 6, 18, 14, tzinfo=timezone.utc)
+        days_since = (dt_val - ref).total_seconds() / 86400
+        return (days_since % 29.53059) / 29.53059
+
+    def phase_name(p):
+        if p < 0.0625 or p >= 0.9375:
+            return "New Moon"
+        if p < 0.1875:
+            return "Waxing Crescent"
+        if p < 0.3125:
+            return "First Quarter"
+        if p < 0.4375:
+            return "Waxing Gibbous"
+        if p < 0.5625:
+            return "Full Moon"
+        if p < 0.6875:
+            return "Waning Gibbous"
+        if p < 0.8125:
+            return "Last Quarter"
+        return "Waning Crescent"
+
+    def phase_emoji(p):
+        if p < 0.0625 or p >= 0.9375:
+            return "\U0001F311"
+        if p < 0.1875:
+            return "\U0001F312"
+        if p < 0.3125:
+            return "\U0001F313"
+        if p < 0.4375:
+            return "\U0001F314"
+        if p < 0.5625:
+            return "\U0001F315"
+        if p < 0.6875:
+            return "\U0001F316"
+        if p < 0.8125:
+            return "\U0001F317"
+        return "\U0001F318"
+
+    moon_data = []
+    for i in range(30):
+        d = now - timedelta(days=29 - i)
+        p = moon_phase(d)
+        moon_data.append({
+            "date": d.strftime("%m/%d"),
+            "phase": round(p, 3),
+            "name": phase_name(p),
+            "emoji": phase_emoji(p),
+            "illumination": round(abs(1 - 2 * abs(p - 0.5)) * 100),
+        })
+
+    # Moon vs activity correlation
+    full_moon_events = sum(1 for dt, _ in parsed if dt >= thirty_days_ago and 0.4 <= moon_phase(dt) <= 0.6)
+    new_moon_events = sum(1 for dt, _ in parsed if dt >= thirty_days_ago and (moon_phase(dt) < 0.1 or moon_phase(dt) > 0.9))
+    today_phase = moon_phase(now)
+
+    # --- Weather (cached) ---
+    weather = await _fetch_weather()
+
     return {
         "oni_status": {
             "status": oni_status,
@@ -219,7 +348,74 @@ async def build_analytics() -> dict:
             "usual_time": misha_usual_time,
         },
         "device_connected": device_connected,
+        "trips": {
+            "recent": trips[-10:][::-1],  # Last 10 trips, newest first
+            "current_trip_start": current_trip_start,
+            "avg_duration_minutes": avg_trip_minutes,
+            "longest_duration_minutes": longest_trip_minutes,
+            "trips_today": len(trips_today),
+            "time_outside_today_minutes": time_outside_today,
+            "total_trips": total_trips,
+        },
+        "records": {
+            "busiest_day": busiest_day,
+            "busiest_day_count": busiest_day_count,
+            "busiest_hour_count": busiest_hour_count,
+            "longest_trip_minutes": longest_trip_minutes,
+            "current_contraband_streak": current_streak,
+            "longest_contraband_streak": longest_streak,
+            "total_trips": total_trips,
+        },
+        "moon": {
+            "today_phase": round(today_phase, 3),
+            "today_name": phase_name(today_phase),
+            "today_emoji": phase_emoji(today_phase),
+            "today_illumination": round(abs(1 - 2 * abs(today_phase - 0.5)) * 100),
+            "full_moon_events_30d": full_moon_events,
+            "new_moon_events_30d": new_moon_events,
+            "phases_30d": moon_data,
+        },
+        "weather": weather,
     }
+
+
+async def _fetch_weather() -> dict | None:
+    """Fetch 30-day weather from Open-Meteo, with daily cache."""
+    now = datetime.now(timezone.utc)
+    cache_date = await store.get_meta("weather_cache_date")
+    if cache_date == now.strftime("%Y-%m-%d"):
+        cached = await store.get_meta("weather_cache")
+        if cached:
+            try:
+                return json.loads(cached)
+            except Exception:
+                pass
+    try:
+        end_date = now.strftime("%Y-%m-%d")
+        start_date = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+        url = (
+            f"https://api.open-meteo.com/v1/forecast"
+            f"?latitude={LATITUDE}&longitude={LONGITUDE}"
+            f"&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code"
+            f"&start_date={start_date}&end_date={end_date}&timezone=auto"
+        )
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, timeout=10)
+            data = resp.json()
+        daily = data.get("daily", {})
+        result = {
+            "dates": daily.get("time", []),
+            "temp_max": daily.get("temperature_2m_max", []),
+            "temp_min": daily.get("temperature_2m_min", []),
+            "precipitation": daily.get("precipitation_sum", []),
+            "weather_code": daily.get("weather_code", []),
+        }
+        await store.set_meta("weather_cache", json.dumps(result))
+        await store.set_meta("weather_cache_date", now.strftime("%Y-%m-%d"))
+        return result
+    except Exception:
+        logger.exception("Failed to fetch weather data")
+        return None
 
 
 async def build_state() -> dict:
@@ -418,6 +614,38 @@ async def trigger_sync():
         return JSONResponse({"status": "already running"}, status_code=409)
     result = await do_sync()
     return result
+
+
+@app.get("/api/export")
+async def export_csv():
+    """Export all events as CSV."""
+    all_events = await store.get_all()
+    pets_raw = await store.get_pets()
+    devices_raw = await store.get_devices()
+    pet_map = {p["rfid_code"]: p for p in pets_raw}
+    device_map = {d["device_id"]: d for d in devices_raw}
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Event ID", "Timestamp", "Device", "Trigger", "Classification", "Pets", "Frame Count"])
+    for ev in all_events:
+        rfid_codes = ev.get("rfidCodes") or []
+        pet_names = [pet_map.get(c, {}).get("label", c) for c in rfid_codes]
+        writer.writerow([
+            ev.get("eventId", ""),
+            ev.get("timestamp", ""),
+            device_map.get(ev.get("deviceId", ""), {}).get("description", ev.get("deviceId", "")),
+            TRIGGER_SOURCE.get(ev.get("eventTriggerSource", -1), "Unknown"),
+            CLASSIFICATION.get(ev.get("eventClassification", -1), "Unknown"),
+            ", ".join(pet_names),
+            ev.get("frameCount", 0),
+        ])
+    output.seek(0)
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=onlycat_events.csv"},
+    )
 
 
 @app.get("/api/status")

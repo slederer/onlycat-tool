@@ -26,6 +26,7 @@
     --orange: #f97316;
     --orange-dim: #351f0a;
     --cyan: #06b6d4;
+    --cyan-dim: #0a2a35;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -37,315 +38,172 @@
     margin: 0 auto;
     line-height: 1.5;
   }
-
-  /* Header */
   header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 28px;
-    padding-bottom: 20px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px; padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
   }
-  header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  #sync-text { font-size: 13px; color: var(--muted); }
+  .sync-btn, .export-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;
+    font-weight: 500; transition: all 0.2s; text-decoration: none;
   }
-  .header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  #sync-text {
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .sync-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  .sync-btn:hover { color: var(--text); border-color: var(--text); background: var(--surface); }
+  .sync-btn:hover, .export-btn:hover { color: var(--text); border-color: var(--text); background: var(--surface); }
   .sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Summary Cards Row */
-  .summary-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
+  /* Summary Cards */
+  .summary-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
   @media (max-width: 1000px) { .summary-row { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 600px) { .summary-row { grid-template-columns: 1fr; } }
-
   .summary-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    border-left: 3px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px; border-left: 3px solid var(--border);
     transition: transform 0.15s, box-shadow 0.15s;
   }
-  .summary-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  }
+  .summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
   .summary-card.accent-green { border-left-color: var(--green); }
   .summary-card.accent-blue { border-left-color: var(--blue); }
   .summary-card.accent-red { border-left-color: var(--red); }
   .summary-card.accent-orange { border-left-color: var(--orange); }
   .summary-card.accent-muted { border-left-color: var(--muted); }
-
-  .summary-card .card-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  .summary-card .card-icon {
-    font-size: 18px;
-    margin-right: 6px;
-  }
-  .summary-card .card-value {
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.1;
-    margin-bottom: 4px;
-  }
+  .summary-card .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+  .summary-card .card-icon { font-size: 18px; margin-right: 6px; }
+  .summary-card .card-value { font-size: 28px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
   .summary-card .card-value.status-inside { color: var(--green); }
   .summary-card .card-value.status-outside { color: var(--orange); }
   .summary-card .card-value.status-unknown { color: var(--muted); }
-  .summary-card .card-sub {
-    font-size: 12px;
-    color: var(--muted);
-  }
+  .summary-card .card-sub { font-size: 12px; color: var(--muted); }
 
   /* Cards */
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px;
-    margin-bottom: 24px;
-    transition: box-shadow 0.15s;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px; margin-bottom: 24px; transition: box-shadow 0.15s;
   }
   .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-  .card h2 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--muted);
-    margin-bottom: 16px;
-    font-weight: 600;
-  }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 16px; font-weight: 600; }
 
-  /* Two-column grid */
-  .grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
   .grid-2 > .card { margin-bottom: 0; }
-  @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .grid-3 > .card { margin-bottom: 0; }
+  @media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
 
-  /* Chart containers */
   .chart-container { position: relative; width: 100%; height: 240px; }
   .chart-container.tall { height: 280px; }
   .chart-container.doughnut { height: 260px; }
 
+  /* Stat boxes */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat-box { background: var(--bg); border-radius: 8px; padding: 12px; }
+  .stat-box .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-box .val { font-size: 20px; font-weight: 700; }
+  .stat-box .val.red { color: var(--red); }
+  .stat-box .val.green { color: var(--green); }
+  .stat-box .val.blue { color: var(--blue); }
+  .stat-box .val.orange { color: var(--orange); }
+  .stat-box .val.cyan { color: var(--cyan); }
+  .stat-box .val.purple { color: var(--purple); }
+  .stat-box .val.yellow { color: var(--yellow); }
+  .stat-box .sub { font-size: 11px; color: var(--muted); }
+
   /* Heatmap */
   .heatmap-wrapper { overflow-x: auto; }
-  .heatmap-grid {
-    display: grid;
-    grid-template-columns: 44px repeat(24, 1fr);
-    gap: 3px;
-    min-width: 600px;
-  }
-  .heatmap-label {
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 6px;
-    font-weight: 500;
-  }
-  .heatmap-hour-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-align: center;
-    padding-bottom: 2px;
-  }
-  .heatmap-cell {
-    aspect-ratio: 1;
-    border-radius: 3px;
-    min-width: 16px;
-    min-height: 16px;
-    transition: transform 0.1s;
-  }
+  .heatmap-grid { display: grid; grid-template-columns: 44px repeat(24, 1fr); gap: 3px; min-width: 600px; }
+  .heatmap-label { font-size: 11px; color: var(--muted); display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-weight: 500; }
+  .heatmap-hour-label { font-size: 10px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+  .heatmap-cell { aspect-ratio: 1; border-radius: 3px; min-width: 16px; min-height: 16px; transition: transform 0.1s; cursor: default; }
   .heatmap-cell:hover { transform: scale(1.3); z-index: 1; }
 
-  /* Contraband stats */
-  .contraband-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .contraband-stat {
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 12px;
-  }
-  .contraband-stat .label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-  .contraband-stat .val {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--red);
-  }
+  /* Trip log */
+  .trip-list { max-height: 320px; overflow-y: auto; }
+  .trip-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .trip-item:last-child { border-bottom: none; }
+  .trip-icon { font-size: 20px; }
+  .trip-details { flex: 1; }
+  .trip-time { font-size: 13px; color: var(--muted); }
+  .trip-duration { font-size: 15px; font-weight: 600; }
+  .trip-badge { padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .trip-badge.short { background: var(--green-dim); color: var(--green); }
+  .trip-badge.medium { background: var(--blue-dim); color: var(--blue); }
+  .trip-badge.long { background: var(--orange-dim); color: var(--orange); }
+  .trip-current { background: var(--purple-dim); color: var(--purple); padding: 8px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
 
-  /* Misha stats */
-  .visit-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .visit-stat {
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 12px;
-  }
-  .visit-stat .label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-  .visit-stat .val {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--orange);
-  }
+  /* Records */
+  .record-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .record-item:last-child { border-bottom: none; }
+  .record-icon { font-size: 22px; width: 36px; text-align: center; }
+  .record-label { font-size: 12px; color: var(--muted); }
+  .record-value { font-size: 16px; font-weight: 700; }
+
+  /* Moon */
+  .moon-today { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px; background: var(--bg); border-radius: 8px; }
+  .moon-emoji { font-size: 36px; }
+  .moon-info .moon-name { font-size: 15px; font-weight: 600; }
+  .moon-info .moon-detail { font-size: 12px; color: var(--muted); }
+
+  /* Weather */
+  .weather-legend { display: flex; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+  .weather-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .weather-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
   /* Tab bar */
-  .tab-bar {
-    display: flex;
-    gap: 4px;
-  }
-  .tab-bar button {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s;
-  }
-  .tab-bar button.active {
-    background: var(--blue-dim);
-    color: var(--blue);
-    border-color: var(--blue);
-  }
+  .tab-bar { display: flex; gap: 4px; }
+  .tab-bar button { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+  .tab-bar button.active { background: var(--blue-dim); color: var(--blue); border-color: var(--blue); }
   .tab-bar button:hover { color: var(--text); }
 
   /* Table */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  th {
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--surface-hover); }
 
   /* Badges */
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-  }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
   .badge-clear { background: var(--green-dim); color: var(--green); }
   .badge-suspicious { background: var(--yellow-dim); color: var(--yellow); }
   .badge-contraband { background: var(--red-dim); color: var(--red); }
   .badge-human { background: var(--purple-dim); color: var(--purple); }
   .badge-unlock { background: var(--blue-dim); color: var(--blue); }
   .badge-unknown { background: #252525; color: var(--muted); }
-
-  /* Pet name badges */
-  .pet-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-  }
+  .pet-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
   .pet-badge.oni { background: var(--blue-dim); color: var(--blue); }
   .pet-badge.misha { background: var(--orange-dim); color: var(--orange); }
   .pet-badge.unknown-pet { background: #252525; color: var(--muted); }
-
   .empty { color: var(--muted); font-style: italic; padding: 20px 0; }
-
-  /* Status dot */
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .status-dot.offline { background: var(--red); }
+
+  /* Notification banner */
+  .notif-banner { background: var(--yellow-dim); color: var(--yellow); padding: 8px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 13px; display: none; cursor: pointer; }
+  .notif-banner:hover { opacity: 0.9; }
 </style>
 </head>
 <body>
+
+<!-- Notification permission banner -->
+<div class="notif-banner" id="notif-banner" onclick="requestNotifPermission()">
+  Click to enable browser notifications for contraband alerts
+</div>
 
 <!-- Header -->
 <header>
   <h1>OnlyCat Dashboard</h1>
   <div class="header-right">
     <span id="sync-text">Loading...</span>
+    <a class="export-btn" href="/api/export" download>Export CSV</a>
     <button class="sync-btn" id="sync-btn" onclick="triggerSync()">Sync Now</button>
   </div>
 </header>
 
 <!-- Summary Cards -->
 <div class="summary-row">
-  <div class="summary-card accent-green" id="card-oni-status">
+  <div class="summary-card accent-green">
     <div class="card-label"><span class="card-icon">&#x1F431;</span> Oni Status</div>
     <div class="card-value status-unknown" id="oni-status-value">Unknown</div>
     <div class="card-sub" id="oni-status-sub">--</div>
@@ -375,8 +233,19 @@
 <!-- Oni's Daily Routine -->
 <div class="card">
   <h2>Oni's Daily Routine (30-Day Pattern)</h2>
-  <div class="chart-container">
-    <canvas id="oniRoutineChart"></canvas>
+  <div class="chart-container"><canvas id="oniRoutineChart"></canvas></div>
+</div>
+
+<!-- Trip Log + Records -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Oni's Trip Log</h2>
+    <div class="stat-grid" id="trip-stats"></div>
+    <div id="trip-log"><p class="empty">Loading...</p></div>
+  </div>
+  <div class="card">
+    <h2>Records &amp; Milestones</h2>
+    <div id="records"><p class="empty">Loading...</p></div>
   </div>
 </div>
 
@@ -388,10 +257,23 @@
   </div>
   <div class="card">
     <h2>Contraband Analysis</h2>
-    <div class="contraband-stats" id="contraband-stats"></div>
-    <div class="chart-container" style="height:180px">
-      <canvas id="contrabandChart"></canvas>
-    </div>
+    <div class="stat-grid" id="contraband-stats"></div>
+    <div class="chart-container" style="height:180px"><canvas id="contrabandChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Weather + Activity -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Weather vs Activity (30 Days)</h2>
+    <div class="weather-legend" id="weather-legend"></div>
+    <div class="chart-container tall"><canvas id="weatherChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h2>Moon Phase</h2>
+    <div class="moon-today" id="moon-today"></div>
+    <div class="stat-grid" id="moon-stats"></div>
+    <div class="chart-container" style="height:160px"><canvas id="moonChart"></canvas></div>
   </div>
 </div>
 
@@ -405,25 +287,19 @@
       <button data-period="monthly">30 Days</button>
     </div>
   </div>
-  <div class="chart-container">
-    <canvas id="activityChart"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="activityChart"></canvas></div>
 </div>
 
 <!-- Classification + Misha -->
 <div class="grid-2">
   <div class="card">
     <h2>Events by Classification</h2>
-    <div class="chart-container doughnut">
-      <canvas id="classChart"></canvas>
-    </div>
+    <div class="chart-container doughnut"><canvas id="classChart"></canvas></div>
   </div>
   <div class="card">
     <h2>Misha's Visit Pattern</h2>
-    <div class="visit-stats" id="misha-stats"></div>
-    <div class="chart-container" style="height:180px">
-      <canvas id="mishaChart"></canvas>
-    </div>
+    <div class="stat-grid" id="misha-stats"></div>
+    <div class="chart-container" style="height:180px"><canvas id="mishaChart"></canvas></div>
   </div>
 </div>
 
@@ -434,22 +310,8 @@
 </div>
 
 <script>
-const BADGE_CLASS = {
-  "Clear": "badge-clear",
-  "Suspicious": "badge-suspicious",
-  "Contraband": "badge-contraband",
-  "Human Activity": "badge-human",
-  "Remote Unlock": "badge-unlock",
-  "Unknown": "badge-unknown",
-};
-const CLASS_COLORS = {
-  "Clear": "#22c55e",
-  "Suspicious": "#eab308",
-  "Contraband": "#ef4444",
-  "Human Activity": "#a855f7",
-  "Remote Unlock": "#3b82f6",
-  "Unknown": "#888888",
-};
+const BADGE_CLASS = {"Clear":"badge-clear","Suspicious":"badge-suspicious","Contraband":"badge-contraband","Human Activity":"badge-human","Remote Unlock":"badge-unlock","Unknown":"badge-unknown"};
+const CLASS_COLORS = {"Clear":"#22c55e","Suspicious":"#eab308","Contraband":"#ef4444","Human Activity":"#a855f7","Remote Unlock":"#3b82f6","Unknown":"#888888"};
 const HOUR_LABELS = Array.from({length:24}, (_,i) => `${String(i).padStart(2,'0')}:00`);
 const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
@@ -457,449 +319,388 @@ Chart.defaults.color = "#71717a";
 Chart.defaults.borderColor = "#2a2d3a";
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif";
 
-let activityChart = null;
-let classChart = null;
-let oniRoutineChart = null;
-let contrabandChart = null;
-let mishaChart = null;
-let currentPeriod = "daily";
-let latestCharts = null;
-let knownPetLabels = {};
+let activityChart=null, classChart=null, oniRoutineChart=null, contrabandChart=null;
+let mishaChart=null, weatherChart=null, moonChart=null;
+let currentPeriod = "daily", latestCharts = null, knownPetLabels = {};
+let previousContrabandCount = null;
 
+// --- Utilities ---
 function relativeTime(ts) {
   if (!ts) return "--";
-  const d = new Date(ts);
-  if (isNaN(d)) return ts;
-  const now = new Date();
-  const diffMs = now - d;
-  const diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 60) return "just now";
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay === 1) return "yesterday";
-  if (diffDay < 30) return `${diffDay}d ago`;
+  const d = new Date(ts); if (isNaN(d)) return ts;
+  const sec = Math.floor((new Date() - d) / 1000);
+  if (sec < 60) return "just now";
+  const min = Math.floor(sec/60); if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min/60); if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr/24);
+  if (day === 1) return "yesterday";
+  if (day < 30) return `${day}d ago`;
   return d.toLocaleDateString();
 }
-
-function formatTime(ts) {
-  if (!ts) return "\u2014";
-  const d = new Date(ts);
-  if (isNaN(d)) return ts;
-  return d.toLocaleString();
+function formatTime(ts) { if (!ts) return "\u2014"; const d=new Date(ts); return isNaN(d)?ts:d.toLocaleString(); }
+function esc(s) { const d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+function fmtDuration(m) {
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m/60); const r = m%60;
+  return r > 0 ? `${h}h ${r}m` : `${h}h`;
 }
-
-function esc(s) {
-  const d = document.createElement("div");
-  d.textContent = s || "";
-  return d.innerHTML;
-}
-
 function petBadge(name) {
-  const lower = (name || "").toLowerCase();
+  const lower = (name||"").toLowerCase();
   let cls = "unknown-pet";
   if (lower.includes("oni")) cls = "oni";
   else if (lower.includes("misha")) cls = "misha";
-  else {
-    // Check known pet labels
-    for (const [code, info] of Object.entries(knownPetLabels)) {
-      if (info.label === name) {
-        cls = info.role === "oni" ? "oni" : info.role === "misha" ? "misha" : "unknown-pet";
-        break;
-      }
-    }
-  }
+  else { for (const [c,info] of Object.entries(knownPetLabels)) { if (info.label===name) { cls=info.role==="oni"?"oni":info.role==="misha"?"misha":"unknown-pet"; break; } } }
   return `<span class="pet-badge ${cls}">${esc(name)}</span>`;
 }
+
+// --- Notifications ---
+function checkNotifPermission() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    document.getElementById("notif-banner").style.display = "block";
+  }
+}
+function requestNotifPermission() {
+  Notification.requestPermission().then(p => {
+    document.getElementById("notif-banner").style.display = "none";
+  });
+}
+function sendNotif(title, body) {
+  if (Notification.permission === "granted") {
+    new Notification(title, { body, icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F6A8;</text></svg>" });
+  }
+}
+checkNotifPermission();
 
 // --- Summary Cards ---
 function updateSummaryCards(analytics) {
   if (!analytics) return;
-
-  // Oni status
   const oni = analytics.oni_status || {};
   const statusEl = document.getElementById("oni-status-value");
   const statusSub = document.getElementById("oni-status-sub");
-  const statusText = (oni.status || "unknown").charAt(0).toUpperCase() + (oni.status || "unknown").slice(1);
+  const statusText = (oni.status||"unknown").charAt(0).toUpperCase() + (oni.status||"unknown").slice(1);
   statusEl.textContent = statusText;
-  statusEl.className = `card-value status-${oni.status || "unknown"}`;
-  const dir = oni.direction === "entered" ? "Last: came inside" : oni.direction === "left" ? "Last: went outside" : "";
-  statusSub.textContent = oni.last_event ? `${relativeTime(oni.last_event)}${dir ? " \u00b7 " + dir : ""}` : "No data";
+  statusEl.className = `card-value status-${oni.status||"unknown"}`;
+  const dir = oni.direction==="entered"?"Last: came inside":oni.direction==="left"?"Last: went outside":"";
+  statusSub.textContent = oni.last_event ? `${relativeTime(oni.last_event)}${dir?" \u00b7 "+dir:""}` : "No data";
 
-  // Events today
   const summary = analytics.summary || {};
   document.getElementById("events-today-value").textContent = summary.events_today ?? "--";
   document.getElementById("events-today-sub").textContent = `avg: ${summary.avg_per_day ?? "--"}/day \u00b7 ${summary.total_events ?? 0} total`;
 
-  // Contraband
   const cb = analytics.contraband || {};
   const cbVal = document.getElementById("contraband-days-value");
-  cbVal.textContent = cb.days_since !== null && cb.days_since !== undefined ? cb.days_since : "\u2714";
-  cbVal.style.color = cb.days_since !== null && cb.days_since < 1 ? "var(--red)" : cb.days_since !== null && cb.days_since < 3 ? "var(--yellow)" : "var(--green)";
-  document.getElementById("contraband-days-sub").textContent = `this month: ${cb.this_month ?? 0} \u00b7 this week: ${cb.this_week ?? 0}`;
+  cbVal.textContent = cb.days_since!==null && cb.days_since!==undefined ? cb.days_since : "\u2714";
+  cbVal.style.color = cb.days_since!==null && cb.days_since<1 ? "var(--red)" : cb.days_since!==null && cb.days_since<3 ? "var(--yellow)" : "var(--green)";
+  document.getElementById("contraband-days-sub").textContent = `this month: ${cb.this_month??0} \u00b7 this week: ${cb.this_week??0}`;
 
-  // Misha
+  // Check for new contraband → notification
+  const newCbCount = (cb.this_week ?? 0);
+  if (previousContrabandCount !== null && newCbCount > previousContrabandCount) {
+    sendNotif("Contraband Alert!", `Oni brought something in at ${cb.last_timestamp ? formatTime(cb.last_timestamp) : "just now"}`);
+  }
+  previousContrabandCount = newCbCount;
+
   const mv = analytics.misha_visits || {};
-  document.getElementById("misha-sightings-value").textContent = mv.visits_week !== undefined ? `${mv.visits_week} this week` : "--";
+  document.getElementById("misha-sightings-value").textContent = mv.visits_week!==undefined ? `${mv.visits_week} this week` : "--";
   document.getElementById("misha-sightings-sub").textContent = mv.last_seen ? `Last seen: ${relativeTime(mv.last_seen)}` : "Not seen yet";
 
-  // Device
   const connected = analytics.device_connected;
-  const devVal = document.getElementById("device-status-value");
-  devVal.innerHTML = `<span class="status-dot ${connected ? 'online' : 'offline'}"></span> ${connected ? 'Connected' : 'Disconnected'}`;
+  document.getElementById("device-status-value").innerHTML = `<span class="status-dot ${connected?'online':'offline'}"></span> ${connected?'Connected':'Disconnected'}`;
 }
 
-// --- Oni's Daily Routine Chart ---
+// --- Oni Routine Chart ---
 function createOniRoutineChart(analytics) {
-  if (!analytics || !analytics.pets || !analytics.pets.oni) return;
+  if (!analytics?.pets?.oni) return;
   const hourly = analytics.pets.oni.hourly_pattern || Array(24).fill(0);
   const ctx = document.getElementById("oniRoutineChart");
   if (oniRoutineChart) oniRoutineChart.destroy();
-
-  const gradient = ctx.getContext("2d").createLinearGradient(0, 0, ctx.parentElement.clientWidth, 0);
+  const gradient = ctx.getContext("2d").createLinearGradient(0,0,ctx.parentElement.clientWidth,0);
   gradient.addColorStop(0, "rgba(99, 102, 241, 0.7)");
   gradient.addColorStop(1, "rgba(139, 92, 246, 0.7)");
-
   oniRoutineChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: HOUR_LABELS,
-      datasets: [{
-        label: "Events",
-        data: hourly,
-        backgroundColor: gradient,
-        borderRadius: 4,
-        borderSkipped: false,
-      }],
-    },
-    options: {
-      indexAxis: "x",
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "#1f2230" } },
-        x: { grid: { display: false }, ticks: { maxTicksLimit: 12 } },
-      },
-    },
+    type: "bar", data: { labels: HOUR_LABELS, datasets: [{ label: "Events", data: hourly, backgroundColor: gradient, borderRadius: 4, borderSkipped: false }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}}, x:{grid:{display:false},ticks:{maxTicksLimit:12}} } },
   });
+}
+
+// --- Trip Log ---
+function renderTrips(analytics) {
+  if (!analytics?.trips) return;
+  const t = analytics.trips;
+  // Stats
+  document.getElementById("trip-stats").innerHTML = `
+    <div class="stat-box"><div class="label">Avg Trip</div><div class="val blue">${fmtDuration(t.avg_duration_minutes)}</div></div>
+    <div class="stat-box"><div class="label">Longest</div><div class="val orange">${fmtDuration(t.longest_duration_minutes)}</div></div>
+    <div class="stat-box"><div class="label">Trips Today</div><div class="val green">${t.trips_today}</div></div>
+    <div class="stat-box"><div class="label">Outside Today</div><div class="val purple">${fmtDuration(t.time_outside_today_minutes)}</div></div>
+  `;
+  // Trip list
+  let html = '';
+  if (t.current_trip_start) {
+    html += `<div class="trip-current">Currently outside since ${relativeTime(t.current_trip_start)}</div>`;
+  }
+  html += '<div class="trip-list">';
+  if (!t.recent || !t.recent.length) {
+    html += '<p class="empty">No trips recorded yet</p>';
+  } else {
+    for (const trip of t.recent) {
+      const dur = trip.duration_minutes;
+      const cls = dur < 30 ? "short" : dur < 120 ? "medium" : "long";
+      html += `<div class="trip-item">
+        <div class="trip-icon">${dur < 30 ? "\u{1F3C3}" : dur < 120 ? "\u{1F6B6}" : "\u{1F30E}"}</div>
+        <div class="trip-details">
+          <div class="trip-time" title="${formatTime(trip.left_at)} → ${formatTime(trip.returned_at)}">${relativeTime(trip.returned_at)}</div>
+          <div class="trip-duration">${fmtDuration(dur)}</div>
+        </div>
+        <span class="trip-badge ${cls}">${cls}</span>
+      </div>`;
+    }
+  }
+  html += '</div>';
+  document.getElementById("trip-log").innerHTML = html;
+}
+
+// --- Records ---
+function renderRecords(analytics) {
+  if (!analytics?.records) return;
+  const r = analytics.records;
+  const el = document.getElementById("records");
+  el.innerHTML = `
+    <div class="record-item"><div class="record-icon">\u{1F4C5}</div><div><div class="record-label">Busiest Day</div><div class="record-value">${r.busiest_day||"--"} (${r.busiest_day_count} events)</div></div></div>
+    <div class="record-item"><div class="record-icon">\u{26A1}</div><div><div class="record-label">Most Events in One Hour</div><div class="record-value">${r.busiest_hour_count}</div></div></div>
+    <div class="record-item"><div class="record-icon">\u{1F30D}</div><div><div class="record-label">Longest Trip</div><div class="record-value">${fmtDuration(r.longest_trip_minutes)}</div></div></div>
+    <div class="record-item"><div class="record-icon">\u{1F3C6}</div><div><div class="record-label">Total Trips</div><div class="record-value">${r.total_trips}</div></div></div>
+    <div class="record-item"><div class="record-icon">\u{2705}</div><div><div class="record-label">Current Clean Streak</div><div class="record-value" style="color:var(--green)">${r.current_contraband_streak} days</div></div></div>
+    <div class="record-item"><div class="record-icon">\u{1F947}</div><div><div class="record-label">Best Clean Streak</div><div class="record-value" style="color:var(--yellow)">${r.longest_contraband_streak} days</div></div></div>
+  `;
 }
 
 // --- Heatmap ---
 function renderHeatmap(analytics) {
   const container = document.getElementById("heatmap-container");
-  if (!analytics || !analytics.heatmap) {
-    container.innerHTML = '<p class="empty">No heatmap data</p>';
-    return;
-  }
-  const heatmap = analytics.heatmap;
-  let maxVal = 0;
-  for (const row of heatmap) for (const v of row) if (v > maxVal) maxVal = v;
-
-  let html = '<div class="heatmap-grid">';
-  // Header row
-  html += '<div></div>';
-  for (let h = 0; h < 24; h++) {
-    html += `<div class="heatmap-hour-label">${h % 3 === 0 ? h : ''}</div>`;
-  }
-  // Data rows
-  for (let d = 0; d < 7; d++) {
+  if (!analytics?.heatmap) { container.innerHTML = '<p class="empty">No data</p>'; return; }
+  const hm = analytics.heatmap; let mx=0;
+  for (const row of hm) for (const v of row) if (v>mx) mx=v;
+  let html = '<div class="heatmap-grid"><div></div>';
+  for (let h=0;h<24;h++) html += `<div class="heatmap-hour-label">${h%3===0?h:''}</div>`;
+  for (let d=0;d<7;d++) {
     html += `<div class="heatmap-label">${DAY_NAMES[d]}</div>`;
-    for (let h = 0; h < 24; h++) {
-      const val = heatmap[d][h];
-      const intensity = maxVal > 0 ? val / maxVal : 0;
-      const bg = intensity === 0
-        ? "rgba(34, 197, 94, 0.05)"
-        : `rgba(34, 197, 94, ${0.15 + intensity * 0.75})`;
-      html += `<div class="heatmap-cell" style="background:${bg}" title="${DAY_NAMES[d]} ${String(h).padStart(2,'0')}:00 — ${val} events"></div>`;
+    for (let h=0;h<24;h++) {
+      const v = hm[d][h]; const i = mx>0?v/mx:0;
+      const bg = i===0 ? "rgba(34,197,94,0.05)" : `rgba(34,197,94,${0.15+i*0.75})`;
+      html += `<div class="heatmap-cell" style="background:${bg}" title="${DAY_NAMES[d]} ${String(h).padStart(2,'0')}:00 — ${v} events"></div>`;
     }
   }
-  html += '</div>';
-  container.innerHTML = html;
+  html += '</div>'; container.innerHTML = html;
 }
 
 // --- Contraband Analysis ---
 function renderContrabandAnalysis(analytics) {
-  if (!analytics || !analytics.contraband) return;
+  if (!analytics?.contraband) return;
   const cb = analytics.contraband;
-
-  // Stats
-  const statsEl = document.getElementById("contraband-stats");
-  const mostCommonHour = cb.by_hour ? cb.by_hour.indexOf(Math.max(...cb.by_hour)) : null;
-  const mostCommonTime = mostCommonHour !== null && Math.max(...cb.by_hour) > 0
-    ? `${String(mostCommonHour).padStart(2, '0')}:00`
-    : "--";
-
-  statsEl.innerHTML = `
-    <div class="contraband-stat">
-      <div class="label">Most Common Time</div>
-      <div class="val">${mostCommonTime}</div>
-    </div>
-    <div class="contraband-stat">
-      <div class="label">Last Incident</div>
-      <div class="val" style="font-size:14px;color:var(--muted)">${cb.last_timestamp ? relativeTime(cb.last_timestamp) : 'Never'}</div>
-    </div>
-    <div class="contraband-stat">
-      <div class="label">This Week</div>
-      <div class="val">${cb.this_week ?? 0}</div>
-    </div>
-    <div class="contraband-stat">
-      <div class="label">This Month</div>
-      <div class="val">${cb.this_month ?? 0}</div>
-    </div>
+  const mh = cb.by_hour?cb.by_hour.indexOf(Math.max(...cb.by_hour)):null;
+  const mt = mh!==null&&Math.max(...cb.by_hour)>0 ? `${String(mh).padStart(2,'0')}:00` : "--";
+  document.getElementById("contraband-stats").innerHTML = `
+    <div class="stat-box"><div class="label">Peak Time</div><div class="val red">${mt}</div></div>
+    <div class="stat-box"><div class="label">Last Incident</div><div class="val red" style="font-size:13px">${cb.last_timestamp?relativeTime(cb.last_timestamp):'Never'}</div></div>
+    <div class="stat-box"><div class="label">This Week</div><div class="val red">${cb.this_week??0}</div></div>
+    <div class="stat-box"><div class="label">This Month</div><div class="val red">${cb.this_month??0}</div></div>
   `;
-
-  // Chart
   const ctx = document.getElementById("contrabandChart");
   if (contrabandChart) contrabandChart.destroy();
-  if (!cb.by_hour || cb.by_hour.every(v => v === 0)) return;
-
+  if (!cb.by_hour||cb.by_hour.every(v=>v===0)) return;
   contrabandChart = new Chart(ctx, {
+    type:"bar", data:{labels:HOUR_LABELS, datasets:[{label:"Contraband",data:cb.by_hour,backgroundColor:"rgba(239,68,68,0.6)",borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}},x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}}},
+  });
+}
+
+// --- Weather Chart ---
+function renderWeather(analytics) {
+  if (!analytics?.weather) {
+    document.getElementById("weather-legend").innerHTML = '<span style="color:var(--muted);font-size:12px">Set LATITUDE & LONGITUDE env vars to enable weather</span>';
+    return;
+  }
+  const w = analytics.weather;
+  document.getElementById("weather-legend").innerHTML = `
+    <div class="weather-legend-item"><div class="weather-legend-dot" style="background:var(--cyan)"></div>Temp High</div>
+    <div class="weather-legend-item"><div class="weather-legend-dot" style="background:var(--blue)"></div>Temp Low</div>
+    <div class="weather-legend-item"><div class="weather-legend-dot" style="background:rgba(59,130,246,0.4)"></div>Rain (mm)</div>
+    <div class="weather-legend-item"><div class="weather-legend-dot" style="background:rgba(139,92,246,0.5)"></div>Events</div>
+  `;
+  const ctx = document.getElementById("weatherChart");
+  if (weatherChart) weatherChart.destroy();
+  // Get event counts per day from charts monthly data (approximate match)
+  const labels = w.dates.map(d => { const parts=d.split("-"); return `${parts[1]}/${parts[2]}`; });
+  // Build daily event count from monthly chart data
+  const charts = latestCharts;
+  const eventsByDate = {};
+  if (charts?.monthly) { charts.monthly.labels.forEach((l,i) => { eventsByDate[l] = charts.monthly.counts[i]; }); }
+  const eventCounts = labels.map(l => eventsByDate[l] || 0);
+
+  weatherChart = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: HOUR_LABELS,
-      datasets: [{
-        label: "Contraband",
-        data: cb.by_hour,
-        backgroundColor: "rgba(239, 68, 68, 0.6)",
-        borderRadius: 3,
-        borderSkipped: false,
-      }],
+      labels,
+      datasets: [
+        { type:"line", label:"Temp High", data:w.temp_max, borderColor:"#06b6d4", backgroundColor:"transparent", yAxisID:"y1", pointRadius:2, borderWidth:2, tension:0.3 },
+        { type:"line", label:"Temp Low", data:w.temp_min, borderColor:"#3b82f6", backgroundColor:"transparent", yAxisID:"y1", pointRadius:2, borderWidth:2, tension:0.3 },
+        { type:"bar", label:"Rain", data:w.precipitation, backgroundColor:"rgba(59,130,246,0.25)", yAxisID:"y2", borderRadius:2 },
+        { type:"bar", label:"Events", data:eventCounts, backgroundColor:"rgba(139,92,246,0.5)", yAxisID:"y", borderRadius:3 },
+      ],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "#1f2230" } },
-        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 10 } } },
+        x: { grid:{display:false}, ticks:{maxTicksLimit:15, font:{size:10}} },
+        y: { beginAtZero:true, position:"left", ticks:{stepSize:1,precision:0}, grid:{color:"#1f2230"}, title:{display:true,text:"Events",color:"#71717a"} },
+        y1: { position:"right", grid:{display:false}, title:{display:true,text:"\u00b0C",color:"#71717a"} },
+        y2: { display:false, beginAtZero:true },
       },
     },
   });
 }
 
-// --- Misha's Visit Pattern ---
-function renderMishaPattern(analytics) {
-  if (!analytics || !analytics.pets || !analytics.pets.misha) return;
-  const misha = analytics.pets.misha;
-  const mv = analytics.misha_visits || {};
-
-  const statsEl = document.getElementById("misha-stats");
-  statsEl.innerHTML = `
-    <div class="visit-stat">
-      <div class="label">Last Seen</div>
-      <div class="val" style="font-size:14px">${mv.last_seen ? relativeTime(mv.last_seen) : 'Never'}</div>
-    </div>
-    <div class="visit-stat">
-      <div class="label">Usual Time</div>
-      <div class="val">${mv.usual_time || '--'}</div>
-    </div>
-    <div class="visit-stat">
-      <div class="label">This Week</div>
-      <div class="val">${mv.visits_week ?? 0}</div>
-    </div>
-    <div class="visit-stat">
-      <div class="label">This Month</div>
-      <div class="val">${mv.visits_month ?? 0}</div>
+// --- Moon Phase ---
+function renderMoon(analytics) {
+  if (!analytics?.moon) return;
+  const m = analytics.moon;
+  document.getElementById("moon-today").innerHTML = `
+    <div class="moon-emoji">${m.today_emoji}</div>
+    <div class="moon-info">
+      <div class="moon-name">${m.today_name}</div>
+      <div class="moon-detail">${m.today_illumination}% illumination</div>
     </div>
   `;
+  document.getElementById("moon-stats").innerHTML = `
+    <div class="stat-box"><div class="label">Full Moon Events</div><div class="val yellow">${m.full_moon_events_30d}</div><div class="sub">last 30 days</div></div>
+    <div class="stat-box"><div class="label">New Moon Events</div><div class="val purple">${m.new_moon_events_30d}</div><div class="sub">last 30 days</div></div>
+  `;
+  const ctx = document.getElementById("moonChart");
+  if (moonChart) moonChart.destroy();
+  const phases = m.phases_30d || [];
+  moonChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: phases.map(p => p.date),
+      datasets: [{
+        label: "Illumination %",
+        data: phases.map(p => p.illumination),
+        borderColor: "#eab308",
+        backgroundColor: "rgba(234,179,8,0.1)",
+        fill: true, pointRadius: 2, borderWidth: 2, tension: 0.4,
+      }],
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>{const p=phases[ctx.dataIndex]; return `${p.emoji} ${p.name} (${p.illumination}%)`;}}}},
+      scales:{ y:{beginAtZero:true,max:100,grid:{color:"#1f2230"},ticks:{callback:v=>v+"%"}}, x:{grid:{display:false},ticks:{maxTicksLimit:10}} },
+    },
+  });
+}
 
+// --- Misha Pattern ---
+function renderMishaPattern(analytics) {
+  if (!analytics?.pets?.misha) return;
+  const mv = analytics.misha_visits || {};
+  document.getElementById("misha-stats").innerHTML = `
+    <div class="stat-box"><div class="label">Last Seen</div><div class="val orange" style="font-size:13px">${mv.last_seen?relativeTime(mv.last_seen):'Never'}</div></div>
+    <div class="stat-box"><div class="label">Usual Time</div><div class="val orange">${mv.usual_time||'--'}</div></div>
+    <div class="stat-box"><div class="label">This Week</div><div class="val orange">${mv.visits_week??0}</div></div>
+    <div class="stat-box"><div class="label">This Month</div><div class="val orange">${mv.visits_month??0}</div></div>
+  `;
   const ctx = document.getElementById("mishaChart");
   if (mishaChart) mishaChart.destroy();
-  const hourly = misha.hourly_pattern || Array(24).fill(0);
-  if (hourly.every(v => v === 0)) return;
-
+  const hourly = analytics.pets.misha.hourly_pattern || Array(24).fill(0);
+  if (hourly.every(v=>v===0)) return;
   mishaChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: HOUR_LABELS,
-      datasets: [{
-        label: "Visits",
-        data: hourly,
-        backgroundColor: "rgba(249, 115, 22, 0.6)",
-        borderRadius: 3,
-        borderSkipped: false,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "#1f2230" } },
-        x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 10 } } },
-      },
-    },
+    type:"bar", data:{labels:HOUR_LABELS, datasets:[{label:"Visits",data:hourly,backgroundColor:"rgba(249,115,22,0.6)",borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}},x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}}},
   });
 }
 
-// --- Activity Over Time (existing, improved) ---
+// --- Activity Over Time ---
 function createActivityChart(charts, period) {
-  const ctx = document.getElementById("activityChart");
-  const data = charts[period];
-  if (!data) return;
-
+  const ctx = document.getElementById("activityChart"); const data = charts[period]; if (!data) return;
   if (activityChart) activityChart.destroy();
   activityChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: data.labels,
-      datasets: [{
-        label: "Events",
-        data: data.counts,
-        backgroundColor: "rgba(59, 130, 246, 0.5)",
-        borderColor: "rgba(59, 130, 246, 0.8)",
-        borderWidth: 1,
-        borderRadius: 4,
-        borderSkipped: false,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "#1f2230" } },
-        x: { grid: { display: false }, ticks: { maxTicksLimit: period === "monthly" ? 15 : undefined } },
-      },
-    },
+    type:"bar", data:{labels:data.labels, datasets:[{label:"Events",data:data.counts,backgroundColor:"rgba(59,130,246,0.5)",borderColor:"rgba(59,130,246,0.8)",borderWidth:1,borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}},x:{grid:{display:false},ticks:{maxTicksLimit:period==="monthly"?15:undefined}}}},
   });
 }
-
-// --- Classification Doughnut ---
 function createClassChart(charts) {
   const ctx = document.getElementById("classChart");
-  const totals = charts.classification_totals || {};
-  const labels = Object.keys(totals);
-  const values = Object.values(totals);
-  const colors = labels.map(l => CLASS_COLORS[l] || "#888");
-
-  if (classChart) classChart.destroy();
-  if (!labels.length) return;
-
+  const totals = charts.classification_totals||{}; const labels=Object.keys(totals); const values=Object.values(totals);
+  const colors = labels.map(l=>CLASS_COLORS[l]||"#888");
+  if (classChart) classChart.destroy(); if (!labels.length) return;
   classChart = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderColor: "#1a1d27",
-        borderWidth: 3,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "65%",
-      plugins: {
-        legend: {
-          position: "right",
-          labels: { padding: 16, usePointStyle: true, pointStyle: "circle" },
-        },
-      },
-    },
+    type:"doughnut", data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:"#1a1d27",borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{position:"right",labels:{padding:16,usePointStyle:true,pointStyle:"circle"}}}},
   });
 }
-
-function renderCharts(charts) {
-  if (!charts) return;
-  latestCharts = charts;
-  createActivityChart(charts, currentPeriod);
-  createClassChart(charts);
-}
-
-// Period tab switching
-document.getElementById("period-tabs").addEventListener("click", (e) => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-  currentPeriod = btn.dataset.period;
-  document.querySelectorAll("#period-tabs button").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  if (latestCharts) createActivityChart(latestCharts, currentPeriod);
+function renderCharts(charts) { if (!charts) return; latestCharts=charts; createActivityChart(charts,currentPeriod); createClassChart(charts); }
+document.getElementById("period-tabs").addEventListener("click", e => {
+  const btn=e.target.closest("button"); if(!btn) return;
+  currentPeriod=btn.dataset.period;
+  document.querySelectorAll("#period-tabs button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active"); if (latestCharts) createActivityChart(latestCharts,currentPeriod);
 });
 
 // --- Events Table ---
 function renderEvents(events) {
   const el = document.getElementById("events");
-  if (!events || !events.length) { el.innerHTML = '<p class="empty">No events yet</p>'; return; }
-  const rows = events.map(e => `
-    <tr>
-      <td title="${formatTime(e.timestamp)}">${relativeTime(e.timestamp)}</td>
-      <td>${esc(e.device)}</td>
-      <td>${esc(e.trigger)}</td>
-      <td><span class="badge ${BADGE_CLASS[e.classification] || 'badge-unknown'}">${esc(e.classification)}</span></td>
-      <td>${e.pets.length ? e.pets.map(p => petBadge(p)).join(" ") : '<span style="color:var(--muted)">\u2014</span>'}</td>
-    </tr>
-  `).join("");
-  el.innerHTML = `<table>
-    <thead><tr><th>Time</th><th>Device</th><th>Trigger</th><th>Classification</th><th>Pet</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
+  if (!events?.length) { el.innerHTML='<p class="empty">No events yet</p>'; return; }
+  const rows = events.map(e => `<tr>
+    <td title="${formatTime(e.timestamp)}">${relativeTime(e.timestamp)}</td>
+    <td>${esc(e.device)}</td><td>${esc(e.trigger)}</td>
+    <td><span class="badge ${BADGE_CLASS[e.classification]||'badge-unknown'}">${esc(e.classification)}</span></td>
+    <td>${e.pets.length?e.pets.map(p=>petBadge(p)).join(" "):'<span style="color:var(--muted)">\u2014</span>'}</td>
+  </tr>`).join("");
+  el.innerHTML = `<table><thead><tr><th>Time</th><th>Device</th><th>Trigger</th><th>Classification</th><th>Pet</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
-// --- Sync Status ---
+// --- Sync ---
 function updateSyncStatus(lastSync) {
   const txt = document.getElementById("sync-text");
-  if (lastSync) {
-    txt.textContent = "Last sync: " + relativeTime(lastSync);
-  } else {
-    txt.textContent = "Not yet synced";
-  }
+  txt.textContent = lastSync ? "Last sync: " + relativeTime(lastSync) : "Not yet synced";
 }
-
 async function triggerSync() {
-  const btn = document.getElementById("sync-btn");
-  btn.disabled = true;
-  btn.textContent = "Syncing...";
-  try {
-    const resp = await fetch("/api/sync", { method: "POST" });
-    if (resp.status === 409) btn.textContent = "Already running...";
-  } catch (e) {
-    console.error("Sync failed", e);
-  } finally {
-    setTimeout(() => { btn.disabled = false; btn.textContent = "Sync Now"; }, 2000);
-  }
+  const btn=document.getElementById("sync-btn"); btn.disabled=true; btn.textContent="Syncing...";
+  try { const r=await fetch("/api/sync",{method:"POST"}); if(r.status===409) btn.textContent="Already running..."; }
+  catch(e) { console.error("Sync failed",e); }
+  finally { setTimeout(()=>{btn.disabled=false;btn.textContent="Sync Now";},2000); }
 }
 
-// --- Main Data Handler ---
+// --- Main Handler ---
 function handleData(data) {
   updateSyncStatus(data.last_sync);
-
-  // Build pet label mapping from analytics
-  const analytics = data.analytics;
-  if (analytics && analytics.pets) {
-    if (analytics.pets.oni) {
-      knownPetLabels[analytics.pets.oni.code] = { label: analytics.pets.oni.label, role: "oni" };
-    }
-    if (analytics.pets.misha) {
-      knownPetLabels[analytics.pets.misha.code] = { label: analytics.pets.misha.label, role: "misha" };
-    }
+  const a = data.analytics;
+  if (a?.pets) {
+    if (a.pets.oni) knownPetLabels[a.pets.oni.code]={label:a.pets.oni.label,role:"oni"};
+    if (a.pets.misha) knownPetLabels[a.pets.misha.code]={label:a.pets.misha.label,role:"misha"};
   }
-
-  // Summary cards
-  updateSummaryCards(analytics);
-
-  // Charts
+  updateSummaryCards(a);
   renderCharts(data.charts);
-  createOniRoutineChart(analytics);
-  renderHeatmap(analytics);
-  renderContrabandAnalysis(analytics);
-  renderMishaPattern(analytics);
-
-  // Events table
+  createOniRoutineChart(a);
+  renderTrips(a);
+  renderRecords(a);
+  renderHeatmap(a);
+  renderContrabandAnalysis(a);
+  renderWeather(a);
+  renderMoon(a);
+  renderMishaPattern(a);
   renderEvents(data.events || []);
 }
 
-// WebSocket for live updates
-const proto = location.protocol === "https:" ? "wss:" : "ws:";
+// WebSocket
+const proto = location.protocol==="https:"?"wss:":"ws:";
 const ws = new WebSocket(`${proto}//${location.host}/ws`);
-ws.onmessage = (e) => handleData(JSON.parse(e.data));
+ws.onmessage = e => handleData(JSON.parse(e.data));
 ws.onclose = () => {};
 
-// Initial data from server-rendered JSON
+// Initial data
 handleData({{ initial_state | tojson }});
 </script>
 </body>
