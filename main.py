@@ -17,6 +17,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from event_store import EventStore
@@ -31,6 +32,7 @@ templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 SYNC_INTERVAL_HOURS = int(os.environ.get("SYNC_INTERVAL_HOURS", "24"))
 LATITUDE = os.environ.get("LATITUDE", "48.8631")
 LONGITUDE = os.environ.get("LONGITUDE", "2.3839")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
 CLASSIFICATION = {
     0: "Unknown", 1: "Clear", 2: "Suspicious", 3: "Contraband",
@@ -307,6 +309,68 @@ async def build_analytics() -> dict:
     new_moon_events = sum(1 for dt, _ in parsed if dt >= thirty_days_ago and (moon_phase(dt) < 0.1 or moon_phase(dt) > 0.9))
     today_phase = moon_phase(now)
 
+    # --- Prediction ---
+    predicted_return = None
+    if oni_status == "outside" and trip_start:
+        dep_hour = trip_start.hour
+        similar = [t for t in trips
+                   if datetime.fromisoformat(t["left_at"]).replace(tzinfo=timezone.utc).hour == dep_hour]
+        if similar:
+            avg_dur = sum(t["duration_minutes"] for t in similar) / len(similar)
+            predicted_return = (trip_start + timedelta(minutes=avg_dur)).isoformat()
+
+    # --- Badges ---
+    badges = []
+    if total_events >= 50:
+        badges.append({"id": "half_century", "name": "Half Century", "icon": "\u2B50", "desc": "50+ events recorded"})
+    if total_events >= 100:
+        badges.append({"id": "century", "name": "Century", "icon": "\U0001F4AF", "desc": "100+ events recorded"})
+    if total_events >= 500:
+        badges.append({"id": "veteran", "name": "Veteran", "icon": "\U0001F396\uFE0F", "desc": "500+ events recorded"})
+    if total_events >= 1000:
+        badges.append({"id": "marathon", "name": "Marathon", "icon": "\U0001F3C3", "desc": "1000+ events recorded"})
+    if current_streak >= 7:
+        badges.append({"id": "clean_week", "name": "Clean Week", "icon": "\u2728", "desc": "7+ day contraband-free streak"})
+    if current_streak >= 30:
+        badges.append({"id": "spotless", "name": "Spotless", "icon": "\U0001F3C6", "desc": "30+ day contraband-free streak"})
+    if longest_trip_minutes >= 120:
+        badges.append({"id": "explorer", "name": "Explorer", "icon": "\U0001F30D", "desc": "Trip over 2 hours"})
+    if longest_trip_minutes >= 360:
+        badges.append({"id": "wanderer", "name": "Wanderer", "icon": "\U0001F6E4\uFE0F", "desc": "Trip over 6 hours"})
+    early_events = sum(1 for dt, _ in parsed if dt.hour < 6)
+    late_events = sum(1 for dt, _ in parsed if dt.hour >= 23)
+    if early_events > 0:
+        badges.append({"id": "early_bird", "name": "Early Bird", "icon": "\U0001F305", "desc": "Activity before 6am"})
+    if late_events > 0:
+        badges.append({"id": "night_owl", "name": "Night Owl", "icon": "\U0001F989", "desc": "Activity after 11pm"})
+    if misha_visits_month >= 10:
+        badges.append({"id": "popular", "name": "Popular Spot", "icon": "\U0001F3E0", "desc": "10+ Misha visits in a month"})
+    if total_trips >= 50:
+        badges.append({"id": "frequent", "name": "Frequent Flyer", "icon": "\u2708\uFE0F", "desc": "50+ trips"})
+    if total_trips >= 200:
+        badges.append({"id": "globetrotter", "name": "Globetrotter", "icon": "\U0001F30E", "desc": "200+ trips"})
+    if busiest_day_count >= 20:
+        badges.append({"id": "hyperactive", "name": "Hyperactive", "icon": "\u26A1", "desc": "20+ events in one day"})
+    if contraband_events:
+        badges.append({"id": "hunter", "name": "Hunter", "icon": "\U0001F43E", "desc": "At least one contraband event"})
+
+    # --- Today's timeline ---
+    timeline = []
+    for dt, ev in parsed:
+        if dt >= today_start:
+            rfid_codes = ev.get("rfidCodes") or []
+            pet_names = [pet_map.get(c, {}).get("label", c) for c in rfid_codes]
+            minutes_since_midnight = dt.hour * 60 + dt.minute
+            timeline.append({
+                "time": dt.strftime("%H:%M"),
+                "timestamp": dt.isoformat(),
+                "position": round(minutes_since_midnight / 1440 * 100, 1),
+                "classification": CLASSIFICATION.get(ev.get("eventClassification", -1), "Unknown"),
+                "trigger": TRIGGER_SOURCE.get(ev.get("eventTriggerSource", -1), "Unknown"),
+                "pets": pet_names,
+            })
+    timeline.sort(key=lambda x: x["timestamp"])
+
     # --- Weather (cached) ---
     weather = await _fetch_weather()
 
@@ -376,6 +440,11 @@ async def build_analytics() -> dict:
             "phases_30d": moon_data,
         },
         "weather": weather,
+        "prediction": {
+            "estimated_return": predicted_return,
+        },
+        "badges": badges,
+        "timeline": timeline,
     }
 
 
@@ -596,6 +665,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -646,6 +716,71 @@ async def export_csv():
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=onlycat_events.csv"},
     )
+
+
+@app.get("/share", response_class=HTMLResponse)
+async def share_page(request: Request):
+    """Public read-only dashboard."""
+    state = await build_state()
+    return templates.TemplateResponse(
+        "share.html",
+        {"request": request, "initial_state": state},
+    )
+
+
+@app.get("/api/diary")
+async def get_diary():
+    """Generate AI diary entry for today using Claude."""
+    if not ANTHROPIC_API_KEY:
+        return {"diary": None, "error": "Set ANTHROPIC_API_KEY to enable AI diary"}
+    today_key = f"diary_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+    cached = await store.get_meta(today_key)
+    if cached:
+        return {"diary": cached}
+
+    analytics = await build_analytics()
+    oni = analytics["oni_status"]
+    summary = analytics["summary"]
+    cb = analytics["contraband"]
+    trips_data = analytics["trips"]
+    misha = analytics["misha_visits"]
+    moon = analytics["moon"]
+
+    prompt = (
+        f"Write a short, fun, first-person diary entry (3-4 sentences) as Oni the cat. "
+        f"Today's stats: {summary['events_today']} events, "
+        f"{trips_data['trips_today']} trips outside, "
+        f"{trips_data['time_outside_today_minutes']} minutes outside total. "
+        f"Oni is currently {oni['status']}. "
+        f"Contraband status: {cb['days_since']} days since last incident. "
+        f"Misha (neighbor cat) visited {misha['visits_week']} times this week. "
+        f"Moon: {moon['today_name']} ({moon['today_illumination']}% illumination). "
+        f"Be playful, use cat personality. Keep it under 100 words."
+    )
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 200,
+                    "messages": [{"role": "user", "content": prompt}],
+                },
+                timeout=30,
+            )
+            data = resp.json()
+            diary = data["content"][0]["text"]
+        await store.set_meta(today_key, diary)
+        return {"diary": diary}
+    except Exception as exc:
+        logger.exception("Failed to generate diary")
+        return {"diary": None, "error": str(exc)}
 
 
 @app.get("/api/status")

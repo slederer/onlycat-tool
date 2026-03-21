@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oni's Adventures - OnlyCat</title>
+<meta name="description" content="Follow Oni the cat's daily adventures through the cat door">
+<meta property="og:title" content="Oni's Adventures - OnlyCat Dashboard">
+<meta property="og:description" content="Live cat activity dashboard - see what Oni is up to!">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#0f1117; --surface:#1a1d27; --border:#2a2d3a; --text:#e4e4e7; --muted:#71717a; --green:#22c55e; --red:#ef4444; --yellow:#eab308; --blue:#3b82f6; --purple:#a855f7; --orange:#f97316; --green-dim:#16352a; --red-dim:#351616; --yellow-dim:#352a16; --blue-dim:#162035; --orange-dim:#351f0a; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",sans-serif; background:var(--bg); color:var(--text); padding:24px; max-width:800px; margin:0 auto; line-height:1.5; }
+  header { text-align:center; margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+  header h1 { font-size:26px; font-weight:700; margin-bottom:4px; }
+  header p { color:var(--muted); font-size:14px; }
+  .hero { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:32px; }
+  .hero-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 28px; text-align:center; min-width:140px; }
+  .hero-card .emoji { font-size:32px; margin-bottom:8px; }
+  .hero-card .value { font-size:24px; font-weight:700; }
+  .hero-card .label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:22px; margin-bottom:24px; }
+  .card h2 { font-size:13px; text-transform:uppercase; letter-spacing:0.6px; color:var(--muted); margin-bottom:16px; font-weight:600; }
+  .chart-container { position:relative; width:100%; height:200px; }
+  .badge-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .badge-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; text-align:center; font-size:13px; }
+  .badge-item .icon { font-size:24px; display:block; margin-bottom:4px; }
+  .badge-item .name { font-weight:600; }
+  .footer { text-align:center; padding:20px 0; color:var(--muted); font-size:13px; }
+  .footer a { color:var(--blue); text-decoration:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#x1F431; Oni's Adventures</h1>
+  <p>Live cat activity dashboard</p>
+</header>
+
+<div class="hero" id="hero"></div>
+
+<div class="card" id="diary-card" style="display:none">
+  <h2>&#x1F4D6; Oni's Diary</h2>
+  <p id="diary-text" style="font-style:italic;line-height:1.7"></p>
+</div>
+
+<div class="card">
+  <h2>Daily Routine (30-Day Pattern)</h2>
+  <div class="chart-container"><canvas id="routineChart"></canvas></div>
+</div>
+
+<div class="card" id="badges-card" style="display:none">
+  <h2>Achievements</h2>
+  <div class="badge-row" id="badges"></div>
+</div>
+
+<div class="footer">
+  Powered by <a href="/">OnlyCat Dashboard</a>
+</div>
+
+<script>
+Chart.defaults.color="#71717a"; Chart.defaults.borderColor="#2a2d3a";
+const data = {{ initial_state | tojson }};
+const a = data.analytics || {};
+
+// Hero cards
+const oni = a.oni_status||{}, s = a.summary||{}, cb = a.contraband||{}, mv = a.misha_visits||{}, moon = a.moon||{};
+const statusColor = oni.status==="inside"?"var(--green)":oni.status==="outside"?"var(--orange)":"var(--muted)";
+document.getElementById("hero").innerHTML = `
+  <div class="hero-card"><div class="emoji">&#x1F431;</div><div class="value" style="color:${statusColor}">${(oni.status||"unknown").charAt(0).toUpperCase()+(oni.status||"unknown").slice(1)}</div><div class="label">Status</div></div>
+  <div class="hero-card"><div class="emoji">&#x1F4CA;</div><div class="value">${s.events_today??0}</div><div class="label">Events Today</div></div>
+  <div class="hero-card"><div class="emoji">&#x2705;</div><div class="value" style="color:var(--green)">${cb.days_since??"\u2714"}</div><div class="label">Clean Days</div></div>
+  <div class="hero-card"><div class="emoji">${moon.today_emoji||""}</div><div class="value">${moon.today_illumination||0}%</div><div class="label">${moon.today_name||"Moon"}</div></div>
+  <div class="hero-card"><div class="emoji">&#x1F431;</div><div class="value" style="color:var(--orange)">${mv.visits_week??0}</div><div class="label">Misha Visits</div></div>
+`;
+
+// Routine chart
+if (a.pets?.oni) {
+  const h = a.pets.oni.hourly_pattern||Array(24).fill(0);
+  const labels = Array.from({length:24},(_,i)=>`${String(i).padStart(2,'0')}:00`);
+  new Chart(document.getElementById("routineChart"), {
+    type:"bar", data:{labels, datasets:[{data:h, backgroundColor:"rgba(139,92,246,0.6)", borderRadius:4, borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{maxTicksLimit:12}}}},
+  });
+}
+
+// Badges
+if (a.badges?.length) {
+  document.getElementById("badges-card").style.display="block";
+  document.getElementById("badges").innerHTML = a.badges.map(b =>
+    `<div class="badge-item"><span class="icon">${b.icon}</span><span class="name">${b.name}</span></div>`
+  ).join("");
+}
+
+// Diary
+fetch("/api/diary").then(r=>r.json()).then(d=>{
+  if(d.diary){document.getElementById("diary-card").style.display="block";document.getElementById("diary-text").textContent=d.diary;}
+});
+</script>
+</body>
+</html>

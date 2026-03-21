@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OnlyCat Dashboard</title>
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#0f1117">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -182,6 +187,38 @@
   /* Notification banner */
   .notif-banner { background: var(--yellow-dim); color: var(--yellow); padding: 8px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 13px; display: none; cursor: pointer; }
   .notif-banner:hover { opacity: 0.9; }
+
+  /* Timeline */
+  .timeline-track { position: relative; height: 60px; background: var(--bg); border-radius: 8px; margin: 8px 0; overflow: visible; }
+  .timeline-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); z-index: 2; }
+  .timeline-now::after { content: "now"; position: absolute; top: -16px; left: -10px; font-size: 10px; color: var(--red); }
+  .timeline-dot { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; z-index: 1; border: 2px solid var(--surface); transition: transform 0.15s; }
+  .timeline-dot:hover { transform: translate(-50%, -50%) scale(1.5); z-index: 3; }
+  .timeline-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); padding: 0 2px; }
+  .timeline-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 11px; white-space: nowrap; z-index: 10; margin-bottom: 8px; }
+  .timeline-dot:hover .timeline-tooltip { display: block; }
+  .prediction-banner { background: var(--blue-dim); color: var(--blue); padding: 8px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; }
+
+  /* Badges */
+  .badge-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .achievement { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; text-align: center; min-width: 100px; transition: transform 0.15s, box-shadow 0.15s; }
+  .achievement:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+  .achievement .ach-icon { font-size: 28px; display: block; margin-bottom: 4px; }
+  .achievement .ach-name { font-size: 12px; font-weight: 700; }
+  .achievement .ach-desc { font-size: 10px; color: var(--muted); }
+
+  /* Diary */
+  .diary-text { font-style: italic; line-height: 1.8; font-size: 15px; color: var(--text); }
+  .diary-loading { color: var(--muted); font-size: 13px; }
+
+  /* Share link */
+  .share-link { font-size: 12px; color: var(--muted); }
+  .share-link a { color: var(--blue); text-decoration: none; }
+  .share-link a:hover { text-decoration: underline; }
+
+  /* PWA install */
+  .install-btn { display: none; background: var(--blue-dim); border: 1px solid var(--blue); color: var(--blue); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+  .install-btn:hover { background: var(--blue); color: white; }
 </style>
 </head>
 <body>
@@ -227,6 +264,18 @@
     <div class="card-label">Device Status</div>
     <div class="card-value" id="device-status-value"><span class="status-dot offline"></span> --</div>
     <div class="card-sub" id="device-status-sub">&nbsp;</div>
+  </div>
+</div>
+
+<!-- Prediction Banner -->
+<div class="prediction-banner" id="prediction-banner" style="display:none"></div>
+
+<!-- Today's Timeline -->
+<div class="card">
+  <h2>Today's Timeline</h2>
+  <div id="timeline-container">
+    <div class="timeline-track" id="timeline-track"></div>
+    <div class="timeline-labels"><span>00:00</span><span>03:00</span><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span><span>24:00</span></div>
   </div>
 </div>
 
@@ -303,9 +352,27 @@
   </div>
 </div>
 
+<!-- Oni's Diary -->
+<div class="card" id="diary-card" style="display:none">
+  <h2>Oni's Diary</h2>
+  <p class="diary-text" id="diary-text"></p>
+</div>
+
+<!-- Achievements -->
+<div class="card" id="badges-card" style="display:none">
+  <h2>Achievements</h2>
+  <div class="badge-grid" id="badges-grid"></div>
+</div>
+
 <!-- Recent Activity -->
 <div class="card">
-  <h2>Recent Activity</h2>
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0">
+    <h2 style="margin-bottom:0">Recent Activity</h2>
+    <div style="display:flex;gap:12px;align-items:center">
+      <span class="share-link">Share: <a href="/share" target="_blank">/share</a></span>
+      <button class="install-btn" id="install-btn" onclick="installPWA()">Install App</button>
+    </div>
+  </div>
   <div id="events" style="overflow-x:auto"><p class="empty">Loading...</p></div>
 </div>
 
@@ -673,6 +740,70 @@ async function triggerSync() {
   finally { setTimeout(()=>{btn.disabled=false;btn.textContent="Sync Now";},2000); }
 }
 
+// --- Timeline ---
+function renderTimeline(analytics) {
+  const track = document.getElementById("timeline-track");
+  if (!analytics?.timeline || !analytics.timeline.length) {
+    track.innerHTML = '<p class="empty" style="text-align:center;padding-top:18px">No events today</p>';
+    return;
+  }
+  const CLS_COLOR = {"Clear":"var(--green)","Suspicious":"var(--yellow)","Contraband":"var(--red)","Human Activity":"var(--purple)","Remote Unlock":"var(--blue)","Unknown":"var(--muted)"};
+  const now = new Date();
+  const nowPos = ((now.getHours()*60+now.getMinutes())/1440*100).toFixed(1);
+  let html = `<div class="timeline-now" style="left:${nowPos}%"></div>`;
+  for (const ev of analytics.timeline) {
+    const color = CLS_COLOR[ev.classification] || "var(--muted)";
+    const pets = ev.pets.length ? ev.pets.join(", ") : "Unknown";
+    html += `<div class="timeline-dot" style="left:${ev.position}%;background:${color}">
+      <div class="timeline-tooltip">${ev.time} \u00b7 ${ev.classification} \u00b7 ${pets}</div>
+    </div>`;
+  }
+  track.innerHTML = html;
+}
+
+// --- Prediction ---
+function renderPrediction(analytics) {
+  const el = document.getElementById("prediction-banner");
+  if (!analytics?.prediction?.estimated_return) { el.style.display="none"; return; }
+  el.style.display = "block";
+  el.innerHTML = `\u{1F52E} Oni is outside. Based on patterns, estimated return: <strong>${relativeTime(analytics.prediction.estimated_return)}</strong> (${formatTime(analytics.prediction.estimated_return)})`;
+}
+
+// --- Badges ---
+function renderBadges(analytics) {
+  if (!analytics?.badges?.length) { document.getElementById("badges-card").style.display="none"; return; }
+  document.getElementById("badges-card").style.display = "block";
+  document.getElementById("badges-grid").innerHTML = analytics.badges.map(b =>
+    `<div class="achievement" title="${b.desc}"><span class="ach-icon">${b.icon}</span><span class="ach-name">${b.name}</span><span class="ach-desc">${b.desc}</span></div>`
+  ).join("");
+}
+
+// --- Diary ---
+function loadDiary() {
+  fetch("/api/diary").then(r=>r.json()).then(d => {
+    if (d.diary) {
+      document.getElementById("diary-card").style.display = "block";
+      document.getElementById("diary-text").textContent = d.diary;
+    }
+  }).catch(() => {});
+}
+
+// --- PWA ---
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("install-btn").style.display = "inline-block";
+});
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById("install-btn").style.display = "none"; });
+}
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+}
+
 // --- Main Handler ---
 function handleData(data) {
   updateSyncStatus(data.last_sync);
@@ -682,6 +813,8 @@ function handleData(data) {
     if (a.pets.misha) knownPetLabels[a.pets.misha.code]={label:a.pets.misha.label,role:"misha"};
   }
   updateSummaryCards(a);
+  renderPrediction(a);
+  renderTimeline(a);
   renderCharts(data.charts);
   createOniRoutineChart(a);
   renderTrips(a);
@@ -691,7 +824,9 @@ function handleData(data) {
   renderWeather(a);
   renderMoon(a);
   renderMishaPattern(a);
+  renderBadges(a);
   renderEvents(data.events || []);
+  loadDiary();
 }
 
 // WebSocket
