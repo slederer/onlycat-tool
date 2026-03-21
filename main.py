@@ -20,6 +20,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from commands import set_transit_policy
 from event_store import EventStore
 from sync import run_sync
 
@@ -354,6 +355,45 @@ async def build_analytics() -> dict:
     if contraband_events:
         badges.append({"id": "hunter", "name": "Hunter", "icon": "\U0001F43E", "desc": "At least one contraband event"})
 
+    # --- Historical comparison: this week vs last week ---
+    last_week_start = week_start - timedelta(days=7)
+    last_week_end = week_start
+    events_last_week = sum(1 for dt, _ in parsed if last_week_start <= dt < last_week_end)
+    events_this_week = sum(1 for dt, _ in parsed if dt >= week_start)
+    contraband_last_week = sum(1 for dt, ev in parsed if last_week_start <= dt < last_week_end and ev.get("eventClassification") == 3)
+    this_week_daily = [0] * 7
+    last_week_daily = [0] * 7
+    for dt, _ in parsed:
+        if dt >= week_start:
+            this_week_daily[dt.weekday()] += 1
+        elif dt >= last_week_start:
+            last_week_daily[dt.weekday()] += 1
+
+    # --- Activity calendar (365 days) ---
+    year_ago = now - timedelta(days=365)
+    calendar_data = {}
+    for dt, _ in parsed:
+        if dt >= year_ago:
+            day_key = dt.strftime("%Y-%m-%d")
+            calendar_data[day_key] = calendar_data.get(day_key, 0) + 1
+    calendar_days = []
+    for i in range(365):
+        d = (now - timedelta(days=364 - i))
+        key = d.strftime("%Y-%m-%d")
+        calendar_days.append({"date": key, "count": calendar_data.get(key, 0), "weekday": d.weekday()})
+
+    # --- Health trends: weekly aggregates ---
+    from collections import OrderedDict
+    health_weeks = OrderedDict()
+    for dt, _ in parsed:
+        week_key = (dt - timedelta(days=dt.weekday())).strftime("%Y-%m-%d")
+        health_weeks[week_key] = health_weeks.get(week_key, 0) + 1
+    health_labels = list(health_weeks.keys())[-12:]
+    health_values = [health_weeks[k] for k in health_labels]
+    recent_avg = sum(health_values[-4:]) / max(len(health_values[-4:]), 1)
+    older_avg = sum(health_values[-8:-4]) / max(len(health_values[-8:-4]), 1) if len(health_values) >= 8 else recent_avg
+    trend_pct = round((recent_avg - older_avg) / max(older_avg, 1) * 100) if older_avg else 0
+
     # --- Today's timeline ---
     timeline = []
     for dt, ev in parsed:
@@ -446,6 +486,22 @@ async def build_analytics() -> dict:
         },
         "badges": badges,
         "timeline": timeline,
+        "comparison": {
+            "this_week": events_this_week,
+            "last_week": events_last_week,
+            "change_pct": round((events_this_week - events_last_week) / max(events_last_week, 1) * 100),
+            "contraband_this_week": contraband_this_week,
+            "contraband_last_week": contraband_last_week,
+            "this_week_daily": this_week_daily,
+            "last_week_daily": last_week_daily,
+        },
+        "calendar": calendar_days,
+        "health": {
+            "labels": health_labels,
+            "values": health_values,
+            "trend_pct": trend_pct,
+            "recent_avg": round(recent_avg, 1),
+        },
     }
 
 
@@ -792,6 +848,82 @@ async def export_csv():
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=onlycat_events.csv"},
     )
+
+
+# --- Cat door control ---
+@app.post("/api/device/{device_id}/policy")
+async def set_door_policy(device_id: str, request: Request):
+    body = await request.json()
+    policy = body.get("policy")
+    token = os.environ.get("ONLYCAT_TOKEN")
+    if not token:
+        return JSONResponse({"error": "No token"}, status_code=500)
+    result = await set_transit_policy(token, device_id, policy)
+    return result
+
+
+# --- Annotations ---
+@app.post("/api/annotations")
+async def add_annotation(request: Request):
+    body = await request.json()
+    await store.add_annotation(body["event_id"], body["note"])
+    return {"status": "ok"}
+
+
+@app.get("/api/annotations")
+async def list_annotations():
+    return await store.get_all_annotations()
+
+
+@app.delete("/api/annotations/{annotation_id}")
+async def delete_annotation(annotation_id: int):
+    await store.delete_annotation(annotation_id)
+    return {"status": "ok"}
+
+
+# --- Alerts ---
+@app.get("/api/alerts")
+async def list_alerts():
+    return await store.get_alerts()
+
+
+@app.post("/api/alerts")
+async def add_alert(request: Request):
+    body = await request.json()
+    await store.add_alert(body["name"], body["alert_type"], body.get("threshold"))
+    return {"status": "ok"}
+
+
+@app.delete("/api/alerts/{alert_id}")
+async def delete_alert_endpoint(alert_id: int):
+    await store.delete_alert(alert_id)
+    return {"status": "ok"}
+
+
+@app.put("/api/alerts/{alert_id}")
+async def update_alert_endpoint(alert_id: int, request: Request):
+    body = await request.json()
+    await store.update_alert(alert_id, body.get("enabled", True))
+    return {"status": "ok"}
+
+
+# --- Door schedule ---
+@app.get("/api/schedules")
+async def list_schedules():
+    return await store.get_schedules()
+
+
+@app.post("/api/schedules")
+async def add_schedule(request: Request):
+    body = await request.json()
+    await store.add_schedule(body["device_id"], body["action"], body["hour"], body["minute"], body.get("days", "0,1,2,3,4,5,6"))
+    return {"status": "ok"}
+
+
+@app.delete("/api/schedules/{schedule_id}")
+async def delete_schedule(schedule_id: int):
+    await store.delete_schedule(schedule_id)
+    return {"status": "ok"}
 
 
 @app.get("/share", response_class=HTMLResponse)

@@ -33,6 +33,12 @@
     --cyan: #06b6d4;
     --cyan-dim: #0a2a35;
   }
+  body.light-mode {
+    --bg: #f5f5f7; --surface: #ffffff; --surface-hover: #f0f0f2; --border: #e0e0e5;
+    --text: #1a1a2e; --muted: #6b7280;
+    --green-dim: #dcfce7; --red-dim: #fee2e2; --yellow-dim: #fef9c3; --blue-dim: #dbeafe;
+    --purple-dim: #f3e8ff; --orange-dim: #ffedd5; --cyan-dim: #cffafe;
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
@@ -42,6 +48,7 @@
     max-width: 1280px;
     margin: 0 auto;
     line-height: 1.5;
+    transition: background 0.3s, color 0.3s;
   }
   header {
     display: flex; align-items: center; gap: 16px;
@@ -58,6 +65,12 @@
   }
   .sync-btn:hover, .export-btn:hover { color: var(--text); border-color: var(--text); background: var(--surface); }
   .sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .theme-toggle {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 16px;
+    transition: all 0.2s; line-height: 1;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--text); background: var(--surface); }
 
   /* Summary Cards */
   .summary-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
@@ -89,6 +102,11 @@
   }
   .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
   .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 16px; font-weight: 600; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .card-header h2 { margin-bottom: 0; }
+  .section-toggle { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: color 0.15s; }
+  .section-toggle:hover { color: var(--text); }
+  .section-body.collapsed { display: none; }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
   .grid-2 > .card { margin-bottom: 0; }
@@ -175,10 +193,12 @@
   .badge-human { background: var(--purple-dim); color: var(--purple); }
   .badge-unlock { background: var(--blue-dim); color: var(--blue); }
   .badge-unknown { background: #252525; color: var(--muted); }
+  body.light-mode .badge-unknown { background: #e5e5e5; }
   .pet-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
   .pet-badge.oni { background: var(--blue-dim); color: var(--blue); }
   .pet-badge.misha { background: var(--orange-dim); color: var(--orange); }
   .pet-badge.unknown-pet { background: #252525; color: var(--muted); }
+  body.light-mode .pet-badge.unknown-pet { background: #e5e5e5; }
   .empty { color: var(--muted); font-style: italic; padding: 20px 0; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
   .status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
@@ -237,6 +257,70 @@
   .device-header .status-pill.offline { background: var(--red-dim); color: var(--red); }
   .device-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; font-size: 13px; color: var(--muted); }
   .device-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* Activity Calendar */
+  .calendar-grid { display: grid; grid-template-columns: repeat(53, 1fr); gap: 2px; }
+  .calendar-cell { width: 12px; height: 12px; border-radius: 2px; cursor: default; transition: transform 0.1s; }
+  .calendar-cell:hover { transform: scale(1.5); z-index: 1; }
+  .calendar-months { display: flex; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .calendar-months span { flex: 1; }
+  .calendar-days-labels { display: flex; flex-direction: column; gap: 2px; margin-right: 4px; font-size: 9px; color: var(--muted); }
+  .calendar-wrapper { display: flex; overflow-x: auto; }
+  .calendar-legend { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); margin-top: 8px; }
+  .calendar-legend-cell { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* Door controls */
+  .door-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .door-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+  .door-btn:hover { color: var(--text); border-color: var(--text); }
+  .door-btn.active { background: var(--blue-dim); color: var(--blue); border-color: var(--blue); }
+  .door-btn.locked { }
+  .door-btn.active.locked { background: var(--red-dim); color: var(--red); border-color: var(--red); }
+
+  /* Schedule */
+  .schedule-list { margin-bottom: 16px; }
+  .schedule-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .schedule-item:last-child { border-bottom: none; }
+  .schedule-time { font-weight: 700; font-size: 15px; min-width: 60px; }
+  .schedule-action { padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .schedule-days { color: var(--muted); font-size: 11px; flex: 1; }
+  .schedule-delete { background: transparent; border: none; color: var(--red); cursor: pointer; font-size: 16px; padding: 4px; }
+  .schedule-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .schedule-form input, .schedule-form select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+  .schedule-form button { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+  /* Alerts */
+  .alert-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-name { font-weight: 600; flex: 1; }
+  .alert-type { font-size: 11px; color: var(--muted); padding: 2px 8px; background: var(--bg); border-radius: 6px; }
+  .alert-threshold { font-size: 12px; color: var(--muted); }
+  .toggle-switch { position: relative; width: 40px; height: 22px; cursor: pointer; }
+  .toggle-switch input { display: none; }
+  .toggle-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 22px; transition: 0.2s; }
+  .toggle-slider::before { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: var(--text); border-radius: 50%; transition: 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: var(--green); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+  .alert-delete { background: transparent; border: none; color: var(--red); cursor: pointer; font-size: 16px; padding: 4px; }
+  .alert-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .alert-form input, .alert-form select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+  .alert-form button { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+  /* Annotations */
+  .annotation-row { background: var(--bg); padding: 6px 12px; font-size: 12px; }
+  .annotation-row td { border-bottom: none; padding: 4px 12px; }
+  .annotation-note { color: var(--muted); font-style: italic; }
+  .annotation-actions { display: flex; gap: 8px; align-items: center; }
+  .add-note-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 6px; transition: color 0.15s; }
+  .add-note-btn:hover { color: var(--blue); }
+  .inline-note-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 12px; width: 200px; }
+  .inline-note-save { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+
+  /* Health trend */
+  .trend-indicator { font-size: 14px; font-weight: 700; padding: 4px 12px; border-radius: 6px; }
+  .trend-up { color: var(--green); background: var(--green-dim); }
+  .trend-down { color: var(--red); background: var(--red-dim); }
+  .trend-flat { color: var(--muted); background: var(--bg); }
 </style>
 </head>
 <body>
@@ -245,6 +329,7 @@
 <div class="page-tabs" id="page-tabs">
   <button class="active" data-page="dashboard">Dashboard</button>
   <button data-page="devices">Device Stats</button>
+  <button data-page="alerts">Alerts</button>
 </div>
 
 <!-- Dashboard Page -->
@@ -262,6 +347,7 @@
     <span id="sync-text">Loading...</span>
     <a class="export-btn" href="/api/export" download>Export CSV</a>
     <button class="sync-btn" id="sync-btn" onclick="triggerSync()">Sync Now</button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#x1F319;</button>
   </div>
 </header>
 
@@ -298,109 +384,212 @@
 <div class="prediction-banner" id="prediction-banner" style="display:none"></div>
 
 <!-- Today's Timeline -->
-<div class="card">
-  <h2>Today's Timeline</h2>
-  <div id="timeline-container">
-    <div class="timeline-track" id="timeline-track"></div>
-    <div class="timeline-labels"><span>00:00</span><span>03:00</span><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span><span>24:00</span></div>
+<div class="card" data-section="timeline">
+  <div class="card-header">
+    <h2>Today's Timeline</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <div id="timeline-container">
+      <div class="timeline-track" id="timeline-track"></div>
+      <div class="timeline-labels"><span>00:00</span><span>03:00</span><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span><span>24:00</span></div>
+    </div>
   </div>
 </div>
 
 <!-- Oni's Daily Routine -->
-<div class="card">
-  <h2>Oni's Daily Routine (30-Day Pattern)</h2>
-  <div class="chart-container"><canvas id="oniRoutineChart"></canvas></div>
+<div class="card" data-section="routine">
+  <div class="card-header">
+    <h2>Oni's Daily Routine (30-Day Pattern)</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <div class="chart-container"><canvas id="oniRoutineChart"></canvas></div>
+  </div>
 </div>
 
 <!-- Trip Log + Records -->
 <div class="grid-2">
-  <div class="card">
-    <h2>Oni's Trip Log</h2>
-    <div class="stat-grid" id="trip-stats"></div>
-    <div id="trip-log"><p class="empty">Loading...</p></div>
+  <div class="card" data-section="trips">
+    <div class="card-header">
+      <h2>Oni's Trip Log</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="stat-grid" id="trip-stats"></div>
+      <div id="trip-log"><p class="empty">Loading...</p></div>
+    </div>
   </div>
-  <div class="card">
-    <h2>Records &amp; Milestones</h2>
-    <div id="records"><p class="empty">Loading...</p></div>
+  <div class="card" data-section="records">
+    <div class="card-header">
+      <h2>Records &amp; Milestones</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div id="records"><p class="empty">Loading...</p></div>
+    </div>
   </div>
 </div>
 
 <!-- Heatmap + Contraband -->
 <div class="grid-2">
-  <div class="card">
-    <h2>Activity Heatmap (30 Days)</h2>
-    <div class="heatmap-wrapper" id="heatmap-container"></div>
+  <div class="card" data-section="heatmap">
+    <div class="card-header">
+      <h2>Activity Heatmap (30 Days)</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="heatmap-wrapper" id="heatmap-container"></div>
+    </div>
   </div>
-  <div class="card">
-    <h2>Contraband Analysis</h2>
-    <div class="stat-grid" id="contraband-stats"></div>
-    <div class="chart-container" style="height:180px"><canvas id="contrabandChart"></canvas></div>
+  <div class="card" data-section="contraband">
+    <div class="card-header">
+      <h2>Contraband Analysis</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="stat-grid" id="contraband-stats"></div>
+      <div class="chart-container" style="height:180px"><canvas id="contrabandChart"></canvas></div>
+    </div>
   </div>
 </div>
 
 <!-- Weather + Activity -->
 <div class="grid-2">
-  <div class="card">
-    <h2>Weather vs Activity (30 Days)</h2>
-    <div class="weather-legend" id="weather-legend"></div>
-    <div class="chart-container tall"><canvas id="weatherChart"></canvas></div>
+  <div class="card" data-section="weather">
+    <div class="card-header">
+      <h2>Weather vs Activity (30 Days)</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="weather-legend" id="weather-legend"></div>
+      <div class="chart-container tall"><canvas id="weatherChart"></canvas></div>
+    </div>
   </div>
-  <div class="card">
-    <h2>Moon Phase</h2>
-    <div class="moon-today" id="moon-today"></div>
-    <div class="stat-grid" id="moon-stats"></div>
-    <div class="chart-container" style="height:160px"><canvas id="moonChart"></canvas></div>
+  <div class="card" data-section="moon">
+    <div class="card-header">
+      <h2>Moon Phase</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="moon-today" id="moon-today"></div>
+      <div class="stat-grid" id="moon-stats"></div>
+      <div class="chart-container" style="height:160px"><canvas id="moonChart"></canvas></div>
+    </div>
   </div>
 </div>
 
 <!-- Activity Over Time -->
-<div class="card">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 4px;">
+<div class="card" data-section="activity-chart">
+  <div class="card-header">
     <h2 style="margin-bottom:0;">Activity Over Time</h2>
-    <div class="tab-bar" id="period-tabs">
-      <button class="active" data-period="daily">24 Hours</button>
-      <button data-period="weekly">7 Days</button>
-      <button data-period="monthly">30 Days</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="tab-bar" id="period-tabs">
+        <button class="active" data-period="daily">24 Hours</button>
+        <button data-period="weekly">7 Days</button>
+        <button data-period="monthly">30 Days</button>
+      </div>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
     </div>
   </div>
-  <div class="chart-container"><canvas id="activityChart"></canvas></div>
+  <div class="section-body">
+    <div class="chart-container"><canvas id="activityChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Historical Comparison -->
+<div class="card" data-section="comparison">
+  <div class="card-header">
+    <h2>This Week vs Last Week</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <div class="stat-grid" id="comparison-stats"></div>
+    <div class="chart-container"><canvas id="comparisonChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Health Trends -->
+<div class="card" data-section="health">
+  <div class="card-header">
+    <h2>Oni's Health Dashboard</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <div class="stat-grid" id="health-stats"></div>
+    <div class="chart-container"><canvas id="healthChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Activity Calendar -->
+<div class="card" data-section="calendar">
+  <div class="card-header">
+    <h2>Activity Streaks (365 Days)</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <div id="calendar-container"></div>
+  </div>
 </div>
 
 <!-- Classification + Misha -->
 <div class="grid-2">
-  <div class="card">
-    <h2>Events by Classification</h2>
-    <div class="chart-container doughnut"><canvas id="classChart"></canvas></div>
+  <div class="card" data-section="classification">
+    <div class="card-header">
+      <h2>Events by Classification</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="chart-container doughnut"><canvas id="classChart"></canvas></div>
+    </div>
   </div>
-  <div class="card">
-    <h2>Misha's Visit Pattern</h2>
-    <div class="stat-grid" id="misha-stats"></div>
-    <div class="chart-container" style="height:180px"><canvas id="mishaChart"></canvas></div>
+  <div class="card" data-section="misha">
+    <div class="card-header">
+      <h2>Misha's Visit Pattern</h2>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+    </div>
+    <div class="section-body">
+      <div class="stat-grid" id="misha-stats"></div>
+      <div class="chart-container" style="height:180px"><canvas id="mishaChart"></canvas></div>
+    </div>
   </div>
 </div>
 
 <!-- Oni's Diary -->
-<div class="card" id="diary-card" style="display:none">
-  <h2>Oni's Diary</h2>
-  <p class="diary-text" id="diary-text"></p>
+<div class="card" id="diary-card" style="display:none" data-section="diary">
+  <div class="card-header">
+    <h2>Oni's Diary</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <p class="diary-text" id="diary-text"></p>
+  </div>
 </div>
 
 <!-- Achievements -->
-<div class="card" id="badges-card" style="display:none">
-  <h2>Achievements</h2>
-  <div class="badge-grid" id="badges-grid"></div>
+<div class="card" id="badges-card" style="display:none" data-section="badges">
+  <div class="card-header">
+    <h2>Achievements</h2>
+    <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
+  </div>
+  <div class="section-body">
+    <div class="badge-grid" id="badges-grid"></div>
+  </div>
 </div>
 
 <!-- Recent Activity -->
-<div class="card">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0">
+<div class="card" data-section="events">
+  <div class="card-header">
     <h2 style="margin-bottom:0">Recent Activity</h2>
     <div style="display:flex;gap:12px;align-items:center">
       <span class="share-link">Share: <a href="/share" target="_blank">/share</a></span>
       <button class="install-btn" id="install-btn" onclick="installPWA()">Install App</button>
+      <button class="section-toggle" onclick="toggleSection(this)" title="Toggle section">&#x25BC;</button>
     </div>
   </div>
-  <div id="events" style="overflow-x:auto"><p class="empty">Loading...</p></div>
+  <div class="section-body">
+    <div id="events" style="overflow-x:auto"><p class="empty">Loading...</p></div>
+  </div>
 </div>
 
 </div><!-- end page-dashboard -->
@@ -410,20 +599,95 @@
   <div id="device-stats-container"><p class="empty">Loading device stats...</p></div>
 </div>
 
+<!-- Alerts Page -->
+<div class="page-content" id="page-alerts">
+  <div class="card">
+    <h2>Custom Alerts</h2>
+    <div id="alerts-list"><p class="empty">Loading alerts...</p></div>
+    <div class="alert-form" id="alert-form">
+      <input type="text" id="alert-name" placeholder="Alert name" style="min-width:140px">
+      <select id="alert-type">
+        <option value="outside_too_long">Oni outside too long</option>
+        <option value="contraband">Contraband detected</option>
+        <option value="misha_visit">Misha visit</option>
+        <option value="no_activity">No activity</option>
+        <option value="night_activity">Night activity</option>
+      </select>
+      <input type="number" id="alert-threshold" placeholder="Minutes/Hour" style="width:100px" min="1">
+      <button onclick="addAlert()">Add Alert</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const BADGE_CLASS = {"Clear":"badge-clear","Suspicious":"badge-suspicious","Contraband":"badge-contraband","Human Activity":"badge-human","Remote Unlock":"badge-unlock","Unknown":"badge-unknown"};
 const CLASS_COLORS = {"Clear":"#22c55e","Suspicious":"#eab308","Contraband":"#ef4444","Human Activity":"#a855f7","Remote Unlock":"#3b82f6","Unknown":"#888888"};
 const HOUR_LABELS = Array.from({length:24}, (_,i) => `${String(i).padStart(2,'0')}:00`);
 const DAY_NAMES = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const ALERT_TYPE_LABELS = {"outside_too_long":"Outside too long","contraband":"Contraband detected","misha_visit":"Misha visit","no_activity":"No activity","night_activity":"Night activity"};
 
 Chart.defaults.color = "#71717a";
 Chart.defaults.borderColor = "#2a2d3a";
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif";
 
 let activityChart=null, classChart=null, oniRoutineChart=null, contrabandChart=null;
-let mishaChart=null, weatherChart=null, moonChart=null;
+let mishaChart=null, weatherChart=null, moonChart=null, comparisonChart=null, healthChart=null;
 let currentPeriod = "daily", latestCharts = null, knownPetLabels = {};
 let previousContrabandCount = null;
+let annotationsCache = {};
+let latestDevices = [];
+
+// --- Theme ---
+function toggleTheme() {
+  document.body.classList.toggle("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
+  localStorage.setItem("onlycat_theme", isLight ? "light" : "dark");
+  document.getElementById("theme-toggle").textContent = isLight ? "\u2600\uFE0F" : "\uD83C\uDF19";
+  updateChartColors();
+}
+function initTheme() {
+  const saved = localStorage.getItem("onlycat_theme");
+  if (saved === "light") {
+    document.body.classList.add("light-mode");
+    document.getElementById("theme-toggle").textContent = "\u2600\uFE0F";
+  }
+}
+function updateChartColors() {
+  const isLight = document.body.classList.contains("light-mode");
+  Chart.defaults.color = isLight ? "#6b7280" : "#71717a";
+  Chart.defaults.borderColor = isLight ? "#e0e0e5" : "#2a2d3a";
+}
+initTheme();
+
+// --- Section toggles ---
+function toggleSection(btn) {
+  const card = btn.closest('.card');
+  const body = card.querySelector('.section-body');
+  const section = card.dataset.section;
+  if (!body) return;
+  body.classList.toggle('collapsed');
+  const isCollapsed = body.classList.contains('collapsed');
+  btn.textContent = isCollapsed ? '\u25B6' : '\u25BC';
+  saveSectionState(section, !isCollapsed);
+}
+function saveSectionState(section, visible) {
+  const state = JSON.parse(localStorage.getItem("onlycat_sections") || "{}");
+  state[section] = visible;
+  localStorage.setItem("onlycat_sections", JSON.stringify(state));
+}
+function restoreSectionStates() {
+  const state = JSON.parse(localStorage.getItem("onlycat_sections") || "{}");
+  document.querySelectorAll('.card[data-section]').forEach(card => {
+    const section = card.dataset.section;
+    if (section in state && state[section] === false) {
+      const body = card.querySelector('.section-body');
+      const btn = card.querySelector('.section-toggle');
+      if (body) body.classList.add('collapsed');
+      if (btn) btn.textContent = '\u25B6';
+    }
+  });
+}
+restoreSectionStates();
 
 // --- Utilities ---
 function relativeTime(ts) {
@@ -495,7 +759,6 @@ function updateSummaryCards(analytics) {
   cbVal.style.color = cb.days_since!==null && cb.days_since<1 ? "var(--red)" : cb.days_since!==null && cb.days_since<3 ? "var(--yellow)" : "var(--green)";
   document.getElementById("contraband-days-sub").textContent = `this month: ${cb.this_month??0} \u00b7 this week: ${cb.this_week??0}`;
 
-  // Check for new contraband → notification
   const newCbCount = (cb.this_week ?? 0);
   if (previousContrabandCount !== null && newCbCount > previousContrabandCount) {
     sendNotif("Contraband Alert!", `Oni brought something in at ${cb.last_timestamp ? formatTime(cb.last_timestamp) : "just now"}`);
@@ -521,7 +784,7 @@ function createOniRoutineChart(analytics) {
   gradient.addColorStop(1, "rgba(139, 92, 246, 0.7)");
   oniRoutineChart = new Chart(ctx, {
     type: "bar", data: { labels: HOUR_LABELS, datasets: [{ label: "Events", data: hourly, backgroundColor: gradient, borderRadius: 4, borderSkipped: false }] },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}}, x:{grid:{display:false},ticks:{maxTicksLimit:12}} } },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"rgba(31,34,48,0.5)"}}, x:{grid:{display:false},ticks:{maxTicksLimit:12}} } },
   });
 }
 
@@ -529,14 +792,12 @@ function createOniRoutineChart(analytics) {
 function renderTrips(analytics) {
   if (!analytics?.trips) return;
   const t = analytics.trips;
-  // Stats
   document.getElementById("trip-stats").innerHTML = `
     <div class="stat-box"><div class="label">Avg Trip</div><div class="val blue">${fmtDuration(t.avg_duration_minutes)}</div></div>
     <div class="stat-box"><div class="label">Longest</div><div class="val orange">${fmtDuration(t.longest_duration_minutes)}</div></div>
     <div class="stat-box"><div class="label">Trips Today</div><div class="val green">${t.trips_today}</div></div>
     <div class="stat-box"><div class="label">Outside Today</div><div class="val purple">${fmtDuration(t.time_outside_today_minutes)}</div></div>
   `;
-  // Trip list
   let html = '';
   if (t.current_trip_start) {
     html += `<div class="trip-current">Currently outside since ${relativeTime(t.current_trip_start)}</div>`;
@@ -551,7 +812,7 @@ function renderTrips(analytics) {
       html += `<div class="trip-item">
         <div class="trip-icon">${dur < 30 ? "\u{1F3C3}" : dur < 120 ? "\u{1F6B6}" : "\u{1F30E}"}</div>
         <div class="trip-details">
-          <div class="trip-time" title="${formatTime(trip.left_at)} → ${formatTime(trip.returned_at)}">${relativeTime(trip.returned_at)}</div>
+          <div class="trip-time" title="${formatTime(trip.left_at)} \u2192 ${formatTime(trip.returned_at)}">${relativeTime(trip.returned_at)}</div>
           <div class="trip-duration">${fmtDuration(dur)}</div>
         </div>
         <span class="trip-badge ${cls}">${cls}</span>
@@ -590,7 +851,7 @@ function renderHeatmap(analytics) {
     for (let h=0;h<24;h++) {
       const v = hm[d][h]; const i = mx>0?v/mx:0;
       const bg = i===0 ? "rgba(34,197,94,0.05)" : `rgba(34,197,94,${0.15+i*0.75})`;
-      html += `<div class="heatmap-cell" style="background:${bg}" title="${DAY_NAMES[d]} ${String(h).padStart(2,'0')}:00 — ${v} events"></div>`;
+      html += `<div class="heatmap-cell" style="background:${bg}" title="${DAY_NAMES[d]} ${String(h).padStart(2,'0')}:00 \u2014 ${v} events"></div>`;
     }
   }
   html += '</div>'; container.innerHTML = html;
@@ -613,7 +874,7 @@ function renderContrabandAnalysis(analytics) {
   if (!cb.by_hour||cb.by_hour.every(v=>v===0)) return;
   contrabandChart = new Chart(ctx, {
     type:"bar", data:{labels:HOUR_LABELS, datasets:[{label:"Contraband",data:cb.by_hour,backgroundColor:"rgba(239,68,68,0.6)",borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}},x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"rgba(31,34,48,0.5)"}},x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}}},
   });
 }
 
@@ -632,9 +893,7 @@ function renderWeather(analytics) {
   `;
   const ctx = document.getElementById("weatherChart");
   if (weatherChart) weatherChart.destroy();
-  // Get event counts per day from charts monthly data (approximate match)
   const labels = w.dates.map(d => { const parts=d.split("-"); return `${parts[1]}/${parts[2]}`; });
-  // Build daily event count from monthly chart data
   const charts = latestCharts;
   const eventsByDate = {};
   if (charts?.monthly) { charts.monthly.labels.forEach((l,i) => { eventsByDate[l] = charts.monthly.counts[i]; }); }
@@ -656,7 +915,7 @@ function renderWeather(analytics) {
       plugins:{ legend:{display:false} },
       scales: {
         x: { grid:{display:false}, ticks:{maxTicksLimit:15, font:{size:10}} },
-        y: { beginAtZero:true, position:"left", ticks:{stepSize:1,precision:0}, grid:{color:"#1f2230"}, title:{display:true,text:"Events",color:"#71717a"} },
+        y: { beginAtZero:true, position:"left", ticks:{stepSize:1,precision:0}, grid:{color:"rgba(31,34,48,0.5)"}, title:{display:true,text:"Events",color:"#71717a"} },
         y1: { position:"right", grid:{display:false}, title:{display:true,text:"\u00b0C",color:"#71717a"} },
         y2: { display:false, beginAtZero:true },
       },
@@ -697,7 +956,7 @@ function renderMoon(analytics) {
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>{const p=phases[ctx.dataIndex]; return `${p.emoji} ${p.name} (${p.illumination}%)`;}}}},
-      scales:{ y:{beginAtZero:true,max:100,grid:{color:"#1f2230"},ticks:{callback:v=>v+"%"}}, x:{grid:{display:false},ticks:{maxTicksLimit:10}} },
+      scales:{ y:{beginAtZero:true,max:100,grid:{color:"rgba(31,34,48,0.5)"},ticks:{callback:v=>v+"%"}}, x:{grid:{display:false},ticks:{maxTicksLimit:10}} },
     },
   });
 }
@@ -718,7 +977,7 @@ function renderMishaPattern(analytics) {
   if (hourly.every(v=>v===0)) return;
   mishaChart = new Chart(ctx, {
     type:"bar", data:{labels:HOUR_LABELS, datasets:[{label:"Visits",data:hourly,backgroundColor:"rgba(249,115,22,0.6)",borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}},x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"rgba(31,34,48,0.5)"}},x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}}},
   });
 }
 
@@ -728,7 +987,7 @@ function createActivityChart(charts, period) {
   if (activityChart) activityChart.destroy();
   activityChart = new Chart(ctx, {
     type:"bar", data:{labels:data.labels, datasets:[{label:"Events",data:data.counts,backgroundColor:"rgba(59,130,246,0.5)",borderColor:"rgba(59,130,246,0.8)",borderWidth:1,borderRadius:4,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}},x:{grid:{display:false},ticks:{maxTicksLimit:period==="monthly"?15:undefined}}}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"rgba(31,34,48,0.5)"}},x:{grid:{display:false},ticks:{maxTicksLimit:period==="monthly"?15:undefined}}}},
   });
 }
 function createClassChart(charts) {
@@ -737,7 +996,7 @@ function createClassChart(charts) {
   const colors = labels.map(l=>CLASS_COLORS[l]||"#888");
   if (classChart) classChart.destroy(); if (!labels.length) return;
   classChart = new Chart(ctx, {
-    type:"doughnut", data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:"#1a1d27",borderWidth:3}]},
+    type:"doughnut", data:{labels,datasets:[{data:values,backgroundColor:colors,borderColor:"var(--surface)",borderWidth:3}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{position:"right",labels:{padding:16,usePointStyle:true,pointStyle:"circle"}}}},
   });
 }
@@ -749,17 +1008,322 @@ document.getElementById("period-tabs").addEventListener("click", e => {
   btn.classList.add("active"); if (latestCharts) createActivityChart(latestCharts,currentPeriod);
 });
 
-// --- Events Table ---
+// --- Historical Comparison ---
+function renderComparison(analytics) {
+  if (!analytics?.comparison) return;
+  const c = analytics.comparison;
+  const changeCls = c.change_pct > 0 ? "green" : c.change_pct < 0 ? "red" : "blue";
+  const changeSign = c.change_pct > 0 ? "+" : "";
+  document.getElementById("comparison-stats").innerHTML = `
+    <div class="stat-box"><div class="label">This Week</div><div class="val blue">${c.this_week}</div></div>
+    <div class="stat-box"><div class="label">Last Week</div><div class="val ${changeCls}">${c.last_week}</div></div>
+    <div class="stat-box"><div class="label">Change</div><div class="val ${changeCls}">${changeSign}${c.change_pct}%</div></div>
+    <div class="stat-box"><div class="label">Contraband TW</div><div class="val red">${c.contraband_this_week}</div></div>
+    <div class="stat-box"><div class="label">Contraband LW</div><div class="val red">${c.contraband_last_week}</div></div>
+  `;
+  const ctx = document.getElementById("comparisonChart");
+  if (comparisonChart) comparisonChart.destroy();
+  comparisonChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: DAY_NAMES,
+      datasets: [
+        { label: "This Week", data: c.this_week_daily, backgroundColor: "rgba(59,130,246,0.7)", borderRadius: 4, borderSkipped: false },
+        { label: "Last Week", data: c.last_week_daily, backgroundColor: "rgba(113,113,122,0.35)", borderRadius: 4, borderSkipped: false },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { usePointStyle: true, pointStyle: "circle", padding: 16 } } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "rgba(31,34,48,0.5)" } }, x: { grid: { display: false } } },
+    },
+  });
+}
+
+// --- Health Trends ---
+function renderHealth(analytics) {
+  if (!analytics?.health) return;
+  const h = analytics.health;
+  const trendCls = h.trend_pct > 0 ? "trend-up" : h.trend_pct < 0 ? "trend-down" : "trend-flat";
+  const trendSign = h.trend_pct > 0 ? "+" : "";
+  const trendText = h.trend_pct !== 0 ? `${trendSign}${h.trend_pct}%` : "Stable";
+  document.getElementById("health-stats").innerHTML = `
+    <div class="stat-box"><div class="label">Weekly Avg</div><div class="val blue">${h.recent_avg}</div><div class="sub">events/week (last 4)</div></div>
+    <div class="stat-box"><div class="label">Trend</div><div class="val"><span class="trend-indicator ${trendCls}">${trendText}</span></div><div class="sub">vs previous 4 weeks</div></div>
+  `;
+  const ctx = document.getElementById("healthChart");
+  if (healthChart) healthChart.destroy();
+  healthChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: h.labels,
+      datasets: [{
+        label: "Weekly Events",
+        data: h.values,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59,130,246,0.1)",
+        fill: true, pointRadius: 4, borderWidth: 2, tension: 0.3,
+        pointBackgroundColor: "#3b82f6",
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: "rgba(31,34,48,0.5)" } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      },
+    },
+  });
+}
+
+// --- Activity Calendar ---
+function renderCalendar(analytics) {
+  const container = document.getElementById("calendar-container");
+  if (!analytics?.calendar || !analytics.calendar.length) {
+    container.innerHTML = '<p class="empty">No calendar data</p>';
+    return;
+  }
+  const days = analytics.calendar;
+  const maxCount = Math.max(...days.map(d => d.count), 1);
+
+  // Build weeks (columns)
+  // days[0] is 364 days ago, days[364] is today
+  // We need to arrange into a grid: 7 rows (Mon-Sun), ~53 columns (weeks)
+  let weeks = [];
+  let currentWeek = new Array(7).fill(null);
+  for (const day of days) {
+    const wd = day.weekday; // 0=Mon
+    currentWeek[wd] = day;
+    if (wd === 6) { // Sunday = end of week
+      weeks.push(currentWeek);
+      currentWeek = new Array(7).fill(null);
+    }
+  }
+  if (currentWeek.some(d => d !== null)) weeks.push(currentWeek);
+
+  // Color scale
+  function calColor(count) {
+    if (count === 0) return "rgba(34,197,94,0.06)";
+    const intensity = Math.min(count / maxCount, 1);
+    if (intensity < 0.25) return "rgba(34,197,94,0.2)";
+    if (intensity < 0.5) return "rgba(34,197,94,0.4)";
+    if (intensity < 0.75) return "rgba(34,197,94,0.6)";
+    return "rgba(34,197,94,0.85)";
+  }
+
+  // Month labels
+  let monthHtml = '<div class="calendar-months" style="padding-left:28px;">';
+  let lastMonth = "";
+  for (let w = 0; w < weeks.length; w++) {
+    const firstDay = weeks[w].find(d => d !== null);
+    if (firstDay) {
+      const m = firstDay.date.substring(5, 7);
+      const monthNames = ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const mn = monthNames[parseInt(m)] || "";
+      if (mn !== lastMonth) {
+        monthHtml += `<span style="min-width:14px">${mn}</span>`;
+        lastMonth = mn;
+      } else {
+        monthHtml += '<span style="min-width:14px"></span>';
+      }
+    }
+  }
+  monthHtml += '</div>';
+
+  // Grid
+  let gridHtml = '<div class="calendar-wrapper">';
+  gridHtml += '<div class="calendar-days-labels">';
+  for (const dn of ["M","","W","","F","",""]) {
+    gridHtml += `<div style="height:12px;line-height:12px">${dn}</div>`;
+  }
+  gridHtml += '</div>';
+  gridHtml += `<div style="display:grid;grid-template-columns:repeat(${weeks.length},14px);gap:2px;">`;
+  for (let wd = 0; wd < 7; wd++) {
+    for (let w = 0; w < weeks.length; w++) {
+      const day = weeks[w][wd];
+      if (day) {
+        gridHtml += `<div class="calendar-cell" style="background:${calColor(day.count)}" title="${day.date}: ${day.count} events"></div>`;
+      } else {
+        gridHtml += '<div class="calendar-cell" style="background:transparent"></div>';
+      }
+    }
+  }
+  gridHtml += '</div></div>';
+
+  // Legend
+  let legendHtml = '<div class="calendar-legend">Less ';
+  for (const v of [0, 0.2, 0.4, 0.6, 0.85]) {
+    legendHtml += `<div class="calendar-legend-cell" style="background:rgba(34,197,94,${v === 0 ? 0.06 : v})"></div>`;
+  }
+  legendHtml += ' More</div>';
+
+  container.innerHTML = monthHtml + gridHtml + legendHtml;
+}
+
+// --- Events Table (with annotations) ---
 function renderEvents(events) {
   const el = document.getElementById("events");
   if (!events?.length) { el.innerHTML='<p class="empty">No events yet</p>'; return; }
-  const rows = events.map(e => `<tr>
+  const rows = events.map(e => {
+    const eventAnnotations = annotationsCache[e.eventId] || [];
+    let annotationHtml = '';
+    for (const a of eventAnnotations) {
+      annotationHtml += `<tr class="annotation-row"><td colspan="6"><span class="annotation-note">\u{1F4DD} ${esc(a.note)}</span> <span style="color:var(--muted);font-size:10px">${relativeTime(a.created_at)}</span> <button class="add-note-btn" onclick="deleteAnnotation(${a.id}, ${e.eventId})" title="Delete note" style="color:var(--red);font-size:12px">\u2716</button></td></tr>`;
+    }
+    return `<tr>
     <td title="${formatTime(e.timestamp)}">${relativeTime(e.timestamp)}</td>
     <td>${esc(e.device)}</td><td>${esc(e.trigger)}</td>
     <td><span class="badge ${BADGE_CLASS[e.classification]||'badge-unknown'}">${esc(e.classification)}</span></td>
     <td>${e.pets.length?e.pets.map(p=>petBadge(p)).join(" "):'<span style="color:var(--muted)">\u2014</span>'}</td>
-  </tr>`).join("");
-  el.innerHTML = `<table><thead><tr><th>Time</th><th>Device</th><th>Trigger</th><th>Classification</th><th>Pet</th></tr></thead><tbody>${rows}</tbody></table>`;
+    <td>
+      <button class="add-note-btn" onclick="showNoteInput(this, ${e.eventId})" title="Add note">+</button>
+    </td>
+  </tr>${annotationHtml}`;
+  }).join("");
+  el.innerHTML = `<table><thead><tr><th>Time</th><th>Device</th><th>Trigger</th><th>Classification</th><th>Pet</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function showNoteInput(btn, eventId) {
+  // Check if input already shown
+  const tr = btn.closest('tr');
+  if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('note-input-row')) return;
+  const inputRow = document.createElement('tr');
+  inputRow.className = 'note-input-row annotation-row';
+  inputRow.innerHTML = `<td colspan="6"><input class="inline-note-input" placeholder="Add a note..." onkeydown="if(event.key==='Enter')saveNote(this,${eventId})"> <button class="inline-note-save" onclick="saveNote(this.previousElementSibling,${eventId})">Save</button></td>`;
+  tr.insertAdjacentElement('afterend', inputRow);
+  inputRow.querySelector('input').focus();
+}
+
+async function saveNote(input, eventId) {
+  const note = input.value.trim();
+  if (!note) return;
+  await fetch('/api/annotations', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({event_id: eventId, note}) });
+  await loadAnnotations();
+  // Re-render events table
+  if (window._latestEvents) renderEvents(window._latestEvents);
+}
+
+async function deleteAnnotation(annotationId, eventId) {
+  await fetch(`/api/annotations/${annotationId}`, { method: 'DELETE' });
+  await loadAnnotations();
+  if (window._latestEvents) renderEvents(window._latestEvents);
+}
+
+async function loadAnnotations() {
+  try {
+    const resp = await fetch('/api/annotations');
+    const data = await resp.json();
+    annotationsCache = {};
+    for (const a of data) {
+      if (!annotationsCache[a.event_id]) annotationsCache[a.event_id] = [];
+      annotationsCache[a.event_id].push(a);
+    }
+  } catch(e) { console.error("Failed to load annotations", e); }
+}
+
+// --- Alerts ---
+async function loadAlerts() {
+  try {
+    const resp = await fetch('/api/alerts');
+    const alerts = await resp.json();
+    const el = document.getElementById("alerts-list");
+    if (!alerts.length) { el.innerHTML = '<p class="empty">No alerts configured</p>'; return; }
+    el.innerHTML = alerts.map(a => `
+      <div class="alert-item">
+        <span class="alert-name">${esc(a.name)}</span>
+        <span class="alert-type">${ALERT_TYPE_LABELS[a.alert_type] || a.alert_type}</span>
+        ${a.threshold ? `<span class="alert-threshold">${a.threshold}${a.alert_type === 'night_activity' ? 'h' : 'min'}</span>` : ''}
+        <label class="toggle-switch">
+          <input type="checkbox" ${a.enabled ? 'checked' : ''} onchange="toggleAlert(${a.id}, this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <button class="alert-delete" onclick="deleteAlert(${a.id})" title="Delete">\u2716</button>
+      </div>
+    `).join("");
+  } catch(e) { console.error("Failed to load alerts", e); }
+}
+
+async function addAlert() {
+  const name = document.getElementById("alert-name").value.trim();
+  const type = document.getElementById("alert-type").value;
+  const threshold = parseInt(document.getElementById("alert-threshold").value) || null;
+  if (!name) return;
+  await fetch('/api/alerts', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, alert_type: type, threshold}) });
+  document.getElementById("alert-name").value = "";
+  document.getElementById("alert-threshold").value = "";
+  await loadAlerts();
+}
+
+async function toggleAlert(id, enabled) {
+  await fetch(`/api/alerts/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({enabled}) });
+}
+
+async function deleteAlert(id) {
+  await fetch(`/api/alerts/${id}`, { method: 'DELETE' });
+  await loadAlerts();
+}
+
+// --- Door Controls ---
+async function setDoorPolicy(deviceId, policy, btn) {
+  const buttons = btn.parentElement.querySelectorAll('.door-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  try {
+    const resp = await fetch(`/api/device/${deviceId}/policy`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({policy}) });
+    const data = await resp.json();
+    if (!data.success && data.error) { console.error("Policy failed:", data.error); }
+  } catch(e) { console.error("Failed to set policy", e); }
+}
+
+// --- Door Schedules ---
+async function loadSchedules() {
+  try {
+    const resp = await fetch('/api/schedules');
+    return await resp.json();
+  } catch(e) { console.error("Failed to load schedules", e); return []; }
+}
+
+async function addScheduleForDevice(deviceId) {
+  const form = document.getElementById(`schedule-form-${deviceId}`);
+  const time = form.querySelector('.sched-time').value;
+  if (!time) return;
+  const [hour, minute] = time.split(':').map(Number);
+  const action = form.querySelector('.sched-action').value;
+  const dayCheckboxes = form.querySelectorAll('.sched-day:checked');
+  const days = Array.from(dayCheckboxes).map(cb => cb.value).join(',') || '0,1,2,3,4,5,6';
+  await fetch('/api/schedules', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({device_id: deviceId, action, hour, minute, days}) });
+  await refreshDeviceSchedules();
+}
+
+async function deleteScheduleItem(id) {
+  await fetch(`/api/schedules/${id}`, { method: 'DELETE' });
+  await refreshDeviceSchedules();
+}
+
+async function refreshDeviceSchedules() {
+  const schedules = await loadSchedules();
+  for (const dev of latestDevices) {
+    const devScheds = schedules.filter(s => s.device_id === dev.device_id);
+    const listEl = document.getElementById(`schedule-list-${dev.device_id}`);
+    if (listEl) {
+      if (!devScheds.length) {
+        listEl.innerHTML = '<p class="empty" style="padding:8px 0;font-size:12px">No schedules</p>';
+      } else {
+        const ACTION_COLORS = {"lock":"var(--red)","unlock":"var(--green)","in_only":"var(--blue)","out_only":"var(--orange)"};
+        listEl.innerHTML = devScheds.map(s => {
+          const dayNums = s.days.split(',').map(Number);
+          const dayLabels = dayNums.map(d => DAY_NAMES[d] || d).join(', ');
+          return `<div class="schedule-item">
+            <span class="schedule-time">${String(s.hour).padStart(2,'0')}:${String(s.minute).padStart(2,'0')}</span>
+            <span class="schedule-action" style="background:var(--bg);color:${ACTION_COLORS[s.action]||'var(--muted)'}">${s.action.replace('_',' ')}</span>
+            <span class="schedule-days">${dayLabels}</span>
+            <button class="schedule-delete" onclick="deleteScheduleItem(${s.id})">\u2716</button>
+          </div>`;
+        }).join("");
+      }
+    }
+  }
 }
 
 // --- Sync ---
@@ -846,6 +1410,7 @@ document.getElementById("page-tabs").addEventListener("click", e => {
   btn.classList.add("active");
   document.querySelectorAll(".page-content").forEach(p => p.classList.remove("active"));
   document.getElementById("page-" + page).classList.add("active");
+  if (page === "alerts") loadAlerts();
 });
 
 // --- Device Stats ---
@@ -855,7 +1420,7 @@ function renderDeviceStats(analytics) {
     document.getElementById("device-stats-container").innerHTML = '<p class="empty">No devices found</p>';
     return;
   }
-  // Destroy old charts
+  latestDevices = analytics.device_stats;
   Object.values(deviceCharts).forEach(c => c.destroy());
   deviceCharts = {};
 
@@ -874,6 +1439,35 @@ function renderDeviceStats(analytics) {
         ${dev.signal_strength !== null && dev.signal_strength !== undefined ? `<span>Signal: ${dev.signal_strength}%</span>` : ''}
         ${dev.first_event ? `<span>First event: ${formatTime(dev.first_event)}</span>` : ''}
         ${dev.last_event ? `<span>Last event: ${relativeTime(dev.last_event)}</span>` : ''}
+      </div>
+
+      <!-- Cat Door Controls -->
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">Cat Door Controls</h2>
+        <div class="door-controls">
+          <button class="door-btn" onclick="setDoorPolicy('${esc(dev.device_id)}','both',this)">Both Ways</button>
+          <button class="door-btn" onclick="setDoorPolicy('${esc(dev.device_id)}','in_only',this)">In Only</button>
+          <button class="door-btn" onclick="setDoorPolicy('${esc(dev.device_id)}','out_only',this)">Out Only</button>
+          <button class="door-btn locked" onclick="setDoorPolicy('${esc(dev.device_id)}','locked',this)">Locked</button>
+        </div>
+      </div>
+
+      <!-- Door Schedule -->
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">Door Schedule</h2>
+        <div class="schedule-list" id="schedule-list-${esc(dev.device_id)}"><p class="empty" style="padding:8px 0;font-size:12px">Loading...</p></div>
+        <div class="schedule-form" id="schedule-form-${esc(dev.device_id)}">
+          <input type="time" class="sched-time" value="08:00">
+          <select class="sched-action">
+            <option value="unlock">Unlock</option>
+            <option value="lock">Lock</option>
+            <option value="in_only">In Only</option>
+            <option value="out_only">Out Only</option>
+          </select>
+          <span style="font-size:11px;color:var(--muted)">Days:</span>
+          ${DAY_NAMES.map((d,i) => `<label style="font-size:11px;color:var(--muted);cursor:pointer"><input type="checkbox" class="sched-day" value="${i}" checked style="margin-right:2px">${d}</label>`).join(' ')}
+          <button onclick="addScheduleForDevice('${esc(dev.device_id)}')">Add</button>
+        </div>
       </div>
 
       <!-- Device summary stats -->
@@ -912,6 +1506,9 @@ function renderDeviceStats(analytics) {
   }
   document.getElementById("device-stats-container").innerHTML = html;
 
+  // Load schedules
+  refreshDeviceSchedules();
+
   // Create charts for each device
   for (const dev of analytics.device_stats) {
     const did = dev.device_id;
@@ -920,14 +1517,14 @@ function renderDeviceStats(analytics) {
     deviceCharts["daily-"+did] = new Chart(document.getElementById("dev-daily-"+did), {
       type: "line",
       data: { labels: dev.daily_activity.labels, datasets: [{ data: dev.daily_activity.values, borderColor: "var(--blue)", backgroundColor: "rgba(59,130,246,0.1)", fill: true, pointRadius: 2, borderWidth: 2, tension: 0.3 }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}}, x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:10}}} } },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"rgba(31,34,48,0.5)"}}, x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:10}}} } },
     });
 
     // Hourly pattern bar chart
     deviceCharts["hourly-"+did] = new Chart(document.getElementById("dev-hourly-"+did), {
       type: "bar",
       data: { labels: HOUR_LABELS, datasets: [{ data: dev.hourly_pattern, backgroundColor: "rgba(99,102,241,0.6)", borderRadius: 3, borderSkipped: false }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}}, x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}} } },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"rgba(31,34,48,0.5)"}}, x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}} } },
     });
 
     // Classification doughnut
@@ -937,7 +1534,7 @@ function renderDeviceStats(analytics) {
     if (clsLabels.length) {
       deviceCharts["class-"+did] = new Chart(document.getElementById("dev-class-"+did), {
         type: "doughnut",
-        data: { labels: clsLabels, datasets: [{ data: clsValues, backgroundColor: clsColors, borderColor: "#1a1d27", borderWidth: 3 }] },
+        data: { labels: clsLabels, datasets: [{ data: clsValues, backgroundColor: clsColors, borderColor: "var(--surface)", borderWidth: 3 }] },
         options: { responsive:true, maintainAspectRatio:false, cutout:"60%", plugins:{ legend:{position:"right",labels:{padding:10,usePointStyle:true,pointStyle:"circle",font:{size:11}}} } },
       });
     }
@@ -950,7 +1547,7 @@ function renderDeviceStats(analytics) {
     if (trLabels.length) {
       deviceCharts["trigger-"+did] = new Chart(document.getElementById("dev-trigger-"+did), {
         type: "doughnut",
-        data: { labels: trLabels, datasets: [{ data: trValues, backgroundColor: trColors, borderColor: "#1a1d27", borderWidth: 3 }] },
+        data: { labels: trLabels, datasets: [{ data: trValues, backgroundColor: trColors, borderColor: "var(--surface)", borderWidth: 3 }] },
         options: { responsive:true, maintainAspectRatio:false, cutout:"60%", plugins:{ legend:{position:"right",labels:{padding:10,usePointStyle:true,pointStyle:"circle",font:{size:11}}} } },
       });
     }
@@ -979,7 +1576,11 @@ function handleData(data) {
   renderMishaPattern(a);
   renderBadges(a);
   renderDeviceStats(a);
-  renderEvents(data.events || []);
+  renderComparison(a);
+  renderHealth(a);
+  renderCalendar(a);
+  window._latestEvents = data.events || [];
+  renderEvents(window._latestEvents);
   loadDiary();
 }
 
@@ -989,8 +1590,10 @@ const ws = new WebSocket(`${proto}//${location.host}/ws`);
 ws.onmessage = e => handleData(JSON.parse(e.data));
 ws.onclose = () => {};
 
-// Initial data
-handleData({{ initial_state | tojson }});
+// Initial data + load annotations
+loadAnnotations().then(() => {
+  handleData({{ initial_state | tojson }});
+});
 </script>
 </body>
 </html>
