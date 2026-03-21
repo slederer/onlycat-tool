@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 SYNC_INTERVAL_HOURS = int(os.environ.get("SYNC_INTERVAL_HOURS", "24"))
-LATITUDE = os.environ.get("LATITUDE", "40.7128")
-LONGITUDE = os.environ.get("LONGITUDE", "-74.0060")
+LATITUDE = os.environ.get("LATITUDE", "48.8631")
+LONGITUDE = os.environ.get("LONGITUDE", "2.3839")
 
 CLASSIFICATION = {
     0: "Unknown", 1: "Clear", 2: "Suspicious", 3: "Contraband",

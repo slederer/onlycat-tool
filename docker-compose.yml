@@ -9,6 +9,8 @@ services:
     environment:
       - DB_PATH=/data/onlycat_events.db
       - SYNC_INTERVAL_HOURS=24
+      - LATITUDE=48.8631
+      - LONGITUDE=2.3839
     volumes:
       - onlycat_data:/data
 
