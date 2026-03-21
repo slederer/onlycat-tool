@@ -1,0 +1,21 @@
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = "onlycat-dashboard"
+primary_region = "ewr"
+
+[build]
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[mounts]
+  source = "onlycat_data"
+  destination = "/data"
+
+[env]
+  SYNC_INTERVAL_HOURS = "24"
+  DB_PATH = "/data/onlycat_events.db"

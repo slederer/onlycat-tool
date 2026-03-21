@@ -50,6 +50,18 @@
     align-items: center;
     gap: 6px;
   }
+  .sync-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .sync-btn:hover { color: var(--text); border-color: var(--text); }
+  .sync-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -150,8 +162,8 @@
 <header>
   <h1>OnlyCat Dashboard</h1>
   <div class="cloud-status">
-    <span class="status-dot" id="cloud-dot"></span>
-    <span id="cloud-text">Connecting...</span>
+    <span id="sync-text">Loading...</span>
+    <button class="sync-btn" id="sync-btn" onclick="triggerSync()">Sync Now</button>
   </div>
 </header>
 
@@ -426,11 +438,29 @@ function renderEvents(events) {
   </table>`;
 }
 
-function updateCloud(connected) {
-  const dot = document.getElementById("cloud-dot");
-  const txt = document.getElementById("cloud-text");
-  dot.className = "status-dot " + (connected ? "online" : "offline");
-  txt.textContent = connected ? "Connected" : "Disconnected";
+function updateSyncStatus(lastSync) {
+  const txt = document.getElementById("sync-text");
+  if (lastSync) {
+    txt.textContent = "Last sync: " + formatTime(lastSync);
+  } else {
+    txt.textContent = "Not yet synced";
+  }
+}
+
+async function triggerSync() {
+  const btn = document.getElementById("sync-btn");
+  btn.disabled = true;
+  btn.textContent = "Syncing...";
+  try {
+    const resp = await fetch("/api/sync", { method: "POST" });
+    if (resp.status === 409) {
+      btn.textContent = "Already running...";
+    }
+  } catch (e) {
+    console.error("Sync failed", e);
+  } finally {
+    setTimeout(() => { btn.disabled = false; btn.textContent = "Sync Now"; }, 2000);
+  }
 }
 
 function esc(s) {
@@ -440,7 +470,7 @@ function esc(s) {
 }
 
 function handleData(data) {
-  updateCloud(data.connected);
+  updateSyncStatus(data.last_sync);
   renderDevices(data.devices || []);
   renderPets(data.pets || []);
   renderEvents(data.events || []);
@@ -451,7 +481,7 @@ function handleData(data) {
 const proto = location.protocol === "https:" ? "wss:" : "ws:";
 const ws = new WebSocket(`${proto}//${location.host}/ws`);
 ws.onmessage = (e) => handleData(JSON.parse(e.data));
-ws.onclose = () => { updateCloud(false); };
+ws.onclose = () => {};
 
 // Initial data from server-rendered JSON
 handleData({{ initial_state | tojson }});
