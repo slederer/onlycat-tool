@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OnlyCat Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e4e7;
+    --muted: #888;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  header h1 { font-size: 24px; font-weight: 600; }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-dot.online { background: var(--green); }
+  .status-dot.offline { background: var(--red); }
+  .cloud-status {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 0;
+  }
+  .card + .card-standalone { margin-top: 28px; }
+  .card h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .device-item, .pet-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+  }
+  .device-name, .pet-name { font-weight: 500; }
+  .pet-meta { color: var(--muted); font-size: 13px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-clear { background: #16352a; color: var(--green); }
+  .badge-suspicious { background: #352a16; color: var(--yellow); }
+  .badge-contraband { background: #351616; color: var(--red); }
+  .badge-human { background: #1e1635; color: var(--purple); }
+  .badge-unlock { background: #162035; color: var(--blue); }
+  .badge-unknown { background: #252525; color: var(--muted); }
+  .empty { color: var(--muted); font-style: italic; padding: 20px 0; }
+  .chart-container { position: relative; width: 100%; height: 220px; }
+  .chart-container.doughnut { height: 260px; }
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .tab-bar button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .tab-bar button.active {
+    background: var(--border);
+    color: var(--text);
+  }
+  .tab-bar button:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>OnlyCat Dashboard</h1>
+  <div class="cloud-status">
+    <span class="status-dot" id="cloud-dot"></span>
+    <span id="cloud-text">Connecting...</span>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h2>Devices</h2>
+    <div id="devices"><p class="empty">Loading...</p></div>
+  </div>
+  <div class="card">
+    <h2>Pets</h2>
+    <div id="pets"><p class="empty">Loading...</p></div>
+  </div>
+</div>
+
+<!-- Activity Charts -->
+<div class="card" style="margin-bottom: 28px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 4px;">
+    <h2 style="margin-bottom:0;">Activity Over Time</h2>
+    <div class="tab-bar" id="period-tabs">
+      <button class="active" data-period="daily">24 Hours</button>
+      <button data-period="weekly">7 Days</button>
+      <button data-period="monthly">30 Days</button>
+    </div>
+  </div>
+  <div class="chart-container">
+    <canvas id="activityChart"></canvas>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Events by Classification</h2>
+    <div class="chart-container doughnut">
+      <canvas id="classChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Classification Breakdown</h2>
+    <div class="chart-container">
+      <canvas id="stackedChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 28px;">
+  <h2>Recent Activity</h2>
+  <div id="events" style="overflow-x:auto"><p class="empty">Loading...</p></div>
+</div>
+
+<script>
+const BADGE_CLASS = {
+  "Clear": "badge-clear",
+  "Suspicious": "badge-suspicious",
+  "Contraband": "badge-contraband",
+  "Human Activity": "badge-human",
+  "Remote Unlock": "badge-unlock",
+  "Unknown": "badge-unknown",
+};
+
+const CLASS_COLORS = {
+  "Clear": "#22c55e",
+  "Suspicious": "#eab308",
+  "Contraband": "#ef4444",
+  "Human Activity": "#a855f7",
+  "Remote Unlock": "#3b82f6",
+  "Unknown": "#888888",
+};
+
+Chart.defaults.color = "#888";
+Chart.defaults.borderColor = "#2a2d3a";
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+let activityChart = null;
+let classChart = null;
+let stackedChart = null;
+let currentPeriod = "daily";
+let latestCharts = null;
+
+function createActivityChart(charts, period) {
+  const ctx = document.getElementById("activityChart");
+  const data = charts[period];
+  if (!data) return;
+
+  if (activityChart) activityChart.destroy();
+  activityChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: "Events",
+        data: data.counts,
+        backgroundColor: "rgba(59, 130, 246, 0.6)",
+        borderColor: "#3b82f6",
+        borderWidth: 1,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, precision: 0 },
+          grid: { color: "#1f2230" },
+        },
+        x: {
+          grid: { display: false },
+          ticks: {
+            maxTicksLimit: period === "monthly" ? 15 : undefined,
+          },
+        },
+      },
+    },
+  });
+}
+
+function createClassChart(charts) {
+  const ctx = document.getElementById("classChart");
+  const totals = charts.classification_totals || {};
+  const labels = Object.keys(totals);
+  const values = Object.values(totals);
+  const colors = labels.map(l => CLASS_COLORS[l] || "#888");
+
+  if (classChart) classChart.destroy();
+  if (!labels.length) return;
+
+  classChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderColor: "#1a1d27",
+        borderWidth: 3,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "65%",
+      plugins: {
+        legend: {
+          position: "right",
+          labels: { padding: 16, usePointStyle: true, pointStyle: "circle" },
+        },
+      },
+    },
+  });
+}
+
+function createStackedChart(charts, period) {
+  const ctx = document.getElementById("stackedChart");
+  const data = charts[period];
+  if (!data) return;
+
+  // Collect all classification types present
+  const allClasses = new Set();
+  for (const label of data.labels) {
+    const byClass = data.by_class[label] || {};
+    for (const cls of Object.keys(byClass)) allClasses.add(cls);
+  }
+
+  const datasets = [...allClasses].map(cls => ({
+    label: cls,
+    data: data.labels.map(l => (data.by_class[l] || {})[cls] || 0),
+    backgroundColor: CLASS_COLORS[cls] || "#888",
+    borderRadius: 2,
+  }));
+
+  if (stackedChart) stackedChart.destroy();
+  stackedChart = new Chart(ctx, {
+    type: "bar",
+    data: { labels: data.labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: { padding: 12, usePointStyle: true, pointStyle: "circle", boxWidth: 8 },
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { maxTicksLimit: period === "monthly" ? 15 : undefined },
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          ticks: { stepSize: 1, precision: 0 },
+          grid: { color: "#1f2230" },
+        },
+      },
+    },
+  });
+}
+
+function renderCharts(charts) {
+  if (!charts) return;
+  latestCharts = charts;
+  createActivityChart(charts, currentPeriod);
+  createClassChart(charts);
+  createStackedChart(charts, currentPeriod);
+}
+
+// Period tab switching
+document.getElementById("period-tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  currentPeriod = btn.dataset.period;
+  document.querySelectorAll("#period-tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  if (latestCharts) {
+    createActivityChart(latestCharts, currentPeriod);
+    createStackedChart(latestCharts, currentPeriod);
+  }
+});
+
+function formatTime(ts) {
+  if (!ts) return "\u2014";
+  const d = new Date(ts);
+  if (isNaN(d)) return ts;
+  return d.toLocaleString();
+}
+
+function renderDevices(devices) {
+  const el = document.getElementById("devices");
+  if (!devices.length) { el.innerHTML = '<p class="empty">No devices found</p>'; return; }
+  el.innerHTML = devices.map(d => `
+    <div class="device-item">
+      <span class="status-dot ${d.connected ? 'online' : 'offline'}"></span>
+      <span class="device-name">${esc(d.description)}</span>
+    </div>
+  `).join("");
+}
+
+function renderPets(pets) {
+  const el = document.getElementById("pets");
+  if (!pets.length) { el.innerHTML = '<p class="empty">No pets found</p>'; return; }
+  el.innerHTML = pets.map(p => `
+    <div class="pet-item">
+      <div>
+        <div class="pet-name">${esc(p.label)}</div>
+        <div class="pet-meta">Last seen: ${formatTime(p.last_seen)} &middot; ${esc(p.device)}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderEvents(events) {
+  const el = document.getElementById("events");
+  if (!events.length) { el.innerHTML = '<p class="empty">No events yet</p>'; return; }
+  const rows = events.map(e => `
+    <tr>
+      <td>${formatTime(e.timestamp)}</td>
+      <td>${esc(e.device)}</td>
+      <td>${esc(e.trigger)}</td>
+      <td><span class="badge ${BADGE_CLASS[e.classification] || 'badge-unknown'}">${esc(e.classification)}</span></td>
+      <td>${e.pets.length ? e.pets.map(esc).join(", ") : "\u2014"}</td>
+    </tr>
+  `).join("");
+  el.innerHTML = `<table>
+    <thead><tr><th>Time</th><th>Device</th><th>Trigger</th><th>Classification</th><th>Pet</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function updateCloud(connected) {
+  const dot = document.getElementById("cloud-dot");
+  const txt = document.getElementById("cloud-text");
+  dot.className = "status-dot " + (connected ? "online" : "offline");
+  txt.textContent = connected ? "Connected" : "Disconnected";
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s || "";
+  return d.innerHTML;
+}
+
+function handleData(data) {
+  updateCloud(data.connected);
+  renderDevices(data.devices || []);
+  renderPets(data.pets || []);
+  renderEvents(data.events || []);
+  renderCharts(data.charts);
+}
+
+// WebSocket for live updates
+const proto = location.protocol === "https:" ? "wss:" : "ws:";
+const ws = new WebSocket(`${proto}//${location.host}/ws`);
+ws.onmessage = (e) => handleData(JSON.parse(e.data));
+ws.onclose = () => { updateCloud(false); };
+
+// Initial data from server-rendered JSON
+handleData({{ initial_state | tojson }});
+</script>
+</body>
+</html>
