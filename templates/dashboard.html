@@ -219,9 +219,36 @@
   /* PWA install */
   .install-btn { display: none; background: var(--blue-dim); border: 1px solid var(--blue); color: var(--blue); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
   .install-btn:hover { background: var(--blue); color: white; }
+
+  /* Page tabs */
+  .page-tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+  .page-tabs button { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.15s; }
+  .page-tabs button.active { background: var(--surface); color: var(--text); border-color: var(--text); }
+  .page-tabs button:hover { color: var(--text); }
+  .page-content { display: none; }
+  .page-content.active { display: block; }
+
+  /* Device stats */
+  .device-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 24px; }
+  .device-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .device-header h3 { font-size: 18px; font-weight: 700; }
+  .device-header .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .device-header .status-pill.online { background: var(--green-dim); color: var(--green); }
+  .device-header .status-pill.offline { background: var(--red-dim); color: var(--red); }
+  .device-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; font-size: 13px; color: var(--muted); }
+  .device-meta span { display: flex; align-items: center; gap: 6px; }
 </style>
 </head>
 <body>
+
+<!-- Page Tabs -->
+<div class="page-tabs" id="page-tabs">
+  <button class="active" data-page="dashboard">Dashboard</button>
+  <button data-page="devices">Device Stats</button>
+</div>
+
+<!-- Dashboard Page -->
+<div class="page-content active" id="page-dashboard">
 
 <!-- Notification permission banner -->
 <div class="notif-banner" id="notif-banner" onclick="requestNotifPermission()">
@@ -374,6 +401,13 @@
     </div>
   </div>
   <div id="events" style="overflow-x:auto"><p class="empty">Loading...</p></div>
+</div>
+
+</div><!-- end page-dashboard -->
+
+<!-- Device Stats Page -->
+<div class="page-content" id="page-devices">
+  <div id="device-stats-container"><p class="empty">Loading device stats...</p></div>
 </div>
 
 <script>
@@ -804,6 +838,125 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/static/sw.js").catch(() => {});
 }
 
+// --- Page Tabs ---
+document.getElementById("page-tabs").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  const page = btn.dataset.page;
+  document.querySelectorAll("#page-tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".page-content").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-" + page).classList.add("active");
+});
+
+// --- Device Stats ---
+let deviceCharts = {};
+function renderDeviceStats(analytics) {
+  if (!analytics?.device_stats?.length) {
+    document.getElementById("device-stats-container").innerHTML = '<p class="empty">No devices found</p>';
+    return;
+  }
+  // Destroy old charts
+  Object.values(deviceCharts).forEach(c => c.destroy());
+  deviceCharts = {};
+
+  let html = '';
+  for (const dev of analytics.device_stats) {
+    const statusCls = dev.connected ? "online" : "offline";
+    const statusText = dev.connected ? "Online" : "Offline";
+    html += `<div class="device-card">
+      <div class="device-header">
+        <h3>${esc(dev.description)}</h3>
+        <span class="status-pill ${statusCls}">${statusText}</span>
+      </div>
+      <div class="device-meta">
+        <span>ID: ${esc(dev.device_id)}</span>
+        ${dev.firmware_version ? `<span>Firmware: ${esc(dev.firmware_version)}</span>` : ''}
+        ${dev.signal_strength !== null && dev.signal_strength !== undefined ? `<span>Signal: ${dev.signal_strength}%</span>` : ''}
+        ${dev.first_event ? `<span>First event: ${formatTime(dev.first_event)}</span>` : ''}
+        ${dev.last_event ? `<span>Last event: ${relativeTime(dev.last_event)}</span>` : ''}
+      </div>
+
+      <!-- Device summary stats -->
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-box"><div class="label">Today</div><div class="val blue">${dev.events_today}</div></div>
+        <div class="stat-box"><div class="label">This Week</div><div class="val blue">${dev.events_week}</div></div>
+        <div class="stat-box"><div class="label">Total</div><div class="val blue">${dev.events_total}</div></div>
+        <div class="stat-box"><div class="label">Avg/Day</div><div class="val cyan">${dev.avg_per_day}</div></div>
+        <div class="stat-box"><div class="label">Peak Hour</div><div class="val purple">${dev.peak_hour}</div></div>
+      </div>
+
+      <!-- 30-day activity sparkline -->
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">Daily Activity (30 Days)</h2>
+        <div class="chart-container" style="height:160px"><canvas id="dev-daily-${esc(dev.device_id)}"></canvas></div>
+      </div>
+
+      <!-- Hourly pattern -->
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">Hourly Pattern (30 Days)</h2>
+        <div class="chart-container" style="height:160px"><canvas id="dev-hourly-${esc(dev.device_id)}"></canvas></div>
+      </div>
+
+      <!-- Classification + Trigger breakdown side by side -->
+      <div class="grid-2" style="margin-bottom:0">
+        <div>
+          <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">By Classification</h2>
+          <div class="chart-container doughnut"><canvas id="dev-class-${esc(dev.device_id)}"></canvas></div>
+        </div>
+        <div>
+          <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">By Trigger</h2>
+          <div class="chart-container doughnut"><canvas id="dev-trigger-${esc(dev.device_id)}"></canvas></div>
+        </div>
+      </div>
+    </div>`;
+  }
+  document.getElementById("device-stats-container").innerHTML = html;
+
+  // Create charts for each device
+  for (const dev of analytics.device_stats) {
+    const did = dev.device_id;
+
+    // Daily activity line chart
+    deviceCharts["daily-"+did] = new Chart(document.getElementById("dev-daily-"+did), {
+      type: "line",
+      data: { labels: dev.daily_activity.labels, datasets: [{ data: dev.daily_activity.values, borderColor: "var(--blue)", backgroundColor: "rgba(59,130,246,0.1)", fill: true, pointRadius: 2, borderWidth: 2, tension: 0.3 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}}, x:{grid:{display:false},ticks:{maxTicksLimit:10,font:{size:10}}} } },
+    });
+
+    // Hourly pattern bar chart
+    deviceCharts["hourly-"+did] = new Chart(document.getElementById("dev-hourly-"+did), {
+      type: "bar",
+      data: { labels: HOUR_LABELS, datasets: [{ data: dev.hourly_pattern, backgroundColor: "rgba(99,102,241,0.6)", borderRadius: 3, borderSkipped: false }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,ticks:{stepSize:1,precision:0},grid:{color:"#1f2230"}}, x:{grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}} } },
+    });
+
+    // Classification doughnut
+    const clsLabels = Object.keys(dev.classification_breakdown);
+    const clsValues = Object.values(dev.classification_breakdown);
+    const clsColors = clsLabels.map(l => CLASS_COLORS[l] || "#888");
+    if (clsLabels.length) {
+      deviceCharts["class-"+did] = new Chart(document.getElementById("dev-class-"+did), {
+        type: "doughnut",
+        data: { labels: clsLabels, datasets: [{ data: clsValues, backgroundColor: clsColors, borderColor: "#1a1d27", borderWidth: 3 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:"60%", plugins:{ legend:{position:"right",labels:{padding:10,usePointStyle:true,pointStyle:"circle",font:{size:11}}} } },
+      });
+    }
+
+    // Trigger doughnut
+    const TRIGGER_COLORS = {"Manual":"#71717a","Remote":"#3b82f6","Indoor Motion":"#22c55e","Outdoor Motion":"#f97316","Unknown":"#444"};
+    const trLabels = Object.keys(dev.trigger_breakdown);
+    const trValues = Object.values(dev.trigger_breakdown);
+    const trColors = trLabels.map(l => TRIGGER_COLORS[l] || "#888");
+    if (trLabels.length) {
+      deviceCharts["trigger-"+did] = new Chart(document.getElementById("dev-trigger-"+did), {
+        type: "doughnut",
+        data: { labels: trLabels, datasets: [{ data: trValues, backgroundColor: trColors, borderColor: "#1a1d27", borderWidth: 3 }] },
+        options: { responsive:true, maintainAspectRatio:false, cutout:"60%", plugins:{ legend:{position:"right",labels:{padding:10,usePointStyle:true,pointStyle:"circle",font:{size:11}}} } },
+      });
+    }
+  }
+}
+
 // --- Main Handler ---
 function handleData(data) {
   updateSyncStatus(data.last_sync);
@@ -825,6 +978,7 @@ function handleData(data) {
   renderMoon(a);
   renderMishaPattern(a);
   renderBadges(a);
+  renderDeviceStats(a);
   renderEvents(data.events || []);
   loadDiary();
 }

@@ -439,6 +439,7 @@ async def build_analytics() -> dict:
             "new_moon_events_30d": new_moon_events,
             "phases_30d": moon_data,
         },
+        "device_stats": _build_device_stats(devices_raw, parsed, parsed_chrono, today_start, week_start, thirty_days_ago),
         "weather": weather,
         "prediction": {
             "estimated_return": predicted_return,
@@ -446,6 +447,81 @@ async def build_analytics() -> dict:
         "badges": badges,
         "timeline": timeline,
     }
+
+
+def _build_device_stats(devices_raw, parsed, parsed_chrono, today_start, week_start, thirty_days_ago):
+    """Build per-device statistics."""
+    device_stats = []
+    for d in devices_raw:
+        did = d["device_id"]
+        conn = d.get("connectivity", {})
+        desc = d.get("description", did)
+
+        # Events for this device
+        dev_events = [(dt, ev) for dt, ev in parsed if ev.get("deviceId") == did]
+        dev_today = sum(1 for dt, _ in dev_events if dt >= today_start)
+        dev_week = sum(1 for dt, _ in dev_events if dt >= week_start)
+        dev_total = len(dev_events)
+
+        # Hourly pattern (30 days)
+        hourly = [0] * 24
+        for dt, _ in dev_events:
+            if dt >= thirty_days_ago:
+                hourly[dt.hour] += 1
+
+        # Classification breakdown
+        class_counts: dict[str, int] = defaultdict(int)
+        for _, ev in dev_events:
+            cls = CLASSIFICATION.get(ev.get("eventClassification", -1), "Unknown")
+            class_counts[cls] += 1
+
+        # Trigger breakdown
+        trigger_counts: dict[str, int] = defaultdict(int)
+        for _, ev in dev_events:
+            tr = TRIGGER_SOURCE.get(ev.get("eventTriggerSource", -1), "Unknown")
+            trigger_counts[tr] += 1
+
+        # Daily event counts for the last 30 days (for sparkline)
+        daily_counts: dict[str, int] = defaultdict(int)
+        for dt, _ in dev_events:
+            if dt >= thirty_days_ago:
+                daily_counts[dt.strftime("%m/%d")] += 1
+        now = parsed_chrono[-1][0] if parsed_chrono else datetime.now(timezone.utc)
+        daily_labels = [(now - timedelta(days=29 - i)).strftime("%m/%d") for i in range(30)]
+        daily_values = [daily_counts.get(label, 0) for label in daily_labels]
+
+        # First and last event
+        first_event = dev_events[-1][0].isoformat() if dev_events else None
+        last_event = dev_events[0][0].isoformat() if dev_events else None
+
+        # Avg events per day (30 days)
+        dev_30d = sum(1 for dt, _ in dev_events if dt >= thirty_days_ago)
+        avg_per_day = round(dev_30d / 30, 1) if dev_30d else 0
+
+        # Peak hour
+        peak_hour = hourly.index(max(hourly)) if max(hourly) > 0 else None
+
+        device_stats.append({
+            "device_id": did,
+            "description": desc,
+            "connected": conn.get("connected", False),
+            "disconnect_reason": conn.get("disconnectReason", ""),
+            "firmware_version": conn.get("firmwareVersion", ""),
+            "signal_strength": conn.get("signalStrength"),
+            "events_today": dev_today,
+            "events_week": dev_week,
+            "events_total": dev_total,
+            "avg_per_day": avg_per_day,
+            "peak_hour": f"{peak_hour:02d}:00" if peak_hour is not None else "--",
+            "hourly_pattern": hourly,
+            "classification_breakdown": dict(class_counts),
+            "trigger_breakdown": dict(trigger_counts),
+            "daily_activity": {"labels": daily_labels, "values": daily_values},
+            "first_event": first_event,
+            "last_event": last_event,
+        })
+
+    return device_stats
 
 
 async def _fetch_weather() -> dict | None:
