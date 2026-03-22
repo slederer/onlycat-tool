@@ -17,5 +17,5 @@ primary_region = "ewr"
   destination = "/data"
 
 [env]
-  SYNC_INTERVAL_HOURS = "24"
+  SYNC_INTERVAL_MINUTES = "10"
   DB_PATH = "/data/onlycat_events.db"

@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
-SYNC_INTERVAL_HOURS = int(os.environ.get("SYNC_INTERVAL_HOURS", "24"))
+SYNC_INTERVAL_MINUTES = int(os.environ.get("SYNC_INTERVAL_MINUTES", "10"))
 LATITUDE = os.environ.get("LATITUDE", "48.8631")
 LONGITUDE = os.environ.get("LONGITUDE", "2.3839")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
@@ -786,7 +786,7 @@ async def sync_loop():
     """Background task: sync on startup, then every SYNC_INTERVAL_HOURS."""
     await do_sync()
     while True:
-        await asyncio.sleep(SYNC_INTERVAL_HOURS * 3600)
+        await asyncio.sleep(SYNC_INTERVAL_MINUTES * 60)
         await do_sync()
 
 
