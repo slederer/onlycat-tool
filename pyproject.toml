@@ -13,3 +13,13 @@ dependencies = [
     "python-socketio[asyncio-client]>=5.16.1",
     "uvicorn[standard]>=0.42.0",
 ]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
