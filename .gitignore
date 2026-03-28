@@ -3,3 +3,11 @@
 __pycache__/
 *.pyc
 *.db
+.pytest_cache/
+.claude/
+results.csv
+*.HEIC
+*.heic
+# Allow Oni's photo in static/
+*.jpeg
+!static/oni.jpg
