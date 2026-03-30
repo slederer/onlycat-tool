@@ -23,6 +23,7 @@ from fastapi.templating import Jinja2Templates
 
 from commands import set_transit_policy
 from event_store import EventStore
+from mcp_server import mcp as mcp_server, set_store as mcp_set_store
 from sync import run_sync
 
 load_dotenv()
@@ -793,6 +794,7 @@ async def sync_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await store.open()
+    mcp_set_store(store)
     task = asyncio.create_task(sync_loop())
     yield
     task.cancel()
@@ -801,6 +803,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+app.mount("/mcp", mcp_server.streamable_http_app())
 
 
 @app.get("/", response_class=HTMLResponse)
