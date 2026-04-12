@@ -136,7 +136,7 @@
         </header>
 
         <div class="projects" id="projects">
-            <a href="http://oni.slederer.com" class="project" data-host="oni.slederer.com">
+            <a href="https://oni.slederer.com" class="project" data-host="oni.slederer.com">
                 <div class="project-icon" style="background: #f9731622; color: #f97316;">
                     <span>&#128049;</span>
                 </div>
@@ -148,7 +148,7 @@
                 <div class="status" id="status-oni"></div>
             </a>
 
-            <a href="http://streaming.slederer.com" class="project" data-host="streaming.slederer.com">
+            <a href="https://streaming.slederer.com" class="project" data-host="streaming.slederer.com">
                 <div class="project-icon" style="background: #8b5cf622; color: #8b5cf6;">
                     <span>&#127916;</span>
                 </div>
@@ -160,7 +160,7 @@
                 <div class="status" id="status-streaming"></div>
             </a>
 
-            <a href="http://crm.slederer.com" class="project" data-host="crm.slederer.com">
+            <a href="https://crm.slederer.com" class="project" data-host="crm.slederer.com">
                 <div class="project-icon" style="background: #3b82f622; color: #3b82f6;">
                     <span>&#128188;</span>
                 </div>
@@ -172,7 +172,7 @@
                 <div class="status" id="status-crm"></div>
             </a>
 
-            <a href="http://tracker.slederer.com" class="project" data-host="tracker.slederer.com">
+            <a href="https://tracker.slederer.com" class="project" data-host="tracker.slederer.com">
                 <div class="project-icon" style="background: #f59e0b22; color: #f59e0b;">
                     <span>&#128640;</span>
                 </div>
@@ -184,7 +184,7 @@
                 <div class="status" id="status-tracker"></div>
             </a>
 
-            <a href="http://trading.slederer.com" class="project" data-host="trading.slederer.com">
+            <a href="https://trading.slederer.com" class="project" data-host="trading.slederer.com">
                 <div class="project-icon" style="background: #10b98122; color: #10b981;">
                     <span>&#128200;</span>
                 </div>
@@ -196,7 +196,7 @@
                 <div class="status" id="status-trading"></div>
             </a>
 
-            <a href="http://ctv.slederer.com" class="project" data-host="ctv.slederer.com">
+            <a href="https://ctv.slederer.com" class="project" data-host="ctv.slederer.com">
                 <div class="project-icon" style="background: #ec489922; color: #ec4899;">
                     <span>&#128250;</span>
                 </div>
@@ -208,7 +208,7 @@
                 <div class="status" id="status-ctv"></div>
             </a>
 
-            <a href="http://security.slederer.com" class="project" data-host="security.slederer.com">
+            <a href="https://security.slederer.com" class="project" data-host="security.slederer.com">
                 <div class="project-icon" style="background: #ef444422; color: #ef4444;">
                     <span>&#128274;</span>
                 </div>
@@ -231,7 +231,7 @@
         document.querySelectorAll('.project').forEach(el => {
             const host = el.dataset.host;
             const statusDot = el.querySelector('.status');
-            fetch('http://' + host + '/', { mode: 'no-cors', signal: AbortSignal.timeout(4000) })
+            fetch('https://' + host + '/', { mode: 'no-cors', signal: AbortSignal.timeout(4000) })
                 .then(() => { statusDot.classList.add('live'); })
                 .catch(() => { statusDot.classList.add('offline'); });
         });
