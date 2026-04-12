@@ -910,6 +910,7 @@ async def auth_callback(request: Request):
     response.set_cookie(
         "session", cookie_value,
         httponly=True, samesite="lax", max_age=86400 * 30,
+        domain=".slederer.com",
     )
     return response
 
@@ -917,7 +918,7 @@ async def auth_callback(request: Request):
 @app.get("/auth/logout")
 async def auth_logout():
     response = RedirectResponse("/")
-    response.delete_cookie("session")
+    response.delete_cookie("session", domain=".slederer.com")
     return response
 
 
@@ -928,12 +929,21 @@ async def auth_me(request: Request):
     return user or JSONResponse(None)
 
 
-# --- Dashboard ---
+HOMEPAGE_HOSTS = {"slederer.com", "www.slederer.com"}
+
+
+# --- Dashboard / Homepage ---
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    state = await build_state()
+    host = (request.headers.get("host") or "").split(":")[0].lower()
     user = get_user(request)
+    if host in HOMEPAGE_HOSTS:
+        return templates.TemplateResponse(
+            "homepage.html",
+            {"request": request, "user": user},
+        )
+    state = await build_state()
     return templates.TemplateResponse(
         "dashboard.html",
         {"request": request, "initial_state": state, "user": user},
