@@ -326,6 +326,14 @@
   .trend-up { color: var(--green); background: var(--green-dim); }
   .trend-down { color: var(--red); background: var(--red-dim); }
   .trend-flat { color: var(--muted); background: var(--bg); }
+
+  /* Auth */
+  .auth-area { display: flex; align-items: center; gap: 8px; }
+  .auth-avatar { width: 24px; height: 24px; border-radius: 50%; }
+  .auth-name { font-size: 12px; color: var(--muted); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .login-btn, .logout-btn { font-size: 12px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); cursor: pointer; text-decoration: none; transition: all 0.15s; }
+  .login-btn:hover, .logout-btn:hover { color: var(--text); border-color: var(--text); }
+  .auth-only { {% if not user %}display: none !important;{% endif %} }
 </style>
 </head>
 <body>
@@ -351,9 +359,20 @@
   <h1>OnlyCat Dashboard</h1>
   <div class="header-right">
     <span id="sync-text">Loading...</span>
+    {% if user %}
     <a class="export-btn" href="/api/export" download>Export CSV</a>
     <button class="sync-btn" id="sync-btn" onclick="triggerSync()">Sync Now</button>
+    {% endif %}
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#x1F319;</button>
+    <div class="auth-area">
+      {% if user %}
+        {% if user.picture %}<img class="auth-avatar" src="{{ user.picture }}" alt="">{% endif %}
+        <span class="auth-name">{{ user.name or user.email }}</span>
+        <a class="logout-btn" href="/auth/logout">Logout</a>
+      {% else %}
+        <a class="login-btn" href="/auth/login">Login</a>
+      {% endif %}
+    </div>
   </div>
 </header>
 
@@ -615,6 +634,7 @@
   <div class="card">
     <h2>Custom Alerts</h2>
     <div id="alerts-list"><p class="empty">Loading alerts...</p></div>
+    {% if user %}
     <div class="alert-form" id="alert-form">
       <input type="text" id="alert-name" placeholder="Alert name" style="min-width:140px">
       <select id="alert-type">
@@ -622,11 +642,13 @@
         <option value="contraband">Contraband detected</option>
         <option value="misha_visit">Misha visit</option>
         <option value="no_activity">No activity</option>
+        <option value="no_activity">No activity</option>
         <option value="night_activity">Night activity</option>
       </select>
       <input type="number" id="alert-threshold" placeholder="Minutes/Hour" style="width:100px" min="1">
       <button onclick="addAlert()">Add Alert</button>
     </div>
+    {% endif %}
   </div>
 </div>
 
@@ -647,6 +669,7 @@ let currentPeriod = "daily", latestCharts = null, knownPetLabels = {};
 let previousContrabandCount = null;
 let annotationsCache = {};
 let latestDevices = [];
+const IS_AUTHED = {{ 'true' if user else 'false' }};
 
 // --- Theme ---
 function toggleTheme() {
@@ -1180,7 +1203,7 @@ function renderEvents(events) {
     const eventAnnotations = annotationsCache[e.eventId] || [];
     let annotationHtml = '';
     for (const a of eventAnnotations) {
-      annotationHtml += `<tr class="annotation-row"><td colspan="6"><span class="annotation-note">\u{1F4DD} ${esc(a.note)}</span> <span style="color:var(--muted);font-size:10px">${relativeTime(a.created_at)}</span> <button class="add-note-btn" onclick="deleteAnnotation(${a.id}, ${e.eventId})" title="Delete note" style="color:var(--red);font-size:12px">\u2716</button></td></tr>`;
+      annotationHtml += `<tr class="annotation-row"><td colspan="6"><span class="annotation-note">\u{1F4DD} ${esc(a.note)}</span> <span style="color:var(--muted);font-size:10px">${relativeTime(a.created_at)}</span> ${IS_AUTHED ? `<button class="add-note-btn" onclick="deleteAnnotation(${a.id}, ${e.eventId})" title="Delete note" style="color:var(--red);font-size:12px">\u2716</button>` : ''}</td></tr>`;
     }
     return `<tr>
     <td title="${formatTime(e.timestamp)}">${relativeTime(e.timestamp)}</td>
@@ -1188,7 +1211,7 @@ function renderEvents(events) {
     <td><span class="badge ${BADGE_CLASS[e.classification]||'badge-unknown'}">${esc(e.classification)}</span></td>
     <td>${e.pets.length?e.pets.map(p=>petBadge(p)).join(" "):'<span style="color:var(--muted)">\u2014</span>'}</td>
     <td>
-      <button class="add-note-btn" onclick="showNoteInput(this, ${e.eventId})" title="Add note">+</button>
+      ${IS_AUTHED ? `<button class="add-note-btn" onclick="showNoteInput(this, ${e.eventId})" title="Add note">+</button>` : ''}
     </td>
   </tr>${annotationHtml}`;
   }).join("");
@@ -1245,11 +1268,11 @@ async function loadAlerts() {
         <span class="alert-name">${esc(a.name)}</span>
         <span class="alert-type">${ALERT_TYPE_LABELS[a.alert_type] || a.alert_type}</span>
         ${a.threshold ? `<span class="alert-threshold">${a.threshold}${a.alert_type === 'night_activity' ? 'h' : 'min'}</span>` : ''}
-        <label class="toggle-switch">
+        ${IS_AUTHED ? `<label class="toggle-switch">
           <input type="checkbox" ${a.enabled ? 'checked' : ''} onchange="toggleAlert(${a.id}, this.checked)">
           <span class="toggle-slider"></span>
         </label>
-        <button class="alert-delete" onclick="deleteAlert(${a.id})" title="Delete">\u2716</button>
+        <button class="alert-delete" onclick="deleteAlert(${a.id})" title="Delete">\u2716</button>` : ''}
       </div>
     `).join("");
   } catch(e) { console.error("Failed to load alerts", e); }
@@ -1452,7 +1475,7 @@ function renderDeviceStats(analytics) {
         ${dev.last_event ? `<span>Last event: ${relativeTime(dev.last_event)}</span>` : ''}
       </div>
 
-      <!-- Cat Door Controls -->
+      ${IS_AUTHED ? `<!-- Cat Door Controls -->
       <div style="margin-bottom:20px">
         <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">Cat Door Controls</h2>
         <div class="door-controls">
@@ -1467,7 +1490,7 @@ function renderDeviceStats(analytics) {
       <div style="margin-bottom:20px">
         <h2 style="font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:12px;font-weight:600">Door Schedule</h2>
         <div class="schedule-list" id="schedule-list-${esc(dev.device_id)}"><p class="empty" style="padding:8px 0;font-size:12px">Loading...</p></div>
-        <div class="schedule-form" id="schedule-form-${esc(dev.device_id)}">
+        <div class="schedule-form" id="schedule-form-${esc(dev.device_id)}">` : `<div style="display:none"><div class="schedule-form" id="schedule-form-${esc(dev.device_id)}">
           <input type="time" class="sched-time" value="08:00">
           <select class="sched-action">
             <option value="unlock">Unlock</option>
@@ -1479,7 +1502,7 @@ function renderDeviceStats(analytics) {
           ${DAY_NAMES.map((d,i) => `<label style="font-size:11px;color:var(--muted);cursor:pointer"><input type="checkbox" class="sched-day" value="${i}" checked style="margin-right:2px">${d}</label>`).join(' ')}
           <button onclick="addScheduleForDevice('${esc(dev.device_id)}')">Add</button>
         </div>
-      </div>
+      </div>`}
 
       <!-- Device summary stats -->
       <div class="stat-grid" style="margin-bottom:20px">

@@ -7,19 +7,22 @@ import json
 import logging
 import math
 import os
+import secrets
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 import httpx
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from itsdangerous import URLSafeTimedSerializer
 
 from commands import set_transit_policy
 from event_store import EventStore
@@ -37,6 +40,41 @@ LATITUDE = os.environ.get("LATITUDE", "48.8631")
 LONGITUDE = os.environ.get("LONGITUDE", "2.3839")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 TZ = ZoneInfo(os.environ.get("TIMEZONE", "Europe/Paris"))
+
+# --- Google OAuth ---
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+ALLOWED_EMAILS = [e.strip() for e in os.environ.get("ALLOWED_EMAILS", "").split(",") if e.strip()]
+SESSION_SECRET = os.environ.get("SESSION_SECRET", secrets.token_hex(32))
+signer = URLSafeTimedSerializer(SESSION_SECRET)
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+
+
+def get_user(request: Request) -> dict | None:
+    """Read the signed session cookie and return user info or None."""
+    cookie = request.cookies.get("session")
+    if not cookie:
+        return None
+    try:
+        data = signer.loads(cookie, max_age=86400 * 30)  # 30-day sessions
+        return data
+    except Exception:
+        return None
+
+
+def require_auth(request: Request) -> dict:
+    """Return user dict or raise a 401."""
+    user = get_user(request)
+    if not user:
+        raise_unauthorized()
+    return user
+
+
+def raise_unauthorized():
+    from fastapi import HTTPException
+    raise HTTPException(status_code=401, detail="Login required")
 
 CLASSIFICATION = {
     0: "Unknown", 1: "Clear", 2: "Suspicious", 3: "Contraband",
@@ -806,18 +844,106 @@ app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), na
 app.mount("/mcp", mcp_server.streamable_http_app())
 
 
+# --- Auth Routes ---
+
+@app.get("/auth/login")
+async def auth_login(request: Request):
+    """Redirect to Google OAuth consent screen."""
+    if not GOOGLE_CLIENT_ID:
+        return JSONResponse({"error": "OAuth not configured"}, status_code=500)
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("host", request.url.hostname)
+    redirect_uri = f"{scheme}://{host}/auth/callback"
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "online",
+        "prompt": "select_account",
+    }
+    return RedirectResponse(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
+
+
+@app.get("/auth/callback")
+async def auth_callback(request: Request):
+    """Handle Google OAuth callback, set session cookie."""
+    code = request.query_params.get("code")
+    if not code:
+        return RedirectResponse("/")
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("host", request.url.hostname)
+    redirect_uri = f"{scheme}://{host}/auth/callback"
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(GOOGLE_TOKEN_URL, data={
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        })
+        if token_resp.status_code != 200:
+            return RedirectResponse("/")
+        tokens = token_resp.json()
+        userinfo_resp = await client.get(GOOGLE_USERINFO_URL, headers={
+            "Authorization": f"Bearer {tokens['access_token']}"
+        })
+        if userinfo_resp.status_code != 200:
+            return RedirectResponse("/")
+        userinfo = userinfo_resp.json()
+
+    email = userinfo.get("email", "").lower()
+    if ALLOWED_EMAILS and email not in [e.lower() for e in ALLOWED_EMAILS]:
+        return HTMLResponse(
+            "<h2>Access denied</h2><p>Your Google account is not authorized.</p>"
+            f"<p>{email}</p><a href='/'>Back</a>",
+            status_code=403,
+        )
+
+    session_data = {
+        "email": email,
+        "name": userinfo.get("name", ""),
+        "picture": userinfo.get("picture", ""),
+    }
+    cookie_value = signer.dumps(session_data)
+    response = RedirectResponse("/")
+    response.set_cookie(
+        "session", cookie_value,
+        httponly=True, samesite="lax", max_age=86400 * 30,
+    )
+    return response
+
+
+@app.get("/auth/logout")
+async def auth_logout():
+    response = RedirectResponse("/")
+    response.delete_cookie("session")
+    return response
+
+
+@app.get("/auth/me")
+async def auth_me(request: Request):
+    """Return current user info or null."""
+    user = get_user(request)
+    return user or JSONResponse(None)
+
+
+# --- Dashboard ---
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     state = await build_state()
+    user = get_user(request)
     return templates.TemplateResponse(
         "dashboard.html",
-        {"request": request, "initial_state": state},
+        {"request": request, "initial_state": state, "user": user},
     )
 
 
 @app.post("/api/sync")
-async def trigger_sync():
+async def trigger_sync(request: Request):
     """Manually trigger a data sync."""
+    require_auth(request)
     if sync_lock.locked():
         return JSONResponse({"status": "already running"}, status_code=409)
     result = await do_sync()
@@ -825,8 +951,9 @@ async def trigger_sync():
 
 
 @app.get("/api/export")
-async def export_csv():
+async def export_csv(request: Request):
     """Export all events as CSV."""
+    require_auth(request)
     all_events = await store.get_all()
     pets_raw = await store.get_pets()
     devices_raw = await store.get_devices()
@@ -859,6 +986,7 @@ async def export_csv():
 # --- Cat door control ---
 @app.post("/api/device/{device_id}/policy")
 async def set_door_policy(device_id: str, request: Request):
+    require_auth(request)
     body = await request.json()
     policy = body.get("policy")
     token = os.environ.get("ONLYCAT_TOKEN")
@@ -871,6 +999,7 @@ async def set_door_policy(device_id: str, request: Request):
 # --- Annotations ---
 @app.post("/api/annotations")
 async def add_annotation(request: Request):
+    require_auth(request)
     body = await request.json()
     await store.add_annotation(body["event_id"], body["note"])
     return {"status": "ok"}
@@ -882,7 +1011,8 @@ async def list_annotations():
 
 
 @app.delete("/api/annotations/{annotation_id}")
-async def delete_annotation(annotation_id: int):
+async def delete_annotation(annotation_id: int, request: Request):
+    require_auth(request)
     await store.delete_annotation(annotation_id)
     return {"status": "ok"}
 
@@ -895,19 +1025,22 @@ async def list_alerts():
 
 @app.post("/api/alerts")
 async def add_alert(request: Request):
+    require_auth(request)
     body = await request.json()
     await store.add_alert(body["name"], body["alert_type"], body.get("threshold"))
     return {"status": "ok"}
 
 
 @app.delete("/api/alerts/{alert_id}")
-async def delete_alert_endpoint(alert_id: int):
+async def delete_alert_endpoint(alert_id: int, request: Request):
+    require_auth(request)
     await store.delete_alert(alert_id)
     return {"status": "ok"}
 
 
 @app.put("/api/alerts/{alert_id}")
 async def update_alert_endpoint(alert_id: int, request: Request):
+    require_auth(request)
     body = await request.json()
     await store.update_alert(alert_id, body.get("enabled", True))
     return {"status": "ok"}
@@ -921,13 +1054,15 @@ async def list_schedules():
 
 @app.post("/api/schedules")
 async def add_schedule(request: Request):
+    require_auth(request)
     body = await request.json()
     await store.add_schedule(body["device_id"], body["action"], body["hour"], body["minute"], body.get("days", "0,1,2,3,4,5,6"))
     return {"status": "ok"}
 
 
 @app.delete("/api/schedules/{schedule_id}")
-async def delete_schedule(schedule_id: int):
+async def delete_schedule(schedule_id: int, request: Request):
+    require_auth(request)
     await store.delete_schedule(schedule_id)
     return {"status": "ok"}
 

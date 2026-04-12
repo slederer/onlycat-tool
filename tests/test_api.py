@@ -24,9 +24,11 @@ async def client(store, monkeypatch):
     monkeypatch.setattr(main, "store", store)
     # Disable the sync loop by patching do_sync to no-op
     monkeypatch.setattr(main, "do_sync", lambda: None)
+    # Create a signed session cookie for test auth
+    session_cookie = main.signer.dumps({"email": "test@example.com", "name": "Test", "picture": ""})
     # Use test client
     transport = ASGITransport(app=main.app)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
+    async with AsyncClient(transport=transport, base_url="http://test", cookies={"session": session_cookie}) as c:
         yield c
 
 
