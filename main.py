@@ -19,7 +19,10 @@ import httpx
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import (
+    HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse,
+    Response, StreamingResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from itsdangerous import URLSafeTimedSerializer
@@ -988,6 +991,45 @@ async def projects_page(request: Request):
         "projects.html",
         {**site_context(request), "projects": content.PROJECTS},
     )
+
+
+# Canonical origin for the personal site. The apex, matching the <link rel=
+# "canonical"> in site_base.html, so www and apex do not compete.
+SITE_ORIGIN = "https://slederer.com"
+SITEMAP_PATHS = ("/", "/projects")
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots(request: Request):
+    """Allow the personal site; keep the dashboard hosts out of search.
+
+    oni.slederer.com is publicly proxied and serves a public /share page, so
+    without this it gets indexed by accident.
+    """
+    if is_homepage_host(request):
+        body = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            "\n"
+            f"Sitemap: {SITE_ORIGIN}/sitemap.xml\n"
+        )
+    else:
+        body = "User-agent: *\nDisallow: /\n"
+    return PlainTextResponse(body)
+
+
+@app.get("/sitemap.xml")
+async def sitemap(request: Request):
+    require_homepage_host(request)
+    urls = "".join(
+        f"<url><loc>{SITE_ORIGIN}{path}</loc></url>" for path in SITEMAP_PATHS
+    )
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{urls}</urlset>"
+    )
+    return Response(content=body, media_type="application/xml")
 
 
 @app.post("/api/sync")

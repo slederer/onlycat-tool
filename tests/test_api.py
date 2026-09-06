@@ -409,3 +409,48 @@ class TestPublicSite:
         resp = await site_client.get("/")
         for hobby in content.PROFILE.hobbies:
             assert hobby.name in resp.text
+
+    @pytest.mark.asyncio
+    async def test_robots_allows_the_personal_site(self, site_client):
+        resp = await site_client.get("/robots.txt")
+        assert resp.status_code == 200
+        assert "text/plain" in resp.headers["content-type"]
+        assert "Allow: /" in resp.text
+        assert "Disallow" not in resp.text
+        assert "Sitemap: https://slederer.com/sitemap.xml" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_robots_blocks_the_dashboard_host(self, oni_client):
+        """oni.slederer.com is public and serves /share, so keep it unindexed."""
+        resp = await oni_client.get("/robots.txt")
+        assert resp.status_code == 200
+        assert "Disallow: /" in resp.text
+        assert "Allow: /" not in resp.text
+
+    @pytest.mark.asyncio
+    async def test_robots_blocks_unknown_hosts(self, client):
+        resp = await client.get("/robots.txt")
+        assert resp.status_code == 200
+        assert "Disallow: /" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_sitemap_lists_every_public_page(self, site_client):
+        import main
+        resp = await site_client.get("/sitemap.xml")
+        assert resp.status_code == 200
+        assert "xml" in resp.headers["content-type"]
+        for path in main.SITEMAP_PATHS:
+            assert f"<loc>https://slederer.com{path}</loc>" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_sitemap_paths_are_all_reachable(self, site_client):
+        """Guards against a sitemap advertising a URL that 404s."""
+        import main
+        for path in main.SITEMAP_PATHS:
+            page = await site_client.get(path)
+            assert page.status_code == 200, f"sitemap lists {path} but it is {page.status_code}"
+
+    @pytest.mark.asyncio
+    async def test_sitemap_404s_on_the_dashboard_host(self, oni_client):
+        resp = await oni_client.get("/sitemap.xml")
+        assert resp.status_code == 404
