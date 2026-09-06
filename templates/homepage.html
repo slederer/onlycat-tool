@@ -276,7 +276,7 @@
   <div class="wrap">
     <div class="section-head">
       <h2>Angel portfolio <span class="count">· {{ angel_companies|length }}</span></h2>
-      <p>Direct investments, typically pre-seed and seed.</p>
+      <p>Direct investments, roughly ordered by size.</p>
     </div>
     <div class="angel-grid">
       {% for c in angel_companies %}{{ m.angel_tile(c) }}{% endfor %}

@@ -225,11 +225,12 @@ BITMOVIN = Company(
 #
 # Bitmovin is not in this list: it has its own section above.
 #
-# TODO(stefan): the blurbs below are DRAFTED from public knowledge of each
-# company and need your eye before this goes live. These have NO blurb because
-# I did not want to guess: GuardAero, Dartboard Energy, Earendil, Golpo,
-# Hypernote, Linq, Ozeki, Pally, Rewbi, Splash Inc., Statewide, Trace.
-# A blank blurb renders as a name-only tile, which is fine.
+# Order matters: the angel list is rendered in this order, roughly largest and
+# best known first. Move a line to move a company on the page.
+#
+# TODO(stefan): the blurbs are DRAFTED from each company's own site and need
+# your eye. Still no blurb (name-only tile, which is fine): GuardAero, Rewbi
+# (stealth), Dartboard Energy, Statewide, Trace.
 # ---------------------------------------------------------------------------
 
 PORTFOLIO: tuple[Company, ...] = (
@@ -244,41 +245,72 @@ PORTFOLIO: tuple[Company, ...] = (
             sector="Telecom", spv=True, role="Lead investor, syndicate via SPV",
             accent="green"),
 
-    # --- direct angel investments (alphabetical) ---
-    Company("0.email", "Open-source, AI-native email client.", sector="AI", accent="indigo"),
-    Company("AiSDR", "AI sales development rep for outbound pipeline.", sector="Sales", accent="purple"),
-    Company("Cosmic JS", "Headless CMS for content-driven applications.", sector="Dev tools", accent="cyan"),
-    Company("crate", "Distributed SQL database for real-time machine data.", sector="Data", accent="blue"),
+    # --- direct angel investments, roughly largest first ---
+    Company("SpaceX", "Orbital launch and satellite internet.",
+            url="https://www.spacex.com", sector="Space", accent="blue"),
+    Company("Mistral", "Open-weight frontier AI models, built in Europe.",
+            url="https://mistral.ai", sector="AI", accent="orange"),
+    Company("crate", "Distributed SQL database for real-time machine data.",
+            url="https://cratedb.com", sector="Data", accent="blue"),
+    Company("Upflow", "Accounts-receivable automation for B2B finance teams.",
+            url="https://upflow.io", sector="Fintech", accent="green"),
+    Company("Oden.io", "Real-time analytics for manufacturing lines.",
+            url="https://oden.io", sector="Industrial", accent="red"),
+    Company("Waydev", "Engineering analytics for software teams.",
+            url="https://waydev.co", sector="Dev tools", accent="purple"),
+    Company("Resquared", "Lead generation for teams selling to local businesses.",
+            sector="Sales", accent="yellow"),
+    Company("AiSDR", "AI sales development rep for outbound pipeline.",
+            sector="Sales", accent="purple"),
+    Company("Invofox", "AI document and invoice processing for finance teams.",
+            sector="Fintech", accent="blue"),
+    Company("Kilobaser", "Benchtop DNA synthesiser for research labs.",
+            sector="Biotech", accent="pink"),
+    Company("Onedoclabs", "Document infrastructure for healthcare software.",
+            sector="Health", accent="cyan"),
+    Company("Linemetrics", "IoT sensor monitoring for buildings and industry.",
+            sector="IoT", accent="cyan"),
+    Company("Cosmic JS", "Headless CMS for content-driven applications.",
+            sector="Dev tools", accent="cyan"),
+    Company("Reflect", "No-code automated browser testing.",
+            sector="Dev tools", accent="purple"),
+    Company("Onboard.io", "Customer onboarding for B2B software teams.",
+            sector="SaaS", accent="blue"),
+    Company("Kickscale", "AI meeting intelligence for sales teams.",
+            sector="Sales", accent="orange"),
+    Company("Hilos", "WhatsApp automation for customer conversations.",
+            sector="SaaS", accent="green"),
+    Company("Rownd", "Drop-in authentication and user onboarding.",
+            sector="Dev tools", accent="blue"),
+    Company("Golpo", "Turns documents and prompts into whiteboard animation videos.",
+            url="https://video.golpoai.com", sector="AI video", accent="pink"),
+    Company("Red Barn Robotics", "Robotic weeding for vegetable farms.",
+            sector="Robotics", accent="green"),
+    Company("Splash Inc.", "Autonomous surface vessels for maritime security.",
+            url="https://splash9.com", sector="Defence", accent="red"),
+    Company("Ozeki", "AI that negotiates and reviews contracts.",
+            url="https://www.ozeki.ai", sector="Legal tech", accent="green"),
+    Company("Pally", "AI assistant over text that remembers your life and follows up.",
+            url="https://pally.com", sector="AI", accent="pink"),
+    Company("HumanLayer", "Human-in-the-loop approvals for AI agents.",
+            sector="AI infra", accent="orange"),
+    Company("GlassKube", "Open-source package manager for Kubernetes.",
+            sector="Dev tools", accent="green"),
+    Company("Promptless", "Keeps product documentation up to date automatically.",
+            sector="Dev tools", accent="indigo"),
+    Company("0.email", "Open-source, AI-native email client.",
+            sector="AI", accent="indigo"),
+    Company("Hyprnote", "Open-source AI notetaker that keeps meeting data on-device.",
+            url="https://www.ycombinator.com/launches/OEu-hyprnote-open-source-ai-notetaker-for-enterprises",
+            sector="AI", accent="purple"),
+    Company("Linq", "Private photo sharing where you can revoke access after sending.",
+            url="https://sendlinqs.com", sector="Consumer", accent="blue"),
+    Company("Earendil", "Building AI tools in the open.",
+            url="https://earendil.com", sector="AI", accent="indigo"),
+    Company("Rewbi", "", url="https://www.rewbi.com", sector="Stealth", accent="cyan"),
     Company("Dartboard Energy", "", sector="Energy", accent="yellow"),
-    Company("Earendil", "", accent="indigo"),
-    Company("GlassKube", "Open-source package manager for Kubernetes.", sector="Dev tools", accent="green"),
-    Company("Golpo", "", accent="pink"),
-    Company("Hilos", "WhatsApp automation for customer conversations.", sector="SaaS", accent="green"),
-    Company("HumanLayer", "Human-in-the-loop approvals for AI agents.", sector="AI infra", accent="orange"),
-    Company("Hypernote", "", accent="purple"),
-    Company("Invofox", "AI document and invoice processing for finance teams.", sector="Fintech", accent="blue"),
-    Company("Kickscale", "AI meeting intelligence for sales teams.", sector="Sales", accent="orange"),
-    Company("Kilobaser", "Benchtop DNA synthesiser for research labs.", sector="Biotech", accent="pink"),
-    Company("Linemetrics", "IoT sensor monitoring for buildings and industry.", sector="IoT", accent="cyan"),
-    Company("Linq", "", accent="blue"),
-    Company("Mistral", "Open-weight frontier AI models, built in Europe.", sector="AI", accent="orange"),
-    Company("Oden.io", "Real-time analytics for manufacturing lines.", sector="Industrial", accent="red"),
-    Company("Onboard.io", "Customer onboarding for B2B software teams.", sector="SaaS", accent="blue"),
-    Company("Onedoclabs", "Document infrastructure for healthcare software.", sector="Health", accent="cyan"),
-    Company("Ozeki", "", accent="green"),
-    Company("Pally", "", accent="pink"),
-    Company("Promptless", "Keeps product documentation up to date automatically.", sector="Dev tools", accent="indigo"),
-    Company("Red Barn Robotics", "Robotic weeding for vegetable farms.", sector="Robotics", accent="green"),
-    Company("Reflect", "No-code automated browser testing.", sector="Dev tools", accent="purple"),
-    Company("Resquared", "Lead generation for teams selling to local businesses.", sector="Sales", accent="yellow"),
-    Company("Rewbi", "", accent="cyan"),
-    Company("Rownd", "Drop-in authentication and user onboarding.", sector="Dev tools", accent="blue"),
-    Company("SpaceX", "Orbital launch and satellite internet.", sector="Space", accent="red"),
-    Company("Splash Inc.", "", accent="orange"),
     Company("Statewide", "", accent="yellow"),
     Company("Trace", "", accent="indigo"),
-    Company("Upflow", "Accounts-receivable automation for B2B finance teams.", sector="Fintech", accent="green"),
-    Company("Waydev", "Engineering analytics for software teams.", sector="Dev tools", accent="purple"),
 )
 
 
