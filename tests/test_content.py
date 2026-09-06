@@ -235,3 +235,20 @@ class TestNoPlaceholdersEscape:
         assert not offenders, "unfinished text would render on the live site:\n" + "\n".join(
             f"  {path}: {text[:70]!r}" for path, text in offenders
         )
+
+
+class TestVoice:
+    """Stefan asked for copy that does not read as machine-written.
+
+    Em dashes are the giveaway he called out, so they fail the build.
+    """
+
+    def test_no_em_dashes_in_visible_copy(self):
+        offenders = [
+            (path, text)
+            for path, text in TestNoPlaceholdersEscape()._strings()
+            if "—" in text
+        ]
+        assert not offenders, "em dash in visible copy:\n" + "\n".join(
+            f"  {path}: {text[:70]!r}" for path, text in offenders
+        )

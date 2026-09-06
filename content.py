@@ -1,7 +1,7 @@
 """Site content for slederer.com.
 
 This is the ONLY file you need to edit to update the personal site. Nothing here
-touches HTML — the templates read these objects and lay them out.
+touches HTML. The templates read these objects and lay them out.
 
 Quick guide:
   * Add a portfolio company      -> append a Company(...) to PORTFOLIO
@@ -9,8 +9,8 @@ Quick guide:
   * Edit the incubator           -> INCUBATOR
   * Edit bio / links / thesis    -> PROFILE and THESIS
 
-`accent` is always a TOKEN NAME from ACCENTS (e.g. "purple"), never a hex code —
-the template turns it into var(--purple). tests/test_content.py enforces this,
+`accent` is always a TOKEN NAME from ACCENTS (e.g. "purple"), never a hex code.
+The template turns it into var(--purple). tests/test_content.py enforces this,
 so a typo fails CI instead of rendering an invisible chip.
 """
 
@@ -54,7 +54,7 @@ class Company:
 
 @dataclass(frozen=True)
 class CohortProject:
-    """One product built during a cohort. Blurb optional — name-only is fine."""
+    """One product built during a cohort. Blurb optional, name-only is fine."""
     name: str
     blurb: str = ""
 
@@ -105,7 +105,6 @@ class Thesis:
     sectors: tuple[tuple[str, str], ...] = ()   # (label, accent token)
     bullets: tuple[str, ...] = ()
     anti_bullets: tuple[str, ...] = ()
-    check_size: str = ""
     stages: tuple[str, ...] = ()
     geos: tuple[str, ...] = ()
     how_to_reach: str = ""
@@ -123,7 +122,7 @@ class Profile:
     contact_email: str = ""
 
     def json_ld(self) -> dict:
-        """schema.org Person — single-sourced with the visible links."""
+        """schema.org Person, single-sourced with the visible links."""
         return {
             "@context": "https://schema.org",
             "@type": "Person",
@@ -144,29 +143,29 @@ class Profile:
 # networks") and his Google Scholar profile (2,187 citations, h-index 20).
 #
 # TODO(stefan): confirm the bio wording reads how you want it, and set
-# contact_email. The patent count is YOURS personally — I could not find a
+# contact_email. The patent count is YOURS personally. I could not find a
 # reliable public figure for Bitmovin's company-wide portfolio.
 # ---------------------------------------------------------------------------
 
 PROFILE = Profile(
     name="Stefan Lederer",
     role="CEO & Co-founder, Bitmovin",
-    tagline="Building the video infrastructure behind a large share of internet "
-            "streaming. Angel investor in early-stage technical founders.",
-    location="Paris, France",
+    tagline="I build video infrastructure at Bitmovin. I also put my own money "
+            "into early-stage technical founders.",
+    location="",
     bio=(
-        "I'm the co-founder and CEO of Bitmovin. We started the company in 2013 "
-        "out of research and standardisation work on adaptive streaming, "
-        "co-creating MPEG-DASH — the format behind a large share of the video "
-        "delivered over the internet today. Bitmovin now builds the encoding, "
-        "playback and analytics infrastructure that streaming services run on.",
-        "I still keep a foot in research: more than 25 papers and 10 patents in "
+        "I co-founded Bitmovin in 2013 and run it as CEO. It grew out of our "
+        "research on adaptive streaming and the work we did on MPEG-DASH, which "
+        "is now how a large share of internet video gets delivered. Today we "
+        "build the encoding, playback and analytics that streaming services "
+        "run on.",
+        "I never fully left the research side. 25 papers, 10 patents in "
         "multimedia delivery and networking, and an associate professorship at "
         "the University of Klagenfurt.",
-        "Alongside Bitmovin I invest as an angel in early-stage companies — "
-        "usually technical founders at pre-seed and seed, focused on B2B SaaS, "
-        "security and defence, and energy. In a handful of cases I lead the "
-        "round and bring other investors in through an SPV.",
+        "I also invest my own money in early-stage companies. Mostly pre-seed "
+        "and seed, mostly technical founders, in B2B SaaS, security and "
+        "defence, and energy. Three times so far I have led the round and "
+        "brought other investors in through an SPV.",
     ),
     facts=(
         ("2013", "Co-founded Bitmovin"),
@@ -206,7 +205,7 @@ BITMOVIN = Company(
 #
 # ONE list. Set spv=True to move a company into the "Rounds I lead" block.
 #
-# Cheque sizes are deliberately NOT modelled here — the page shows companies,
+# Cheque sizes are deliberately NOT modelled here. The page shows companies,
 # not amounts. If you want them public, add an `amount` field and render it.
 #
 # Bitmovin is not in this list: it has its own section above.
@@ -222,10 +221,10 @@ PORTFOLIO: tuple[Company, ...] = (
     # --- rounds I lead via an SPV ---
     Company("HockeyStack", "B2B marketing attribution and revenue analytics.",
             sector="Analytics", spv=True, role="Lead investor, syndicate via SPV",
-            accent="purple"),
+            accent="pink"),
     Company("GuardAero", "",
             sector="Aviation", spv=True, role="Lead investor, syndicate via SPV",
-            accent="cyan"),
+            accent="blue"),
     Company("Salvy", "Business mobile connectivity and eSIM in Brazil.",
             sector="Telecom", spv=True, role="Lead investor, syndicate via SPV",
             accent="green"),
@@ -281,28 +280,28 @@ PORTFOLIO: tuple[Company, ...] = (
 
 INCUBATOR = Incubator(
     name="Bitmovin AI Incubator",
-    tagline="Two iterations, Vienna and Klagenfurt",
+    tagline="Two rounds, Vienna and Klagenfurt",
     description=(
-        "A programme that gives small teams ten weeks, real customers and a budget "
-        "to take an AI idea from a hypothesis to a working product. We have run it "
-        "twice; after the second cohort it became a permanent part of Bitmovin."
+        "We give small teams ten weeks, a budget and access to real customers, "
+        "then see what they can ship. We have run it twice. After the second "
+        "round we made it permanent."
     ),
     cohorts=(
         Cohort(
             name="Summer 2025",
             period="First run",
-            theme="Nine people, nine projects — eight of which ended up shipping "
-                  "inside Bitmovin products.",
+            theme="Nine people, nine projects. Eight of them ended up inside "
+                  "Bitmovin products.",
             status="completed",
             people=9,
             teams=9,
-            accent="cyan",
+            accent="blue",
             focus_areas=("Observability", "AI assistants", "Analytics",
                          "Test automation"),
             highlights=(
-                "Nine people chosen after interviewing 350 candidates across Europe.",
-                "Eight of the nine projects became features of Bitmovin products.",
-                "Shown at IBC and other industry events.",
+                "We interviewed 350 people across Europe to fill nine places.",
+                "Eight of the nine projects became features in Bitmovin products.",
+                "Shown at IBC and other industry shows.",
             ),
             projects_total=9,
             projects=(
@@ -317,18 +316,18 @@ INCUBATOR = Incubator(
         Cohort(
             name="Summer 2026",
             period="Ten weeks",
-            theme="Fifteen interns, selected from 500 European applicants, shipping "
-                  "seven products in ten weeks.",
+            theme="Fifteen interns picked from 500 applicants across Europe. "
+                  "Seven products in ten weeks.",
             status="completed",
             people=15,
             teams=7,
-            accent="purple",
+            accent="pink",
             projects_total=7,
             focus_areas=("Streaming", "Observability", "Advertising",
                          "Video workflows", "AI tooling"),
             highlights=(
-                "Teams demoed to real customers within four weeks and signed first test users.",
-                "The programme is now permanent.",
+                "Teams were demoing to customers inside four weeks.",
+                "Several signed their first test users before the ten weeks were up.",
             ),
             projects=(
                 CohortProject("Quicly", "Multiview live streaming on Media over QUIC."),
@@ -348,41 +347,38 @@ INCUBATOR = Incubator(
 # ---------------------------------------------------------------------------
 # INVESTING THESIS
 #
-# Sectors are Stefan's. The bullets and how_to_reach are still drafted —
-# TODO(stefan): reword in your own voice, and set check_size.
+# Sectors are Stefan's. The bullets and how_to_reach are still drafted.
+# TODO(stefan): reword in your own voice.
 # ---------------------------------------------------------------------------
 
 THESIS = Thesis(
     headline="What I look for",
     sectors=(
         ("B2B SaaS", "blue"),
-        ("Security & Defence", "red"),
-        ("Energy", "yellow"),
+        ("Security & Defence", "pink"),
+        ("Energy", "green"),
     ),
     bullets=(
-        "Technical founders who have felt the problem themselves.",
-        "A product a real user is already using, however small.",
-        "Unglamorous problems with a clear reason they are hard.",
+        "Founders who have hit the problem themselves.",
+        "Something already built that someone is using.",
+        "Problems that look boring on the surface and are hard underneath.",
     ),
     anti_bullets=(
-        "Pre-product decks with no working prototype.",
-        "Consumer social and marketplaces — I would be a bad investor for you.",
-        "Anything needing a large check to reach the next milestone.",
+        "Decks with nothing built yet.",
+        "Consumer social and marketplaces. I would be no help to you.",
+        "Rounds where my cheque would not move the needle.",
     ),
-    # Blank hides the "Cheque" row entirely. Fill in only if you want a
-    # range public — your per-deal amounts are deliberately not on the site.
-    check_size="",
     stages=("Pre-seed", "Seed"),
     geos=("Europe", "US"),
     how_to_reach=(
-        "Send a short email with what you are building, who is using it, and what "
-        "you need. A demo link beats a deck. I try to reply within a week."
+        "Email me. Tell me what you are building, who is using it and what you "
+        "need. A link to something working beats a deck."
     ),
 )
 
 
 # ---------------------------------------------------------------------------
-# SIDE PROJECTS — shown at /projects, not on the homepage
+# SIDE PROJECTS, shown at /projects rather than the homepage
 # ---------------------------------------------------------------------------
 
 PROJECTS: tuple[Project, ...] = (
@@ -410,7 +406,7 @@ PROJECTS: tuple[Project, ...] = (
 
 
 # ---------------------------------------------------------------------------
-# Derived views — the templates use these, never PORTFOLIO directly.
+# Derived views. Templates use these, never PORTFOLIO directly.
 # ---------------------------------------------------------------------------
 
 def spv_companies() -> tuple[Company, ...]:

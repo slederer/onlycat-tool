@@ -1,8 +1,8 @@
 {% extends "site_base.html" %}
 {% import "macros.html" as m %}
 
-{% block title %}Stefan Lederer — CEO &amp; Co-founder, Bitmovin | Angel Investor{% endblock %}
-{% block description %}Stefan Lederer is CEO and co-founder of Bitmovin and an angel investor in early-stage technical founders, leading selected rounds via SPV.{% endblock %}
+{% block title %}Stefan Lederer, CEO of Bitmovin and angel investor{% endblock %}
+{% block description %}Stefan Lederer, CEO and co-founder of Bitmovin. He backs early-stage technical founders in B2B SaaS, security and defence, and energy, and leads some rounds via SPV.{% endblock %}
 
 {% block nav_links %}
   {% if spv_companies or angel_companies %}<a class="nav-anchor" href="#investing">Investing</a>{% endif %}
@@ -12,9 +12,22 @@
 
 {% block page_styles %}
   /* hero */
-  .hero { padding-block: 96px 72px; }
-  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: center; }
-  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); }
+  .hero { padding-block: 104px 80px; overflow: hidden; }
+  /* Soft blue-to-pink wash behind the hero. Purely decorative. */
+  .hero::before {
+    content: ""; position: absolute; inset: -50% 0 auto -15%; height: 760px;
+    background:
+      radial-gradient(620px 400px at 18% 42%, color-mix(in srgb, var(--blue) 26%, transparent), transparent 70%),
+      radial-gradient(520px 340px at 62% 14%, color-mix(in srgb, var(--pink) 18%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 48px;
+               align-items: center; position: relative; }
+  .hero h1 {
+    font-size: clamp(2.4rem, 5.4vw, 3.5rem); letter-spacing: -0.035em;
+    background: linear-gradient(102deg, var(--text-strong) 30%, var(--blue) 75%, var(--pink) 105%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
   .hero-role { color: var(--muted); font-size: 17px; margin-top: 10px; }
   .hero-tagline { font-size: 19px; margin-top: 20px; max-width: 40ch; }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
@@ -46,14 +59,21 @@
   .bitmovin-card p { color: var(--muted); margin-top: 12px; max-width: 62ch; }
   .bitmovin-card .btn { margin-top: 20px; }
 
-  /* SPV block — raised, accent-railed, roomy */
+  /* SPV block: raised, accent-railed, roomy */
   .spv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
   .spv-card {
     background: var(--surface); border: 1px solid var(--border);
     border-left: 3px solid var(--accent); border-radius: var(--radius);
-    padding: 24px; box-shadow: var(--shadow);
-    display: flex; flex-direction: column;
+    padding: 26px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; position: relative; overflow: hidden;
+    transition: transform .18s, border-color .18s;
   }
+  .spv-card::after {
+    content: ""; position: absolute; inset: -60% -30% auto -30%; height: 220px;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
+    pointer-events: none;
+  }
+  .spv-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
   .spv-card-top { display: flex; gap: 8px; margin-bottom: 14px; }
   .spv-name { font-size: 19px; }
   .spv-name a { text-decoration: none; }
@@ -62,17 +82,20 @@
   .spv-role { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 12px; }
   .spv-meta { margin-top: 16px; }
 
-  /* Angel grid — recessed, flat, denser. The contrast with .spv-card is
+  /* Angel grid: recessed, flat, denser. The contrast with .spv-card is
      deliberate and carried by elevation + density + rail, not colour alone. */
   /* align-items:start so a tile with no blurb stays compact instead of
      stretching to match the tallest tile in its row. */
   .angel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
                 gap: 12px; align-items: start; }
   .angel-tile {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px 16px;
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 15px 17px;
+    transition: border-color .15s, background .15s;
   }
+  .angel-tile:hover { border-color: var(--border-strong); background: var(--surface); }
   html.light-mode .angel-tile { background: var(--surface-hover); }
+  html.light-mode .angel-tile:hover { background: var(--surface); }
   .angel-tile.is-past { opacity: .7; }
   .angel-name { font-size: 15px; font-weight: 600; }
   .angel-name a { text-decoration: none; }
@@ -105,7 +128,7 @@
   .cohort-stat + .cohort-stat { margin-left: 16px; }
   .cohort-link { margin-left: auto; font-size: 14px; color: var(--muted); }
 
-  /* Products shipped by a cohort — a compact grid under the two cards. */
+  /* Products shipped by a cohort: a compact grid under the two cards. */
   .cohort-products { margin-top: 32px; }
   .product-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
@@ -114,8 +137,9 @@
   .product {
     background: var(--bg); border: 1px solid var(--border);
     border-left: 2px solid var(--accent); border-radius: var(--radius-sm);
-    padding: 12px 14px;
+    padding: 13px 15px; transition: border-color .15s;
   }
+  .product:hover { border-color: var(--border-strong); }
   html.light-mode .product { background: var(--surface); }
   .product-name { font-size: 14px; font-weight: 600; color: var(--text-strong); }
   .product-blurb { font-size: 13px; color: var(--muted); margin-top: 3px; }
@@ -123,7 +147,7 @@
 
   /* thesis + contact */
   .thesis-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start; }
-  /* Sector chips sit directly under the heading — the first thing a founder
+  /* Sector chips sit directly under the heading: the first thing a founder
      checks is whether they are even in scope. */
   .sectors { margin: 16px 0 20px; }
   .sectors .chip { font-size: 13px; padding: 5px 12px; }
@@ -212,9 +236,9 @@
     <div class="section-head">
       <div class="eyebrow">Angel investing</div>
       <h2>Rounds I lead</h2>
-      <p>In a small number of companies I lead the round myself and bring other
-         investors in through an SPV — a deeper commitment than a normal angel
-         cheque, and usually a seat at the table.</p>
+      <p>In a few companies I lead the round myself and bring other investors
+         in through an SPV. That means a bigger cheque, more involvement, and
+         usually a seat at the table.</p>
     </div>
     <div class="spv-grid">
       {% for c in spv_companies %}{{ m.spv_card(c) }}{% endfor %}
@@ -268,7 +292,6 @@
       <ul>{% for b in thesis.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
       {% endif %}
       <dl class="thesis-facts">
-        {% if thesis.check_size %}<div><dt>Cheque</dt><dd>{{ thesis.check_size }}</dd></div>{% endif %}
         {% if thesis.stages %}<div><dt>Stage</dt><dd>{{ thesis.stages|join(", ") }}</dd></div>{% endif %}
         {% if thesis.geos %}<div><dt>Geography</dt><dd>{{ thesis.geos|join(", ") }}</dd></div>{% endif %}
       </dl>
@@ -279,7 +302,7 @@
       {% if profile.contact_email %}
       <a class="btn primary" href="mailto:{{ profile.contact_email }}">Email me</a>
       {% else %}
-      {# No public address set yet — fall back to the first profile link. #}
+      {# No public address set yet, so fall back to the first profile link. #}
       {% if profile.links %}
       <a class="btn primary" href="{{ profile.links[0].url }}" target="_blank" rel="noopener">
         Reach me on {{ profile.links[0].label }}

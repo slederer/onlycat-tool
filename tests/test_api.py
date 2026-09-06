@@ -381,3 +381,22 @@ class TestPublicSite:
         resp = await site_client.get("/")
         for label, _accent in content.THESIS.sectors:
             assert html.escape(label) in resp.text, f"{label} missing from page"
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("path", ["/", "/projects"])
+    async def test_no_em_dashes_in_rendered_pages(self, site_client, path):
+        """Catches em dashes written straight into templates.
+
+        tests/test_content.py only sees content.py, so a hardcoded one in
+        homepage.html slipped through until this existed.
+        """
+        resp = await site_client.get(path)
+        assert "—" not in resp.text, f"em dash rendered on {path}"
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("path", ["/", "/projects"])
+    async def test_no_placeholder_text_in_rendered_pages(self, site_client, path):
+        resp = await site_client.get(path)
+        lowered = resp.text.lower()
+        for word in ("placeholder", "lorem ipsum", "tbd"):
+            assert word not in lowered, f"{word!r} rendered on {path}"
