@@ -2,6 +2,8 @@ services:
   nginx:
     image: nginx:alpine
     restart: unless-stopped
+    # Reload every 6h so renewed certs are picked up without a manual restart.
+    command: ["/bin/sh", "-c", "while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"]
     ports:
       - "80:80"
       - "443:443"
