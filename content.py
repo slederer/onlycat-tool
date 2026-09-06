@@ -119,6 +119,10 @@ class Profile:
     bio: tuple[str, ...] = ()
     facts: tuple[tuple[str, str], ...] = ()
     links: tuple[Link, ...] = ()
+    # Research projects Bitmovin funds. Deliberately separate from `links`,
+    # which feeds schema.org sameAs and must only hold Stefan's own profiles.
+    research: tuple[Link, ...] = ()
+    research_note: str = ""
     contact_email: str = ""
 
     def json_ld(self) -> dict:
@@ -142,6 +146,10 @@ class Profile:
 # 25 research papers and 10 patents in the field of multimedia delivery and
 # networks") and his Google Scholar profile (2,187 citations, h-index 20).
 #
+# NOTE: Scholar still lists an associate professorship at Klagenfurt. Stefan
+# says that is out of date. He guest lectured there, and Bitmovin funds
+# research with the university. Do not reinstate the professorship claim.
+#
 # TODO(stefan): confirm the bio wording reads how you want it, and set
 # contact_email. The patent count is YOURS personally. I could not find a
 # reliable public figure for Bitmovin's company-wide portfolio.
@@ -159,9 +167,12 @@ PROFILE = Profile(
         "is now how a large share of internet video gets delivered. Today we "
         "build the encoding, playback and analytics that streaming services "
         "run on.",
-        "I never fully left the research side. 25 papers, 10 patents in "
-        "multimedia delivery and networking, and an associate professorship at "
-        "the University of Klagenfurt.",
+        "I never fully left the research side. 25 papers and 10 patents in "
+        "multimedia delivery and networking. I have guest lectured at the "
+        "University of Klagenfurt over the years, and Bitmovin funds several "
+        "research projects with them. The biggest is ATHENA, a Christian "
+        "Doppler laboratory working on adaptive streaming and networked "
+        "multimedia.",
         "I also invest my own money in early-stage companies. Mostly pre-seed "
         "and seed, mostly technical founders, in B2B SaaS, security and "
         "defence, and energy. Three times so far I have led the round and "
@@ -182,6 +193,10 @@ PROFILE = Profile(
              show_in_hero=False),
         Link("Bitmovin", "https://bitmovin.com", show_in_hero=False),
     ),
+    research=(
+        Link("ATHENA", "https://athena.itec.aau.at/"),
+    ),
+    research_note="and several other projects with the University of Klagenfurt",
     contact_email="stefan.lederer@bitmovin.com",
 )
 

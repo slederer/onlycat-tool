@@ -39,6 +39,19 @@
   /* bio */
   .bio p { max-width: 68ch; font-size: 17px; line-height: 1.75; }
   .bio p + p { margin-top: 18px; }
+  .research { margin-top: 32px; }
+  .research-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .research-link {
+    display: inline-block; padding: 6px 13px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    color: var(--green); background: var(--green-dim);
+    border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+    transition: filter .15s;
+  }
+  .research-link:hover { filter: brightness(1.15); }
+  html.light-mode .research-link { color: var(--text); }
+  .research-note { font-size: 14px; color: var(--muted); }
+
   .facts {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 16px; margin-top: 40px;
@@ -201,6 +214,17 @@
 <section class="bio">
   <div class="wrap">
     {% for para in profile.bio %}<p>{{ para }}</p>{% endfor %}
+    {% if profile.research %}
+    <div class="research">
+      <div class="eyebrow">Research we fund</div>
+      <div class="research-row">
+        {% for r in profile.research %}
+        <a class="research-link" href="{{ r.url }}" target="_blank" rel="noopener">{{ r.label }} &#8599;</a>
+        {% endfor %}
+        {% if profile.research_note %}<span class="research-note">{{ profile.research_note }}</span>{% endif %}
+      </div>
+    </div>
+    {% endif %}
     {% if profile.facts %}
     <div class="facts">
       {% for value, label in profile.facts %}

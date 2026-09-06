@@ -252,3 +252,22 @@ class TestVoice:
         assert not offenders, "em dash in visible copy:\n" + "\n".join(
             f"  {path}: {text[:70]!r}" for path, text in offenders
         )
+
+
+class TestResearch:
+    def test_research_links_are_absolute(self):
+        for link in content.PROFILE.research:
+            assert link.label.strip()
+            assert link.url.startswith("https://")
+
+    def test_research_is_not_in_schema_org_same_as(self):
+        """sameAs must only carry Stefan's own profiles, not funded projects."""
+        same_as = content.PROFILE.json_ld()["sameAs"]
+        for link in content.PROFILE.research:
+            assert link.url not in same_as
+
+    def test_no_professorship_claim(self):
+        """Scholar lists one; Stefan says it is out of date. Do not reinstate."""
+        bio = " ".join(content.PROFILE.bio).lower()
+        assert "professorship" not in bio
+        assert "associate professor" not in bio
