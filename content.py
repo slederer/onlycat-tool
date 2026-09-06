@@ -78,6 +78,14 @@ class Cohort:
 
 
 @dataclass(frozen=True)
+class Hobby:
+    name: str
+    emoji: str
+    note: str = ""              # optional one-liner; "" shows just the name
+    accent: str = "blue"
+
+
+@dataclass(frozen=True)
 class Photo:
     src: str                    # path under /static/site/
     alt: str                    # required: this is the accessible description
@@ -132,6 +140,8 @@ class Profile:
     research: tuple[Link, ...] = ()
     research_note: str = ""
     portrait: str = ""          # "" hides the hero portrait
+    hobbies: tuple[Hobby, ...] = ()
+    hobbies_intro: str = ""
     contact_email: str = ""
 
     def json_ld(self) -> dict:
@@ -207,6 +217,15 @@ PROFILE = Profile(
     ),
     research_note="and several other projects with the University of Klagenfurt",
     portrait="/static/site/stefan.jpg",
+    # TODO(stefan): the `note` on each of these is empty on purpose. Add a line
+    # if you want, or leave them and the cards just show the activity.
+    hobbies_intro="Away from the desk you will usually find me on skis, on the "
+                  "water, or out running.",
+    hobbies=(
+        Hobby("Skiing", "\u26F7\uFE0F", accent="blue"),
+        Hobby("Sailing", "\u26F5", accent="cyan"),
+        Hobby("Running", "\U0001F3C3", accent="green"),
+    ),
     contact_email="stefan.lederer@bitmovin.com",
 )
 

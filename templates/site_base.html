@@ -9,7 +9,7 @@
 
 <link rel="icon" href="/static/site/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/static/site/apple-touch-icon.png">
-<meta name="theme-color" content="#070d1c">
+<meta name="theme-color" content="#0b1020">
 
 {% block og %}
 <meta property="og:type" content="profile">
@@ -41,158 +41,137 @@
 
 <style>
   :root {
-    /* Deep navy base. Blue leads, pink and green carry the accents. */
-    --bg: #070d1c;
-    --bg-soft: #0a1224;
-    --surface: #0f1a33;
-    --surface-hover: #14213e;
-    --border: #1c2a4a;
-    --border-strong: #2e4370;
-    --text: #e7eefb;
+    --bg: #0b1020;
+    --bg-soft: #0e1428;
+    --surface: #121a33;
+    --border: rgba(233, 237, 245, .10);
+    --border-strong: rgba(233, 237, 245, .22);
+    --text: #e9edf5;
     --text-strong: #ffffff;
-    --muted: #8296b8;
+    --muted: #8493ae;
+    --faint: #5b6883;
 
-    --blue: #4d8dff;   --blue-dim: #10224a;
-    --pink: #ff5c9d;   --pink-dim: #3a1028;
-    --green: #34d399;  --green-dim: #06301f;
-    --cyan: #22d3ee;   --cyan-dim: #062c38;
-    --purple: #a78bfa; --purple-dim: #1f1740;
-    --orange: #fb923c; --orange-dim: #3a1e08;
-    --yellow: #fbbf24; --yellow-dim: #33260a;
-    --red: #f87171;    --red-dim: #3a1414;
-    --indigo: #818cf8; --indigo-dim: #1a1c44;
+    --blue: #6ea8fe;
+    --pink: #f2789f;
+    --green: #57d9a3;
+    --cyan: #6ec7d9;
+    --purple: #a99cf5;
+    --orange: #e9a06a;
+    --yellow: #dfc069;
+    --red: #ea7a7a;
+    --indigo: #8b9cf0;
 
-    --radius: 14px;
-    --radius-sm: 9px;
-    --maxw: 980px;
-    --shadow: 0 10px 30px rgba(0, 0, 0, .45);
-    --mono: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+    --maxw: 1060px;
+    --gutter: 170px;
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
   }
   html.light-mode {
-    --bg: #f3f7fd;
-    --bg-soft: #ffffff;
+    --bg: #fbfaf7;
+    --bg-soft: #f4f2ec;
     --surface: #ffffff;
-    --surface-hover: #eaf1fc;
-    --border: #d8e3f5;
-    --border-strong: #a9bfe2;
-    --text: #101d36;
-    --text-strong: #04091a;
-    --muted: #56688a;
+    --border: rgba(20, 28, 48, .13);
+    --border-strong: rgba(20, 28, 48, .30);
+    --text: #1a2338;
+    --text-strong: #0a1020;
+    --muted: #5d6b85;
+    --faint: #8a95a8;
 
-    --blue-dim: #dbe8ff; --pink-dim: #ffe0ed; --green-dim: #d3f6e7;
-    --cyan-dim: #d0f4fb; --purple-dim: #ece5ff; --orange-dim: #ffe8d4;
-    --yellow-dim: #fdf0cd; --red-dim: #ffe0e0; --indigo-dim: #e2e5ff;
-    --shadow: 0 10px 30px rgba(23, 43, 84, .10);
+    --blue: #2f6fd0;
+    --pink: #c94f7c;
+    --green: #2c8f68;
+    --cyan: #2e8296;
+    --purple: #6d5cc4;
+    --orange: #b06a2c;
+    --yellow: #94762a;
+    --red: #b94b4b;
+    --indigo: #4f5fc0;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; }
-  h1, h2, h3 { color: var(--text-strong); letter-spacing: -0.02em; line-height: 1.2; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 400; line-height: 1.14;
+               letter-spacing: -0.015em; color: var(--text-strong); }
 
-  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
 
-  section { padding-block: 88px; position: relative; }
-  section + section { border-top: 1px solid var(--border); }
-  .band { background: var(--bg-soft); border-block: 1px solid var(--border); }
-  .band + section { border-top: none; }
-
-  .eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+  /* Every section is a labelled row: a small label in the left gutter, the
+     content beside it. Replaces stacked eyebrow headings. */
+  section { padding-block: 72px; border-top: 1px solid var(--border); }
+  .row { display: grid; grid-template-columns: var(--gutter) 1fr; gap: 40px; }
+  .label {
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--faint); padding-top: 6px;
   }
-  .section-head { margin-bottom: 36px; }
-  .section-head h2 {
-    font-size: 30px; display: inline-block;
-    background: linear-gradient(96deg, var(--text-strong), var(--blue) 130%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .section-head p { color: var(--muted); margin-top: 12px; max-width: 62ch; }
+  .lede { font-size: 19px; line-height: 1.55; max-width: 54ch; }
+  h2 { font-size: 30px; margin-bottom: 18px; }
 
   /* --- nav --- */
-  .nav {
-    position: sticky; top: 0; z-index: 20;
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: blur(12px) saturate(140%);
-    border-bottom: 1px solid var(--border);
-  }
+  .nav { border-bottom: 1px solid var(--border); }
   .nav-inner {
-    max-width: var(--maxw); margin: 0 auto; padding: 15px 24px;
-    display: flex; align-items: center; gap: 20px;
+    max-width: var(--maxw); margin: 0 auto; padding: 20px 32px;
+    display: flex; align-items: baseline; gap: 24px;
   }
   .wordmark {
-    font-weight: 700; color: var(--text-strong); text-decoration: none;
-    letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--serif); font-size: 18px; color: var(--text-strong);
+    text-decoration: none;
   }
-  .wordmark::before {
-    content: ""; width: 9px; height: 9px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--blue), var(--pink));
-    box-shadow: 0 0 12px color-mix(in srgb, var(--blue) 70%, transparent);
+  .nav-links { margin-left: auto; display: flex; align-items: baseline; gap: 24px; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 14px;
+    padding-bottom: 2px; border-bottom: 1px solid transparent;
   }
-  .nav-links { margin-left: auto; display: flex; align-items: center; gap: 22px; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .15s; }
-  .nav-links a:hover { color: var(--text); }
+  .nav-links a:hover { color: var(--text); border-bottom-color: var(--border-strong); }
   .theme-toggle {
-    background: transparent; border: 1px solid var(--border); color: var(--muted);
-    width: 31px; height: 31px; border-radius: var(--radius-sm);
-    cursor: pointer; font-size: 14px; line-height: 1; transition: border-color .15s, color .15s;
+    background: none; border: 0; color: var(--faint); cursor: pointer;
+    font-size: 13px; padding: 0; font-family: inherit;
   }
-  .theme-toggle:hover { border-color: var(--border-strong); color: var(--text); }
+  .theme-toggle:hover { color: var(--text); }
   .nav-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-  .nav-user img { width: 24px; height: 24px; border-radius: 50%; }
+  .nav-user img { width: 22px; height: 22px; border-radius: 50%; }
 
-  /* --- shared bits --- */
-  .chip {
-    display: inline-block; padding: 4px 10px; border-radius: 999px;
-    font-size: 11px; font-weight: 600; letter-spacing: .02em;
-    background: var(--surface-hover); color: var(--muted);
-    border: 1px solid var(--border);
+  /* --- shared --- */
+  .meta {
+    font-size: 13px; color: var(--faint);
   }
-  .chip.accent { background: var(--chip-bg); color: var(--chip-fg); border-color: transparent; }
-  /* Light-mode -dim backgrounds are near-white, so accent text on them falls
-     below readable contrast. Use body text instead. */
-  html.light-mode .chip.accent { color: var(--text); }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 26px;
-  }
+  .meta span + span::before { content: " · "; }
 
   .btn {
-    display: inline-block; padding: 10px 18px; border-radius: var(--radius-sm);
-    font-size: 14px; font-weight: 600; text-decoration: none;
-    border: 1px solid var(--border); color: var(--text);
-    transition: border-color .15s, background .15s, transform .15s;
+    display: inline-block; font-size: 15px; text-decoration: none;
+    color: var(--text); border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 2px;
   }
-  .btn:hover { border-color: var(--border-strong); background: var(--surface-hover); transform: translateY(-1px); }
+  .btn:hover { border-bottom-color: var(--text); }
   .btn.primary {
-    background: linear-gradient(135deg, var(--blue), var(--pink));
-    border-color: transparent; color: #fff;
+    color: var(--blue); border-bottom-color: currentColor;
   }
-  .btn.primary:hover { filter: brightness(1.08); }
 
   /* --- footer --- */
-  footer { border-top: 1px solid var(--border); padding-block: 40px; }
+  footer { border-top: 1px solid var(--border); padding-block: 36px; }
   .footer-inner {
-    max-width: var(--maxw); margin: 0 auto; padding: 0 24px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px;
+    max-width: var(--maxw); margin: 0 auto; padding: 0 32px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 26px;
   }
-  .footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 26px; }
   .footer-inner a { color: var(--muted); text-decoration: none; font-size: 14px; }
   .footer-inner a:hover { color: var(--text); }
-  .footer-copy { margin-left: auto; color: var(--muted); font-size: 13px; }
+  .footer-copy { margin-left: auto; color: var(--faint); font-size: 13px; }
 
-  @media (max-width: 720px) {
-    section { padding-block: 56px; }
-    .nav-links { gap: 14px; }
+  @media (max-width: 780px) {
+    .wrap, .nav-inner, .footer-inner { padding-inline: 22px; }
+    section { padding-block: 52px; }
+    .row { grid-template-columns: 1fr; gap: 14px; }
+    .label { padding-top: 0; }
+    .nav-links { gap: 16px; }
     .nav-links .nav-anchor { display: none; }
     .footer-copy { margin-left: 0; }
   }
@@ -207,7 +186,7 @@
     <a href="/" class="wordmark">Stefan Lederer</a>
     <div class="nav-links">
       {% block nav_links %}{% endblock %}
-      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle colour theme">◐</button>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle colour theme">Theme</button>
       {# Logged-out visitors see no login button: this is a public page and the
          OAuth callback is e-mail gated, so a stranger clicking it would just
          hit "access denied". /auth/login is still reachable directly. #}

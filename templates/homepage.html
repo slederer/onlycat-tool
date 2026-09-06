@@ -12,196 +12,127 @@
 
 {% block page_styles %}
   /* hero */
-  .hero { padding-block: 104px 80px; overflow: hidden; }
-  /* Soft blue-to-pink wash behind the hero. Purely decorative. */
-  .hero::before {
-    content: ""; position: absolute; inset: -50% 0 auto -15%; height: 760px;
-    background:
-      radial-gradient(620px 400px at 18% 42%, color-mix(in srgb, var(--blue) 26%, transparent), transparent 70%),
-      radial-gradient(520px 340px at 62% 14%, color-mix(in srgb, var(--pink) 18%, transparent), transparent 70%);
-    pointer-events: none;
-  }
-  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 48px;
-               align-items: center; position: relative; }
-  .hero h1 {
-    font-size: clamp(2.4rem, 5.4vw, 3.5rem); letter-spacing: -0.035em;
-    background: linear-gradient(102deg, var(--text-strong) 30%, var(--blue) 75%, var(--pink) 105%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .hero-role { color: var(--muted); font-size: 17px; margin-top: 10px; }
-  .hero-tagline { font-size: 19px; margin-top: 20px; max-width: 40ch; }
-  .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .hero { border-top: 0; padding-block: 92px 76px; }
+  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 56px; align-items: start; }
+  .hero h1 { font-size: clamp(2.8rem, 6vw, 4.2rem); }
+  .hero-role { color: var(--muted); margin-top: 14px; font-size: 17px; }
+  .hero-tagline { font-size: 20px; line-height: 1.5; margin-top: 26px; max-width: 34ch; }
+  .hero-links { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 32px; }
   .hero-portrait {
-    width: 180px; height: 180px; border-radius: 50%; object-fit: cover;
-    border: 2px solid var(--border-strong);
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--blue) 12%, transparent), var(--shadow);
+    width: 190px; height: 230px; object-fit: cover; object-position: center 22%;
+    filter: grayscale(1) contrast(1.04);
   }
 
-  /* bio */
-  .bio p { max-width: 68ch; font-size: 17px; line-height: 1.75; }
-  .bio p + p { margin-top: 18px; }
-  .research { margin-top: 32px; }
-  .research-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-  .research-link {
-    display: inline-block; padding: 6px 13px; border-radius: 999px;
-    font-size: 13px; font-weight: 600; text-decoration: none;
-    color: var(--green); background: var(--green-dim);
-    border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
-    transition: filter .15s;
-  }
-  .research-link:hover { filter: brightness(1.15); }
-  html.light-mode .research-link { color: var(--text); }
-  .research-note { font-size: 14px; color: var(--muted); }
+  /* about */
+  .bio p + p { margin-top: 16px; }
+  .bio p { max-width: 60ch; }
+  .research { margin-top: 22px; font-size: 15px; color: var(--muted); }
+  .research a { color: var(--green); text-decoration: none; border-bottom: 1px solid currentColor; }
 
-  .facts {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px; margin-top: 40px;
-  }
+  .facts { margin-top: 34px; border-top: 1px solid var(--border); }
   .fact {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px;
+    display: grid; grid-template-columns: 190px 1fr; gap: 20px;
+    padding: 11px 0; border-bottom: 1px solid var(--border);
   }
-  /* nowrap so hyphenated values like MPEG-DASH stay on one line and the
-     cards keep a common baseline. */
-  .fact-value { font-size: 22px; font-weight: 700; color: var(--text-strong);
-                letter-spacing: -0.02em; white-space: nowrap; }
-  .fact-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-top: 6px; }
+  .fact-value { font-family: var(--serif); font-size: 20px; color: var(--text-strong); }
+  .fact-label { color: var(--muted); font-size: 15px; align-self: center; }
 
   /* bitmovin */
-  .bitmovin-card { border-left: 3px solid var(--blue); }
-  .bitmovin-card h2 { font-size: 22px; }
-  .bitmovin-card p { color: var(--muted); margin-top: 12px; max-width: 62ch; }
-  .bitmovin-card .btn { margin-top: 20px; }
+  .bitmovin p { max-width: 56ch; color: var(--muted); margin-top: 10px; }
+  .bitmovin .btn { margin-top: 18px; }
 
-  /* SPV block: raised, accent-railed, roomy */
-  .spv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-  .spv-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-left: 3px solid var(--accent); border-radius: var(--radius);
-    padding: 26px; box-shadow: var(--shadow);
-    display: flex; flex-direction: column; position: relative; overflow: hidden;
-    transition: transform .18s, border-color .18s;
-  }
-  .spv-card::after {
-    content: ""; position: absolute; inset: -60% -30% auto -30%; height: 220px;
-    background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
-    pointer-events: none;
-  }
-  .spv-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
-  .spv-card-top { display: flex; gap: 8px; margin-bottom: 14px; }
-  .spv-name { font-size: 19px; }
+  /* rounds I lead */
+  .spv-grid { display: grid; gap: 1px; background: var(--border); border-block: 1px solid var(--border); }
+  .spv-card { background: var(--bg); padding: 22px 0 22px 20px; border-left: 2px solid var(--accent); }
+  .spv-name { font-size: 22px; }
   .spv-name a { text-decoration: none; }
-  .spv-name a:hover { color: var(--accent); }
-  .spv-blurb { font-size: 14px; color: var(--muted); margin-top: 8px; }
-  .spv-role { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 12px; }
-  .spv-meta { margin-top: 16px; }
+  .spv-name a:hover { border-bottom: 1px solid currentColor; }
+  .spv-blurb { margin-top: 6px; color: var(--muted); max-width: 52ch; }
+  .spv-foot { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
+  .spv-role { font-size: 13px; color: var(--accent); }
 
-  /* Angel grid: recessed, flat, denser. The contrast with .spv-card is
-     deliberate and carried by elevation + density + rail, not colour alone. */
-  /* align-items:start so a tile with no blurb stays compact instead of
-     stretching to match the tallest tile in its row. */
-  .angel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 12px; align-items: start; }
-  .angel-tile {
-    background: var(--bg-soft); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 15px 17px;
-    transition: border-color .15s, background .15s;
+  /* angel list: rows, not cards */
+  .angel-grid {
+    margin-top: 4px; display: grid; grid-template-columns: 1fr 1fr;
+    column-gap: 44px; border-top: 1px solid var(--border);
   }
-  .angel-tile:hover { border-color: var(--border-strong); background: var(--surface); }
-  html.light-mode .angel-tile { background: var(--surface-hover); }
-  html.light-mode .angel-tile:hover { background: var(--surface); }
-  .angel-tile.is-past { opacity: .7; }
-  .angel-name { font-size: 15px; font-weight: 600; }
-  .angel-name a { text-decoration: none; }
-  .angel-name a:hover { text-decoration: underline; }
-  .angel-blurb { font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .angel-meta { margin-top: 10px; }
-  .count { color: var(--muted); font-weight: 400; }
+  .angel-tile {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 14px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    text-decoration: none; color: inherit; align-items: baseline;
+  }
+  a.angel-tile:hover .co-name { border-bottom: 1px solid currentColor; }
+  .co-name { font-weight: 600; color: var(--text-strong); }
+  .co-sector { font-size: 12px; color: var(--faint); text-align: right; white-space: nowrap; }
+  .co-desc { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
 
   /* incubator */
-  .cohorts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
-  .cohort {
-    background: var(--bg); border: 1px solid var(--border);
-    border-top: 3px solid var(--accent); border-radius: var(--radius);
-    padding: 24px; height: 100%; display: flex; flex-direction: column;
-  }
-  html.light-mode .cohort { background: var(--surface); }
-  .cohort-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .cohort-head h3 { font-size: 18px; }
-  .cohort-period { font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .cohort-theme { margin-top: 14px; font-size: 15px; }
-  .cohort-focus { margin-top: 16px; }
-  .cohort-highlights { margin-top: 16px; padding-left: 18px; font-size: 14px; color: var(--muted); }
-  .cohort-highlights li { margin-top: 6px; }
-  .cohort-highlights li::marker { color: var(--accent); }
-  .cohort-foot { margin-top: auto; padding-top: 20px; display: flex; align-items: baseline; gap: 8px; }
-  .cohort-teams { font-size: 26px; font-weight: 700; color: var(--accent); }
-  .cohort-teams-label { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-  .cohort-stat { font-size: 13px; color: var(--muted); }
-  .cohort-stat b { font-size: 22px; font-weight: 700; color: var(--accent); margin-right: 3px; }
-  .cohort-stat + .cohort-stat { margin-left: 16px; }
-  .cohort-link { margin-left: auto; font-size: 14px; color: var(--muted); }
+  .cohorts { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 8px; }
+  .cohort { border-top: 2px solid var(--accent); padding-top: 16px; }
+  .cohort h3 { font-size: 22px; }
+  .cohort-meta { font-size: 13px; color: var(--faint); margin-top: 5px; }
+  .cohort-theme { margin-top: 12px; }
+  .cohort-highlights { margin-top: 14px; padding-left: 17px; color: var(--muted); font-size: 15px; }
+  .cohort-highlights li { margin-top: 5px; }
 
-  /* Products shipped by a cohort: a compact grid under the two cards. */
-  .cohort-products { margin-top: 32px; }
-  .product-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 12px; margin-top: 12px; align-items: start;
+  .cohort-products { margin-top: 34px; }
+  .products-head {
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent); padding-bottom: 8px; border-bottom: 1px solid var(--border);
   }
-  .product {
-    background: var(--bg); border: 1px solid var(--border);
-    border-left: 2px solid var(--accent); border-radius: var(--radius-sm);
-    padding: 13px 15px; transition: border-color .15s;
+  .products-head .partial { color: var(--faint); letter-spacing: .04em; }
+  .products-head .partial::before { content: " · "; }
+  .product-list { list-style: none; }
+  /* 300px so the longest 2025 names ("TestAutomation MCP & Support Copilot")
+     stay on one line; those entries have no blurb to fill the second column. */
+  .product-list li {
+    display: grid; grid-template-columns: 300px 1fr; gap: 18px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
   }
-  .product:hover { border-color: var(--border-strong); }
+  .product-name { font-weight: 600; color: var(--text-strong); }
+  .product-blurb { color: var(--muted); font-size: 15px; }
 
-  .incubator-photos { margin-top: 40px; }
-  .photo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .incubator-photos { margin-top: 36px; }
+  .photo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .photo-row img {
-    width: 100%; height: 260px; object-fit: cover; display: block;
-    border-radius: var(--radius); border: 1px solid var(--border);
+    width: 100%; height: 240px; object-fit: cover; display: block;
+    filter: grayscale(1) contrast(1.03);
   }
-  .incubator-photos figcaption {
-    margin-top: 12px; font-size: 12px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
+  .incubator-photos figcaption { margin-top: 10px; font-size: 13px; color: var(--faint); }
+
+  /* off the clock */
+  .offduty-line { font-size: 20px; line-height: 1.5; max-width: 44ch; }
+  .offduty-list { margin-top: 14px; font-size: 15px; color: var(--muted); }
+
+  /* contact */
+  .thesis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .sectors-line { font-size: 17px; margin-bottom: 20px; }
+  .sectors-line b { font-weight: 600; color: var(--text-strong); }
+  .thesis ul, .anti ul { list-style: none; }
+  .thesis li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .thesis dl { margin-top: 22px; font-size: 14px; color: var(--muted); }
+  .thesis dl div { display: flex; gap: 14px; padding: 5px 0; }
+  .thesis dt { color: var(--faint); min-width: 90px; }
+  .contact-email { font-family: var(--serif); font-size: 23px; }
+  .contact-email a { text-decoration: none; border-bottom: 1px solid var(--border-strong); }
+  .contact-email a:hover { border-bottom-color: currentColor; }
+  .contact p { color: var(--muted); margin-top: 14px; max-width: 46ch; }
+  .anti { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .anti-head { font-size: 13px; color: var(--faint); margin-bottom: 6px; }
+  .anti li { font-size: 14px; color: var(--muted); padding: 3px 0; }
+
+  @media (max-width: 900px) {
+    .angel-grid { grid-template-columns: 1fr; }
+    .cohorts, .thesis-grid { grid-template-columns: 1fr; gap: 28px; }
+    .product-list li { grid-template-columns: 1fr; gap: 2px; }
   }
-  @media (max-width: 700px) {
+  @media (max-width: 780px) {
+    .hero { padding-block: 48px 40px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+    .hero-portrait { width: 150px; height: 180px; }
+    .fact { grid-template-columns: 1fr; gap: 2px; }
     .photo-row { grid-template-columns: 1fr; }
-    .photo-row img { height: 210px; }
-  }
-  html.light-mode .product { background: var(--surface); }
-  .product-name { font-size: 14px; font-weight: 600; color: var(--text-strong); }
-  .product-blurb { font-size: 13px; color: var(--muted); margin-top: 3px; }
-  .partial { color: var(--muted); font-weight: 400; letter-spacing: .04em; }
-
-  /* thesis + contact */
-  .thesis-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start; }
-  /* Sector chips sit directly under the heading: the first thing a founder
-     checks is whether they are even in scope. */
-  .sectors { margin: 16px 0 20px; }
-  .sectors .chip { font-size: 13px; padding: 5px 12px; }
-  .thesis ul { list-style: none; }
-  .thesis li { position: relative; padding-left: 22px; margin-top: 10px; }
-  .thesis li::before { content: "→"; position: absolute; left: 0; color: var(--green); }
-  .thesis-facts { margin-top: 28px; font-family: var(--mono); font-size: 13px; }
-  .thesis-facts div { display: flex; gap: 12px; padding: 7px 0; border-top: 1px solid var(--border); }
-  .thesis-facts dt { color: var(--muted); min-width: 90px; }
-  .contact-card { border-left: 3px solid var(--green); }
-  .contact-card p { color: var(--muted); font-size: 14px; margin-top: 12px; }
-  .contact-card .btn { margin-top: 4px; }
-  .anti { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
-  .anti .eyebrow { margin-bottom: 8px; }
-  .anti ul { list-style: none; }
-  .anti li { position: relative; padding-left: 18px; font-size: 13px; color: var(--muted); margin-top: 6px; }
-  .anti li::before { content: "×"; position: absolute; left: 0; color: var(--muted); }
-
-  @media (max-width: 800px) {
-    .cohorts { grid-template-columns: 1fr; }
-    .thesis-grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 720px) {
-    .hero { padding-block: 56px 40px; }
-    .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+    .photo-row img { height: 200px; }
   }
 {% endblock %}
 
@@ -211,9 +142,9 @@
   <div class="wrap hero-grid">
     <div>
       <h1>{{ profile.name }}</h1>
-      <div class="hero-role">{{ profile.role }}{% if profile.location %} · {{ profile.location }}{% endif %}</div>
+      <div class="hero-role">{{ profile.role }}</div>
       <p class="hero-tagline">{{ profile.tagline }}</p>
-      <div class="hero-cta">
+      <div class="hero-links">
         <a class="btn primary" href="#contact">Get in touch</a>
         {% for link in profile.links if link.show_in_hero %}
         <a class="btn" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
@@ -222,49 +153,47 @@
     </div>
     {% if profile.portrait %}
     <img class="hero-portrait" src="{{ profile.portrait }}" alt="{{ profile.name }}"
-         width="180" height="180" loading="eager">
+         width="190" height="230" loading="eager">
     {% endif %}
   </div>
 </section>
 
 {% if profile.bio %}
-<section class="bio">
-  <div class="wrap">
-    {% for para in profile.bio %}<p>{{ para }}</p>{% endfor %}
-    {% if profile.research %}
-    <div class="research">
-      <div class="eyebrow">Research we fund</div>
-      <div class="research-row">
-        {% for r in profile.research %}
-        <a class="research-link" href="{{ r.url }}" target="_blank" rel="noopener">{{ r.label }} &#8599;</a>
+<section>
+  <div class="wrap row">
+    <div class="label">About</div>
+    <div class="bio">
+      {% for para in profile.bio %}<p>{{ para }}</p>{% endfor %}
+      {% if profile.research %}
+      <p class="research">
+        Research we fund:
+        {% for r in profile.research %}<a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.label }}</a>{% if not loop.last %}, {% endif %}{% endfor %}{% if profile.research_note %}, {{ profile.research_note }}{% endif %}.
+      </p>
+      {% endif %}
+      {% if profile.facts %}
+      <div class="facts">
+        {% for value, label in profile.facts %}
+        <div class="fact">
+          <div class="fact-value">{{ value }}</div>
+          <div class="fact-label">{{ label }}</div>
+        </div>
         {% endfor %}
-        {% if profile.research_note %}<span class="research-note">{{ profile.research_note }}</span>{% endif %}
       </div>
+      {% endif %}
     </div>
-    {% endif %}
-    {% if profile.facts %}
-    <div class="facts">
-      {% for value, label in profile.facts %}
-      <div class="fact">
-        <div class="fact-value">{{ value }}</div>
-        <div class="fact-label">{{ label }}</div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
   </div>
 </section>
 {% endif %}
 
 {% if bitmovin %}
 <section>
-  <div class="wrap">
-    <div class="card bitmovin-card">
-      <div class="eyebrow">The day job</div>
+  <div class="wrap row">
+    <div class="label">Company</div>
+    <div class="bitmovin">
       <h2>{{ bitmovin.name }}</h2>
       <p>{{ bitmovin.blurb }}</p>
       {% if bitmovin.url %}
-      <a class="btn" href="{{ bitmovin.url }}" target="_blank" rel="noopener">bitmovin.com →</a>
+      <a class="btn" href="{{ bitmovin.url }}" target="_blank" rel="noopener">bitmovin.com</a>
       {% endif %}
     </div>
   </div>
@@ -273,16 +202,15 @@
 
 {% if spv_companies %}
 <section id="investing">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">Angel investing</div>
-      <h2>Rounds I lead</h2>
-      <p>In a few companies I lead the round myself and bring other investors
-         in through an SPV. That means a bigger cheque, more involvement, and
-         usually a seat at the table.</p>
-    </div>
-    <div class="spv-grid">
-      {% for c in spv_companies %}{{ m.spv_card(c) }}{% endfor %}
+  <div class="wrap row">
+    <div class="label">Rounds I lead</div>
+    <div>
+      <p class="lede">In a few companies I lead the round myself and bring other
+         investors in through an SPV. That means a bigger cheque, more
+         involvement, and usually a seat at the table.</p>
+      <div class="spv-grid">
+        {% for c in spv_companies %}{{ m.spv_card(c) }}{% endfor %}
+      </div>
     </div>
   </div>
 </section>
@@ -290,85 +218,93 @@
 
 {% if angel_companies %}
 <section>
-  <div class="wrap">
-    <div class="section-head">
-      <h2>Angel portfolio <span class="count">· {{ angel_companies|length }}</span></h2>
-      <p>Direct investments, roughly ordered by size.</p>
-    </div>
-    <div class="angel-grid">
-      {% for c in angel_companies %}{{ m.angel_tile(c) }}{% endfor %}
+  <div class="wrap row">
+    <div class="label">Portfolio<br><span style="color: var(--faint)">{{ angel_companies|length }} companies</span></div>
+    <div>
+      <p class="lede">Direct angel investments, roughly ordered by size.</p>
+      <div class="angel-grid">
+        {% for c in angel_companies %}{{ m.angel_tile(c) }}{% endfor %}
+      </div>
     </div>
   </div>
 </section>
 {% endif %}
 
 {% if incubator and incubator.cohorts %}
-<section id="incubator" class="band">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">{{ incubator.tagline }}</div>
+<section id="incubator">
+  <div class="wrap row">
+    <div class="label">Incubator</div>
+    <div>
       <h2>{{ incubator.name }}</h2>
-      <p>{{ incubator.description }}</p>
-    </div>
-    <div class="cohorts">
-      {% for k in incubator.cohorts %}{{ m.cohort_card(k, loop.index) }}{% endfor %}
-    </div>
-    {% for k in incubator.cohorts if k.projects %}{{ m.cohort_products(k) }}{% endfor %}
-    {% if incubator.photos %}
-    <figure class="incubator-photos">
-      <div class="photo-row">
-        {% for p in incubator.photos %}
-        <img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy">
-        {% endfor %}
+      <p class="lede">{{ incubator.description }}</p>
+      <div class="cohorts">
+        {% for k in incubator.cohorts %}{{ m.cohort_card(k, loop.index) }}{% endfor %}
       </div>
-      {% if incubator.photo_caption %}
-      <figcaption>{{ incubator.photo_caption }}</figcaption>
+      {% for k in incubator.cohorts if k.projects %}{{ m.cohort_products(k) }}{% endfor %}
+      {% if incubator.photos %}
+      <figure class="incubator-photos">
+        <div class="photo-row">
+          {% for p in incubator.photos %}
+          <img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy">
+          {% endfor %}
+        </div>
+        {% if incubator.photo_caption %}<figcaption>{{ incubator.photo_caption }}</figcaption>{% endif %}
+      </figure>
       {% endif %}
-    </figure>
-    {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if profile.hobbies %}
+<section>
+  <div class="wrap row">
+    <div class="label">Off the clock</div>
+    <div>
+      {% if profile.hobbies_intro %}<p class="offduty-line">{{ profile.hobbies_intro }}</p>{% endif %}
+      <p class="offduty-list">
+        {% for h in profile.hobbies %}{{ h.name }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
+      </p>
+    </div>
   </div>
 </section>
 {% endif %}
 
 {% if thesis %}
 <section id="contact">
-  <div class="wrap thesis-grid">
-    <div class="thesis">
-      <div class="eyebrow">For founders</div>
-      <h2>{{ thesis.headline }}</h2>
-      {% if thesis.sectors %}
-      <div class="chips sectors">
-        {% for label, accent in thesis.sectors %}{{ m.chip(label, accent) }}{% endfor %}
+  <div class="wrap row">
+    <div class="label">For founders</div>
+    <div class="thesis-grid">
+      <div class="thesis">
+        {% if thesis.sectors %}
+        <p class="sectors-line">I invest in
+          {% for label, accent in thesis.sectors %}<b style="color: var(--{{ accent }})">{{ label }}</b>{% if loop.revindex == 2 %} and {% elif not loop.last %}, {% endif %}{% endfor %}.
+        </p>
+        {% endif %}
+        <h2>{{ thesis.headline }}</h2>
+        {% if thesis.bullets %}
+        <ul>{% for b in thesis.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+        {% endif %}
+        <dl>
+          {% if thesis.stages %}<div><dt>Stage</dt><dd>{{ thesis.stages|join(", ") }}</dd></div>{% endif %}
+          {% if thesis.geos %}<div><dt>Geography</dt><dd>{{ thesis.geos|join(", ") }}</dd></div>{% endif %}
+        </dl>
       </div>
-      {% endif %}
-      {% if thesis.bullets %}
-      <ul>{% for b in thesis.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
-      {% endif %}
-      <dl class="thesis-facts">
-        {% if thesis.stages %}<div><dt>Stage</dt><dd>{{ thesis.stages|join(", ") }}</dd></div>{% endif %}
-        {% if thesis.geos %}<div><dt>Geography</dt><dd>{{ thesis.geos|join(", ") }}</dd></div>{% endif %}
-      </dl>
-    </div>
 
-    <div class="card contact-card">
-      <div class="eyebrow">Get in touch</div>
-      {% if profile.contact_email %}
-      <a class="btn primary" href="mailto:{{ profile.contact_email }}">Email me</a>
-      {% else %}
-      {# No public address set yet, so fall back to the first profile link. #}
-      {% if profile.links %}
-      <a class="btn primary" href="{{ profile.links[0].url }}" target="_blank" rel="noopener">
-        Reach me on {{ profile.links[0].label }}
-      </a>
-      {% endif %}
-      {% endif %}
-      {% if thesis.how_to_reach %}<p>{{ thesis.how_to_reach }}</p>{% endif %}
-      {% if thesis.anti_bullets %}
-      <div class="anti">
-        <div class="eyebrow">Probably not a fit</div>
-        <ul>{% for b in thesis.anti_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+      <div class="contact">
+        {% if profile.contact_email %}
+        <div class="contact-email"><a href="mailto:{{ profile.contact_email }}">{{ profile.contact_email }}</a></div>
+        {% elif profile.links %}
+        <div class="contact-email"><a href="{{ profile.links[0].url }}" target="_blank" rel="noopener">{{ profile.links[0].label }}</a></div>
+        {% endif %}
+        {% if thesis.how_to_reach %}<p>{{ thesis.how_to_reach }}</p>{% endif %}
+        {% if thesis.anti_bullets %}
+        <div class="anti">
+          <div class="anti-head">Probably not a fit</div>
+          <ul>{% for b in thesis.anti_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
   </div>
 </section>

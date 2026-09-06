@@ -1,115 +1,86 @@
-{# Reusable cards. Macros take explicit arguments so a card can never depend on
-   whatever happens to be in the surrounding page context. #}
+{# Reusable pieces. Macros take explicit arguments so a component can never
+   depend on whatever happens to be in the surrounding page context. #}
 
-{% macro chip(text, accent="") -%}
-  {%- if accent -%}
-    <span class="chip accent" style="--chip-bg: var(--{{ accent }}-dim); --chip-fg: var(--{{ accent }});">{{ text }}</span>
-  {%- else -%}
-    <span class="chip">{{ text }}</span>
-  {%- endif -%}
+{% macro meta(items) -%}
+  {%- set shown = items | select | list -%}
+  {%- if shown %}<span class="meta">{% for i in shown %}<span>{{ i }}</span>{% endfor %}</span>{% endif -%}
 {%- endmacro %}
 
 
-{# Raised, accent-railed card for rounds Stefan leads via an SPV. #}
+{# A round Stefan led. Given its own block and a coloured rule so it reads
+   apart from the ordinary angel list without shouting. #}
 {% macro spv_card(c) %}
-<article class="spv-card" style="--accent: var(--{{ c.accent }}); --accent-dim: var(--{{ c.accent }}-dim);">
-  <div class="spv-card-top">
-    {{ chip("SPV Lead", c.accent) }}
-    {% if c.status != "active" %}{{ chip(c.status|capitalize) }}{% endif %}
-  </div>
+<article class="spv-card" style="--accent: var(--{{ c.accent }});">
   <h3 class="spv-name">
     {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.name }}</a>
     {% else %}{{ c.name }}{% endif %}
   </h3>
   {% if c.blurb %}<p class="spv-blurb">{{ c.blurb }}</p>{% endif %}
-  {% if c.role %}<p class="spv-role">{{ c.role }}</p>{% endif %}
-  {% if c.sector or c.stage or c.year %}
-  <div class="chips spv-meta">
-    {% if c.sector %}{{ chip(c.sector) }}{% endif %}
-    {% if c.stage %}{{ chip(c.stage) }}{% endif %}
-    {% if c.year %}{{ chip(c.year) }}{% endif %}
+  <div class="spv-foot">
+    {% if c.role %}<span class="spv-role">{{ c.role }}</span>{% endif %}
+    {{ meta([c.sector, c.stage, c.year]) }}
   </div>
-  {% endif %}
 </article>
 {% endmacro %}
 
 
-{# Recessed, flat, denser tile for ordinary direct angel investments. #}
+{# One line in the angel list: name, what it does, sector. #}
 {% macro angel_tile(c) %}
-<article class="angel-tile{% if c.status in ('exited', 'acquired') %} is-past{% endif %}">
-  <h3 class="angel-name">
-    {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.name }}</a>
-    {% else %}{{ c.name }}{% endif %}
-  </h3>
-  {% if c.blurb %}<p class="angel-blurb">{{ c.blurb }}</p>{% endif %}
-  {% if c.sector or c.status != "active" %}
-  <div class="chips angel-meta">
-    {% if c.sector %}{{ chip(c.sector) }}{% endif %}
-    {% if c.status != "active" %}{{ chip(c.status|capitalize) }}{% endif %}
-  </div>
-  {% endif %}
-</article>
+{% if c.url %}<a class="angel-tile" href="{{ c.url }}" target="_blank" rel="noopener">
+{% else %}<div class="angel-tile">{% endif %}
+  {# sector sits beside the name, so it must precede the full-width desc #}
+  <span class="co-name">{{ c.name }}</span>
+  <span class="co-sector">{{ c.sector }}{% if c.status != "active" %} &middot; {{ c.status|capitalize }}{% endif %}</span>
+  <span class="co-desc">{{ c.blurb }}</span>
+{% if c.url %}</a>{% else %}</div>{% endif %}
 {% endmacro %}
 
 
-{# One incubator iteration. `index` drives the "Iteration N" eyebrow. #}
+{# One iteration of the incubator. #}
 {% macro cohort_card(k, index) %}
-<article class="cohort" style="--accent: var(--{{ k.accent }}); --accent-dim: var(--{{ k.accent }}-dim);">
-  <div class="eyebrow">Iteration {{ index }}</div>
-  <div class="cohort-head">
-    <h3>{{ k.name }}</h3>
-    {{ chip(k.status|capitalize, k.accent) }}
+<article class="cohort" style="--accent: var(--{{ k.accent }});">
+  <h3>{{ k.name }}</h3>
+  <div class="cohort-meta">
+    {% if k.people %}{{ k.people }} people{% endif %}
+    {% if k.teams %} &middot; {{ k.teams }} teams{% endif %}
+    {% if k.period %} &middot; {{ k.period }}{% endif %}
   </div>
-  <p class="cohort-period">{{ k.period }}</p>
   <p class="cohort-theme">{{ k.theme }}</p>
-  {% if k.focus_areas %}
-  <div class="chips cohort-focus">
-    {% for area in k.focus_areas %}{{ chip(area) }}{% endfor %}
-  </div>
-  {% endif %}
   {% if k.highlights %}
   <ul class="cohort-highlights">
     {% for item in k.highlights %}<li>{{ item }}</li>{% endfor %}
   </ul>
   {% endif %}
-  <div class="cohort-foot">
-    {% if k.people %}<span class="cohort-stat"><b>{{ k.people }}</b> people</span>{% endif %}
-    {% if k.teams %}<span class="cohort-stat"><b>{{ k.teams }}</b> teams</span>{% endif %}
-    {% if k.url %}<a class="cohort-link" href="{{ k.url }}" target="_blank" rel="noopener">Read more →</a>{% endif %}
-  </div>
 </article>
+{% endmacro %}
+
+
+{# The products a cohort shipped. #}
+{% macro cohort_products(k) %}
+<div class="cohort-products" style="--accent: var(--{{ k.accent }});">
+  <div class="products-head">
+    {{ k.name }}
+    {%- if k.projects_total and k.projects_total > k.projects|length %}
+    <span class="partial">{{ k.projects|length }} of {{ k.projects_total }} shown</span>
+    {%- endif %}
+  </div>
+  <ul class="product-list">
+    {% for p in k.projects %}
+    <li>
+      <span class="product-name">{{ p.name }}</span>
+      {% if p.blurb %}<span class="product-blurb">{{ p.blurb }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endmacro %}
 
 
 {# Row on /projects. #}
 {% macro project_row(p) %}
 <a class="project" href="{{ p.href }}" target="_blank" rel="noopener">
-  <span class="project-icon" style="background: var(--{{ p.accent }}-dim); color: var(--{{ p.accent }});">{{ p.emoji }}</span>
-  <span class="project-info">
-    <span class="project-name">{{ p.name }}</span>
-    <span class="project-desc">{{ p.description }}</span>
-  </span>
+  <span class="project-name">{{ p.name }}</span>
+  <span class="project-desc">{{ p.description }}</span>
   <span class="project-host">{{ p.host }}</span>
 </a>
-{% endmacro %}
-
-
-{# The products a cohort shipped, listed under the cohort cards. #}
-{% macro cohort_products(k) %}
-<div class="cohort-products" style="--accent: var(--{{ k.accent }});">
-  <div class="eyebrow">
-    Projects from {{ k.name }}
-    {%- if k.projects_total and k.projects_total > k.projects|length %}
-    <span class="partial">· {{ k.projects|length }} of {{ k.projects_total }} shown</span>
-    {%- endif %}
-  </div>
-  <div class="product-grid">
-    {% for p in k.projects %}
-    <div class="product">
-      <div class="product-name">{{ p.name }}</div>
-      {% if p.blurb %}<div class="product-blurb">{{ p.blurb }}</div>{% endif %}
-    </div>
-    {% endfor %}
-  </div>
-</div>
 {% endmacro %}

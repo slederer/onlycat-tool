@@ -293,3 +293,15 @@ class TestImages:
         for photo in content.INCUBATOR.photos:
             assert photo.alt.strip(), f"{photo.src} needs alt text"
             assert len(photo.alt) > 15, f"{photo.src}: alt text is too vague"
+
+
+class TestHobbies:
+    @pytest.mark.parametrize("hobby", content.PROFILE.hobbies, ids=lambda h: h.name)
+    def test_hobby_fields(self, hobby):
+        assert hobby.name.strip()
+        assert hobby.emoji.strip()
+        assert hobby.accent in content.ACCENTS
+
+    def test_hobbies_are_visually_distinct(self):
+        accents = [h.accent for h in content.PROFILE.hobbies]
+        assert len(set(accents)) == len(accents)

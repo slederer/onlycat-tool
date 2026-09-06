@@ -300,8 +300,10 @@ class TestPublicSite:
         assert len(content.INCUBATOR.cohorts) == 2
         for cohort in content.INCUBATOR.cohorts:
             assert cohort.name in resp.text
-        assert "Iteration 1" in resp.text
-        assert "Iteration 2" in resp.text
+            # each cohort states its own scale rather than a generic
+            # "Iteration N" label
+            if cohort.people:
+                assert f"{cohort.people} people" in resp.text
 
     @pytest.mark.asyncio
     async def test_homepage_links_to_projects(self, site_client):
@@ -400,3 +402,10 @@ class TestPublicSite:
         lowered = resp.text.lower()
         for word in ("placeholder", "lorem ipsum", "tbd"):
             assert word not in lowered, f"{word!r} rendered on {path}"
+
+    @pytest.mark.asyncio
+    async def test_homepage_shows_hobbies(self, site_client):
+        import content
+        resp = await site_client.get("/")
+        for hobby in content.PROFILE.hobbies:
+            assert hobby.name in resp.text
