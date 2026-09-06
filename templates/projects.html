@@ -17,18 +17,22 @@
 {% endblock %}
 
 {% block page_styles %}
-  .projects { margin-top: 6px; border-top: 1px solid var(--border); }
+  .projects { margin-top: 26px; border-top: 1px solid var(--border); }
   .project {
     display: grid; grid-template-columns: 210px 1fr 190px; gap: 20px;
-    padding: 14px 0; border-bottom: 1px solid var(--border);
+    padding: 15px 0; border-bottom: 1px solid var(--border);
     text-decoration: none; color: inherit; align-items: baseline;
   }
-  .project:hover .project-name { border-bottom: 1px solid currentColor; }
-  .project-name { font-weight: 600; color: var(--text-strong); }
-  .project-desc { color: var(--muted); font-size: 15px; }
-  .project-host { font-family: var(--mono); font-size: 12px; color: var(--faint); text-align: right; }
-  .back { display: inline-block; margin-bottom: 26px; color: var(--muted);
-          text-decoration: none; font-size: 14px; }
+  .project:hover .project-name { color: var(--lime); }
+  .project-name { font-weight: 500; color: var(--text-strong); }
+  .project-desc { color: var(--muted); font-size: 14px; }
+  .project-host {
+    font-family: var(--mono); font-size: 11px; color: var(--faint); text-align: right;
+  }
+  .back {
+    display: inline-block; margin-bottom: 24px; color: var(--muted);
+    text-decoration: none; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  }
   .back:hover { color: var(--text); }
 
   @media (max-width: 820px) {
