@@ -271,3 +271,25 @@ class TestResearch:
         bio = " ".join(content.PROFILE.bio).lower()
         assert "professorship" not in bio
         assert "associate professor" not in bio
+
+
+class TestImages:
+    """Images are referenced by path, so a typo is a silent broken image."""
+
+    def _paths(self):
+        paths = [p.src for p in content.INCUBATOR.photos]
+        if content.PROFILE.portrait:
+            paths.append(content.PROFILE.portrait)
+        return paths
+
+    def test_image_files_exist(self):
+        import pathlib
+        root = pathlib.Path(__file__).resolve().parent.parent
+        for path in self._paths():
+            assert path.startswith("/static/")
+            assert (root / path.lstrip("/")).is_file(), f"missing image file: {path}"
+
+    def test_every_photo_has_alt_text(self):
+        for photo in content.INCUBATOR.photos:
+            assert photo.alt.strip(), f"{photo.src} needs alt text"
+            assert len(photo.alt) > 15, f"{photo.src}: alt text is too vague"

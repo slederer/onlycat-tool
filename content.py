@@ -78,12 +78,20 @@ class Cohort:
 
 
 @dataclass(frozen=True)
+class Photo:
+    src: str                    # path under /static/site/
+    alt: str                    # required: this is the accessible description
+
+
+@dataclass(frozen=True)
 class Incubator:
     name: str
     tagline: str
     description: str
     url: str = ""
     cohorts: tuple[Cohort, ...] = ()
+    photos: tuple[Photo, ...] = ()
+    photo_caption: str = ""
 
 
 @dataclass(frozen=True)
@@ -123,6 +131,7 @@ class Profile:
     # which feeds schema.org sameAs and must only hold Stefan's own profiles.
     research: tuple[Link, ...] = ()
     research_note: str = ""
+    portrait: str = ""          # "" hides the hero portrait
     contact_email: str = ""
 
     def json_ld(self) -> dict:
@@ -197,6 +206,7 @@ PROFILE = Profile(
         Link("ATHENA", "https://athena.itec.aau.at/"),
     ),
     research_note="and several other projects with the University of Klagenfurt",
+    portrait="/static/site/stefan.jpg",
     contact_email="stefan.lederer@bitmovin.com",
 )
 
@@ -228,9 +238,9 @@ BITMOVIN = Company(
 # Order matters: the angel list is rendered in this order, roughly largest and
 # best known first. Move a line to move a company on the page.
 #
-# TODO(stefan): the blurbs are DRAFTED from each company's own site and need
-# your eye. Still no blurb (name-only tile, which is fine): GuardAero, Rewbi
-# (stealth), Dartboard Energy, Statewide, Trace.
+# TODO(stefan): the blurbs are DRAFTED from each company's own site or press
+# coverage and need your eye. Still no blurb: Rewbi (stealth, deliberate) and
+# Statewide (could not identify it; the name is too generic to search).
 # ---------------------------------------------------------------------------
 
 PORTFOLIO: tuple[Company, ...] = (
@@ -238,8 +248,8 @@ PORTFOLIO: tuple[Company, ...] = (
     Company("HockeyStack", "B2B marketing attribution and revenue analytics.",
             sector="Analytics", spv=True, role="Lead investor, syndicate via SPV",
             accent="pink"),
-    Company("GuardAero", "",
-            sector="Aviation", spv=True, role="Lead investor, syndicate via SPV",
+    Company("GuardAero", "Counter-drone protection systems for military vehicles.",
+            sector="Defence", spv=True, role="Lead investor, syndicate via SPV",
             accent="blue"),
     Company("Salvy", "Business mobile connectivity and eSIM in Brazil.",
             sector="Telecom", spv=True, role="Lead investor, syndicate via SPV",
@@ -308,9 +318,11 @@ PORTFOLIO: tuple[Company, ...] = (
     Company("Earendil", "Building AI tools in the open.",
             url="https://earendil.com", sector="AI", accent="indigo"),
     Company("Rewbi", "", url="https://www.rewbi.com", sector="Stealth", accent="cyan"),
-    Company("Dartboard Energy", "", sector="Energy", accent="yellow"),
+    Company("Dartboard Energy", "AI analyst that finds missed revenue for grid batteries.",
+            url="https://dartboard.energy", sector="Energy", accent="yellow"),
     Company("Statewide", "", accent="yellow"),
-    Company("Trace", "", accent="indigo"),
+    Company("Trace", "Maps a company so AI agents know where they fit.",
+            sector="AI infra", accent="indigo"),
 )
 
 
@@ -333,6 +345,13 @@ INCUBATOR = Incubator(
         "then see what they can ship. We have run it twice. After the second "
         "round we made it permanent."
     ),
+    photos=(
+        Photo("/static/site/incubator-1.jpg",
+              "Two Talecut team members presenting to the room on Demo Day."),
+        Photo("/static/site/incubator-2.jpg",
+              "The Quicly team presenting to a seated audience at the Demo Day."),
+    ),
+    photo_caption="Demo Day, Summer 2026",
     cohorts=(
         Cohort(
             name="Summer 2025",
