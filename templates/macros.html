@@ -21,7 +21,7 @@
     {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.name }}</a>
     {% else %}{{ c.name }}{% endif %}
   </h3>
-  <p class="spv-blurb">{{ c.blurb }}</p>
+  {% if c.blurb %}<p class="spv-blurb">{{ c.blurb }}</p>{% endif %}
   {% if c.role %}<p class="spv-role">{{ c.role }}</p>{% endif %}
   {% if c.sector or c.stage or c.year %}
   <div class="chips spv-meta">
@@ -41,7 +41,7 @@
     {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.name }}</a>
     {% else %}{{ c.name }}{% endif %}
   </h3>
-  <p class="angel-blurb">{{ c.blurb }}</p>
+  {% if c.blurb %}<p class="angel-blurb">{{ c.blurb }}</p>{% endif %}
   {% if c.sector or c.status != "active" %}
   <div class="chips angel-meta">
     {% if c.sector %}{{ chip(c.sector) }}{% endif %}

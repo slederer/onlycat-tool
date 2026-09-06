@@ -15,9 +15,8 @@ ALL_COMPANIES = content.PORTFOLIO + (content.BITMOVIN,)
 
 class TestCompanies:
     @pytest.mark.parametrize("company", ALL_COMPANIES, ids=lambda c: c.name)
-    def test_has_name_and_blurb(self, company):
+    def test_has_name(self, company):
         assert company.name.strip(), "company needs a name"
-        assert company.blurb.strip(), f"{company.name} needs a blurb"
 
     @pytest.mark.parametrize("company", ALL_COMPANIES, ids=lambda c: c.name)
     def test_blurb_fits_a_card(self, company):

@@ -34,7 +34,10 @@
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 18px 20px;
   }
-  .fact-value { font-size: 22px; font-weight: 700; color: var(--text-strong); letter-spacing: -0.02em; }
+  /* nowrap so hyphenated values like MPEG-DASH stay on one line and the
+     cards keep a common baseline. */
+  .fact-value { font-size: 22px; font-weight: 700; color: var(--text-strong);
+                letter-spacing: -0.02em; white-space: nowrap; }
   .fact-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-top: 6px; }
 
   /* bitmovin */
@@ -61,7 +64,10 @@
 
   /* Angel grid — recessed, flat, denser. The contrast with .spv-card is
      deliberate and carried by elevation + density + rail, not colour alone. */
-  .angel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  /* align-items:start so a tile with no blurb stays compact instead of
+     stretching to match the tallest tile in its row. */
+  .angel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 12px; align-items: start; }
   .angel-tile {
     background: var(--bg); border: 1px solid var(--border);
     border-radius: var(--radius-sm); padding: 14px 16px;
@@ -133,7 +139,7 @@
       <p class="hero-tagline">{{ profile.tagline }}</p>
       <div class="hero-cta">
         <a class="btn primary" href="#contact">Get in touch</a>
-        {% for link in profile.links %}
+        {% for link in profile.links if link.show_in_hero %}
         <a class="btn" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
         {% endfor %}
       </div>
