@@ -102,6 +102,7 @@ class Project:
 @dataclass(frozen=True)
 class Thesis:
     headline: str
+    sectors: tuple[tuple[str, str], ...] = ()   # (label, accent token)
     bullets: tuple[str, ...] = ()
     anti_bullets: tuple[str, ...] = ()
     check_size: str = ""
@@ -163,9 +164,9 @@ PROFILE = Profile(
         "multimedia delivery and networking, and an associate professorship at "
         "the University of Klagenfurt.",
         "Alongside Bitmovin I invest as an angel in early-stage companies — "
-        "usually technical founders at pre-seed and seed, often in "
-        "infrastructure, developer tools and media. In a handful of cases I lead "
-        "the round and bring other investors in through an SPV.",
+        "usually technical founders at pre-seed and seed, focused on B2B SaaS, "
+        "security and defence, and energy. In a handful of cases I lead the "
+        "round and bring other investors in through an SPV.",
     ),
     facts=(
         ("2013", "Co-founded Bitmovin"),
@@ -347,15 +348,19 @@ INCUBATOR = Incubator(
 # ---------------------------------------------------------------------------
 # INVESTING THESIS
 #
-# TODO(stefan): this is a reasonable default written to save founders time.
-# Rewrite it in your own words — especially check_size and how_to_reach.
+# Sectors are Stefan's. The bullets and how_to_reach are still drafted —
+# TODO(stefan): reword in your own voice, and set check_size.
 # ---------------------------------------------------------------------------
 
 THESIS = Thesis(
     headline="What I look for",
+    sectors=(
+        ("B2B SaaS", "blue"),
+        ("Security & Defence", "red"),
+        ("Energy", "yellow"),
+    ),
     bullets=(
         "Technical founders who have felt the problem themselves.",
-        "Infrastructure, developer tools, video and media — where I can actually help.",
         "A product a real user is already using, however small.",
         "Unglamorous problems with a clear reason they are hard.",
     ),
@@ -364,7 +369,9 @@ THESIS = Thesis(
         "Consumer social and marketplaces — I would be a bad investor for you.",
         "Anything needing a large check to reach the next milestone.",
     ),
-    check_size="PLACEHOLDER — e.g. €25k–100k, larger when leading via SPV",
+    # Blank hides the "Cheque" row entirely. Fill in only if you want a
+    # range public — your per-deal amounts are deliberately not on the site.
+    check_size="",
     stages=("Pre-seed", "Seed"),
     geos=("Europe", "US"),
     how_to_reach=(

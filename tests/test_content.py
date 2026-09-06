@@ -188,3 +188,50 @@ class TestCohortProjects:
                     f"{k.name}: projects_total={k.projects_total} but "
                     f"{len(k.projects)} are listed"
                 )
+
+
+class TestThesisSectors:
+    def test_sectors_are_declared(self):
+        assert content.THESIS.sectors, "founders filter on sector first"
+
+    @pytest.mark.parametrize("sector", content.THESIS.sectors, ids=lambda s: s[0])
+    def test_sector_shape(self, sector):
+        label, accent = sector
+        assert label.strip()
+        assert accent in content.ACCENTS
+
+
+class TestNoPlaceholdersEscape:
+    """content.py auto-deploys on green CI, so unfinished text must fail here.
+
+    A "Cheque: PLACEHOLDER ..." line reached production once; this is the guard.
+    """
+
+    BANNED = ("placeholder", "todo", "tbd", "lorem ipsum", "xxx")
+
+    def _strings(self):
+        """Every user-visible string in the content module, with a label."""
+        import dataclasses
+
+        def walk(obj, path):
+            if isinstance(obj, str):
+                yield path, obj
+            elif dataclasses.is_dataclass(obj):
+                for f in dataclasses.fields(obj):
+                    yield from walk(getattr(obj, f.name), f"{path}.{f.name}")
+            elif isinstance(obj, (tuple, list)):
+                for i, item in enumerate(obj):
+                    yield from walk(item, f"{path}[{i}]")
+
+        for name in ("PROFILE", "THESIS", "BITMOVIN", "INCUBATOR",
+                     "PORTFOLIO", "PROJECTS"):
+            yield from walk(getattr(content, name), name)
+
+    def test_no_placeholder_text_in_content(self):
+        offenders = [
+            (path, text) for path, text in self._strings()
+            if any(word in text.lower() for word in self.BANNED)
+        ]
+        assert not offenders, "unfinished text would render on the live site:\n" + "\n".join(
+            f"  {path}: {text[:70]!r}" for path, text in offenders
+        )

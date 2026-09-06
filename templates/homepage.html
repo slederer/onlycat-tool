@@ -123,6 +123,10 @@
 
   /* thesis + contact */
   .thesis-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start; }
+  /* Sector chips sit directly under the heading — the first thing a founder
+     checks is whether they are even in scope. */
+  .sectors { margin: 16px 0 20px; }
+  .sectors .chip { font-size: 13px; padding: 5px 12px; }
   .thesis ul { list-style: none; }
   .thesis li { position: relative; padding-left: 22px; margin-top: 10px; }
   .thesis li::before { content: "→"; position: absolute; left: 0; color: var(--green); }
@@ -255,6 +259,11 @@
     <div class="thesis">
       <div class="eyebrow">For founders</div>
       <h2>{{ thesis.headline }}</h2>
+      {% if thesis.sectors %}
+      <div class="chips sectors">
+        {% for label, accent in thesis.sectors %}{{ m.chip(label, accent) }}{% endfor %}
+      </div>
+      {% endif %}
       {% if thesis.bullets %}
       <ul>{% for b in thesis.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
       {% endif %}

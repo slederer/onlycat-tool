@@ -372,3 +372,12 @@ class TestPublicSite:
                 assert html.escape(project.name) in resp.text, (
                     f"{project.name} missing from page"
                 )
+
+    @pytest.mark.asyncio
+    async def test_homepage_shows_investment_focus(self, site_client):
+        import html
+
+        import content
+        resp = await site_client.get("/")
+        for label, _accent in content.THESIS.sectors:
+            assert html.escape(label) in resp.text, f"{label} missing from page"
