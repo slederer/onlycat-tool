@@ -18,12 +18,13 @@ from zoneinfo import ZoneInfo
 import httpx
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from itsdangerous import URLSafeTimedSerializer
 
+import content
 from commands import set_transit_policy
 from event_store import EventStore
 from mcp_server import mcp as mcp_server, set_store as mcp_set_store
@@ -73,7 +74,6 @@ def require_auth(request: Request) -> dict:
 
 
 def raise_unauthorized():
-    from fastapi import HTTPException
     raise HTTPException(status_code=401, detail="Login required")
 
 CLASSIFICATION = {
@@ -929,24 +929,64 @@ async def auth_me(request: Request):
     return user or JSONResponse(None)
 
 
-HOMEPAGE_HOSTS = {"slederer.com", "www.slederer.com"}
+# --- Personal site (slederer.com) vs dashboard (oni.slederer.com) ---
+
+# EXTRA_HOMEPAGE_HOSTS lets you preview the personal site locally, e.g.
+#   EXTRA_HOMEPAGE_HOSTS=localhost uv run main.py
+# Baking "localhost" in permanently would break local dashboard work, which is
+# the more common case.
+HOMEPAGE_HOSTS = {"slederer.com", "www.slederer.com"} | {
+    h.strip().lower()
+    for h in os.environ.get("EXTRA_HOMEPAGE_HOSTS", "").split(",")
+    if h.strip()
+}
 
 
-# --- Dashboard / Homepage ---
+def request_host(request: Request) -> str:
+    """Hostname from the Host header, without port, lowercased."""
+    return (request.headers.get("host") or "").split(":")[0].lower()
+
+
+def is_homepage_host(request: Request) -> bool:
+    return request_host(request) in HOMEPAGE_HOSTS
+
+
+def require_homepage_host(request: Request) -> None:
+    """404 for personal-site routes reached on a dashboard host."""
+    if not is_homepage_host(request):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+
+def site_context(request: Request) -> dict:
+    """Base context every personal-site template needs."""
+    return {
+        "request": request,
+        "user": get_user(request),
+        "profile": content.PROFILE,
+        "year": datetime.now(TZ).year,
+    }
+
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    host = (request.headers.get("host") or "").split(":")[0].lower()
-    user = get_user(request)
-    if host in HOMEPAGE_HOSTS:
+    if is_homepage_host(request):
         return templates.TemplateResponse(
             "homepage.html",
-            {"request": request, "user": user},
+            {**site_context(request), **content.page_context()},
         )
     state = await build_state()
     return templates.TemplateResponse(
         "dashboard.html",
-        {"request": request, "initial_state": state, "user": user},
+        {"request": request, "initial_state": state, "user": get_user(request)},
+    )
+
+
+@app.get("/projects", response_class=HTMLResponse)
+async def projects_page(request: Request):
+    require_homepage_host(request)
+    return templates.TemplateResponse(
+        "projects.html",
+        {**site_context(request), "projects": content.PROJECTS},
     )
 
 

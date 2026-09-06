@@ -1,0 +1,93 @@
+{# Reusable cards. Macros take explicit arguments so a card can never depend on
+   whatever happens to be in the surrounding page context. #}
+
+{% macro chip(text, accent="") -%}
+  {%- if accent -%}
+    <span class="chip accent" style="--chip-bg: var(--{{ accent }}-dim); --chip-fg: var(--{{ accent }});">{{ text }}</span>
+  {%- else -%}
+    <span class="chip">{{ text }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+
+{# Raised, accent-railed card for rounds Stefan leads via an SPV. #}
+{% macro spv_card(c) %}
+<article class="spv-card" style="--accent: var(--{{ c.accent }}); --accent-dim: var(--{{ c.accent }}-dim);">
+  <div class="spv-card-top">
+    {{ chip("SPV Lead", c.accent) }}
+    {% if c.status != "active" %}{{ chip(c.status|capitalize) }}{% endif %}
+  </div>
+  <h3 class="spv-name">
+    {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.name }}</a>
+    {% else %}{{ c.name }}{% endif %}
+  </h3>
+  <p class="spv-blurb">{{ c.blurb }}</p>
+  {% if c.role %}<p class="spv-role">{{ c.role }}</p>{% endif %}
+  {% if c.sector or c.stage or c.year %}
+  <div class="chips spv-meta">
+    {% if c.sector %}{{ chip(c.sector) }}{% endif %}
+    {% if c.stage %}{{ chip(c.stage) }}{% endif %}
+    {% if c.year %}{{ chip(c.year) }}{% endif %}
+  </div>
+  {% endif %}
+</article>
+{% endmacro %}
+
+
+{# Recessed, flat, denser tile for ordinary direct angel investments. #}
+{% macro angel_tile(c) %}
+<article class="angel-tile{% if c.status in ('exited', 'acquired') %} is-past{% endif %}">
+  <h3 class="angel-name">
+    {% if c.url %}<a href="{{ c.url }}" target="_blank" rel="noopener">{{ c.name }}</a>
+    {% else %}{{ c.name }}{% endif %}
+  </h3>
+  <p class="angel-blurb">{{ c.blurb }}</p>
+  {% if c.sector or c.status != "active" %}
+  <div class="chips angel-meta">
+    {% if c.sector %}{{ chip(c.sector) }}{% endif %}
+    {% if c.status != "active" %}{{ chip(c.status|capitalize) }}{% endif %}
+  </div>
+  {% endif %}
+</article>
+{% endmacro %}
+
+
+{# One incubator iteration. `index` drives the "Iteration N" eyebrow. #}
+{% macro cohort_card(k, index) %}
+<article class="cohort" style="--accent: var(--{{ k.accent }}); --accent-dim: var(--{{ k.accent }}-dim);">
+  <div class="eyebrow">Iteration {{ index }}</div>
+  <div class="cohort-head">
+    <h3>{{ k.name }}</h3>
+    {{ chip(k.status|capitalize, k.accent) }}
+  </div>
+  <p class="cohort-period">{{ k.period }}</p>
+  <p class="cohort-theme">{{ k.theme }}</p>
+  {% if k.focus_areas %}
+  <div class="chips cohort-focus">
+    {% for area in k.focus_areas %}{{ chip(area) }}{% endfor %}
+  </div>
+  {% endif %}
+  {% if k.highlights %}
+  <ul class="cohort-highlights">
+    {% for item in k.highlights %}<li>{{ item }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <div class="cohort-foot">
+    {% if k.teams %}<span class="cohort-teams">{{ k.teams }}</span> <span class="cohort-teams-label">teams</span>{% endif %}
+    {% if k.url %}<a class="cohort-link" href="{{ k.url }}" target="_blank" rel="noopener">Read more →</a>{% endif %}
+  </div>
+</article>
+{% endmacro %}
+
+
+{# Row on /projects. #}
+{% macro project_row(p) %}
+<a class="project" href="{{ p.href }}" target="_blank" rel="noopener">
+  <span class="project-icon" style="background: var(--{{ p.accent }}-dim); color: var(--{{ p.accent }});">{{ p.emoji }}</span>
+  <span class="project-info">
+    <span class="project-name">{{ p.name }}</span>
+    <span class="project-desc">{{ p.description }}</span>
+  </span>
+  <span class="project-host">{{ p.host }}</span>
+</a>
+{% endmacro %}

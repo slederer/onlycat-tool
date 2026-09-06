@@ -211,3 +211,151 @@ class TestDiaryEndpoint:
         data = resp.json()
         assert data["diary"] is None
         assert "ANTHROPIC_API_KEY" in data.get("error", "")
+
+
+# --- Personal site (slederer.com) ---
+
+@pytest_asyncio.fixture
+async def site_client(store, monkeypatch):
+    """Client whose Host header lands on the personal-site branch.
+
+    httpx derives Host from base_url, so this hits slederer.com rather than the
+    dashboard. Deliberately carries no session cookie: the public site is what
+    a logged-out visitor sees.
+    """
+    import main
+    monkeypatch.setattr(main, "store", store)
+    monkeypatch.setattr(main, "do_sync", lambda: None)
+    transport = ASGITransport(app=main.app)
+    async with AsyncClient(transport=transport, base_url="https://slederer.com") as c:
+        yield c
+
+
+@pytest_asyncio.fixture
+async def oni_client(store, monkeypatch):
+    """Client on the dashboard host, used to prove site routes 404 there."""
+    import main
+    monkeypatch.setattr(main, "store", store)
+    monkeypatch.setattr(main, "do_sync", lambda: None)
+    transport = ASGITransport(app=main.app)
+    async with AsyncClient(transport=transport, base_url="https://oni.slederer.com") as c:
+        yield c
+
+
+class TestPublicSite:
+    @pytest.mark.asyncio
+    async def test_homepage_renders_on_apex(self, site_client):
+        resp = await site_client.get("/")
+        assert resp.status_code == 200
+        assert "text/html" in resp.headers["content-type"]
+        assert "Stefan Lederer" in resp.text
+        assert "Bitmovin" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_renders_on_www(self, store, monkeypatch):
+        import main
+        monkeypatch.setattr(main, "store", store)
+        transport = ASGITransport(app=main.app)
+        async with AsyncClient(transport=transport, base_url="https://www.slederer.com") as c:
+            resp = await c.get("/")
+        assert resp.status_code == 200
+        assert "Stefan Lederer" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_root_on_dashboard_host_still_serves_dashboard(self, oni_client):
+        """Guards the Host branch — the cat dashboard must be unaffected."""
+        resp = await oni_client.get("/")
+        assert resp.status_code == 200
+        assert "OnlyCat" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_lists_spv_companies(self, site_client):
+        import content
+        resp = await site_client.get("/")
+        for company in content.spv_companies():
+            assert company.name in resp.text
+        assert "HockeyStack" in resp.text
+        assert "GuardAero" in resp.text
+        assert "Salvy" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_spv_block_is_distinct_from_angel_block(self, site_client):
+        resp = await site_client.get("/")
+        assert "Rounds I lead" in resp.text
+        assert "spv-card" in resp.text
+        assert "angel-tile" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_lists_angel_companies(self, site_client):
+        import content
+        resp = await site_client.get("/")
+        for company in content.angel_companies():
+            assert company.name in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_shows_both_incubator_cohorts(self, site_client):
+        import content
+        resp = await site_client.get("/")
+        assert content.INCUBATOR.name in resp.text
+        assert len(content.INCUBATOR.cohorts) == 2
+        for cohort in content.INCUBATOR.cohorts:
+            assert cohort.name in resp.text
+        assert "Iteration 1" in resp.text
+        assert "Iteration 2" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_links_to_projects(self, site_client):
+        resp = await site_client.get("/")
+        assert 'href="/projects"' in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_no_longer_lists_side_projects(self, site_client):
+        """Side projects moved to /projects — they must not be back on the homepage."""
+        resp = await site_client.get("/")
+        assert "OnlyCat Dashboard" not in resp.text
+        assert "oni.slederer.com" not in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_hides_login_when_logged_out(self, site_client):
+        resp = await site_client.get("/")
+        assert "/auth/login" not in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_shows_logout_when_logged_in(self, store, monkeypatch):
+        import main
+        monkeypatch.setattr(main, "store", store)
+        cookie = main.signer.dumps({"email": "a@b.c", "name": "Test", "picture": ""})
+        transport = ASGITransport(app=main.app)
+        async with AsyncClient(transport=transport, base_url="https://slederer.com",
+                               cookies={"session": cookie}) as c:
+            resp = await c.get("/")
+        assert "/auth/logout" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_homepage_meta_tags(self, site_client):
+        resp = await site_client.get("/")
+        assert 'rel="canonical"' in resp.text
+        assert 'property="og:image"' in resp.text
+        assert "https://slederer.com/static/site/og.png" in resp.text
+        assert 'name="twitter:card"' in resp.text
+        assert "application/ld+json" in resp.text
+
+    @pytest.mark.asyncio
+    async def test_projects_page_renders(self, site_client):
+        import content
+        resp = await site_client.get("/projects")
+        assert resp.status_code == 200
+        for project in content.PROJECTS:
+            assert project.name in resp.text
+            assert project.href in resp.text
+
+    @pytest.mark.asyncio
+    async def test_projects_404_on_dashboard_host(self, oni_client):
+        """The key gate: /projects does not exist on oni.slederer.com."""
+        resp = await oni_client.get("/projects")
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_projects_404_on_unknown_host(self, client):
+        resp = await client.get("/projects")
+        assert resp.status_code == 404

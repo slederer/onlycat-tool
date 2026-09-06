@@ -12,6 +12,9 @@ onlycat-tool is a web dashboard for monitoring cat activity via the OnlyCat Clou
 # Run the dashboard (serves on http://localhost:8000)
 uv run main.py
 
+# Run the tests
+uv run pytest tests/ -v
+
 # Add a dependency
 uv add <package>
 
@@ -26,6 +29,23 @@ uv sync
 - **`onlycat_client.py`** — Legacy persistent Socket.IO client (kept for reference). The app now uses `sync.py` for periodic batch syncing instead.
 - **`event_store.py`** — SQLite-backed storage for events, devices, pets, and sync metadata. DB path configurable via `DB_PATH` env var.
 - **`templates/dashboard.html`** — Single Jinja2 template with inline CSS/JS. Receives initial state server-rendered, then updates live via browser WebSocket.
+- **`content.py`** — All content for the personal site at slederer.com (bio, angel portfolio, SPV-led rounds, AI Incubator cohorts, side projects). This is the only file to edit when that content changes; `tests/test_content.py` validates it.
+- **`templates/site_base.html`, `macros.html`, `homepage.html`, `projects.html`** — The personal site. `site_base.html` holds the shared design tokens (same palette as the dashboard) and light/dark handling.
+
+### Two sites, one app
+
+The app serves two properties, branching on the `Host` header:
+
+| Host | Serves |
+|---|---|
+| `slederer.com`, `www.slederer.com` | Personal site (`/` and `/projects`) |
+| anything else (e.g. `oni.slederer.com`) | OnlyCat dashboard |
+
+`is_homepage_host()` / `require_homepage_host()` in `main.py` gate this; `/projects` returns 404 on the dashboard host. To preview the personal site locally:
+
+```bash
+EXTRA_HOMEPAGE_HOSTS=localhost uv run main.py
+```
 
 ## Deployment
 

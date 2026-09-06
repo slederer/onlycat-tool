@@ -1,301 +1,271 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Lederer</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+{% extends "site_base.html" %}
+{% import "macros.html" as m %}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            min-height: 100vh;
-        }
+{% block title %}Stefan Lederer — CEO &amp; Co-founder, Bitmovin | Angel Investor{% endblock %}
+{% block description %}Stefan Lederer is CEO and co-founder of Bitmovin and an angel investor in early-stage technical founders, leading selected rounds via SPV.{% endblock %}
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 60px 24px;
-        }
+{% block nav_links %}
+  {% if spv_companies or angel_companies %}<a class="nav-anchor" href="#investing">Investing</a>{% endif %}
+  {% if incubator %}<a class="nav-anchor" href="#incubator">Incubator</a>{% endif %}
+  <a class="nav-anchor" href="#contact">Contact</a>
+{% endblock %}
 
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 56px;
-        }
+{% block page_styles %}
+  /* hero */
+  .hero { padding-block: 96px 72px; }
+  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: center; }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); }
+  .hero-role { color: var(--muted); font-size: 17px; margin-top: 10px; }
+  .hero-tagline { font-size: 19px; margin-top: 20px; max-width: 40ch; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .hero-portrait {
+    width: 160px; height: 160px; border-radius: 50%; object-fit: cover;
+    border: 3px solid var(--border);
+  }
 
-        .header-left h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
+  /* bio */
+  .bio p { max-width: 68ch; font-size: 17px; line-height: 1.75; }
+  .bio p + p { margin-top: 18px; }
+  .facts {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px; margin-top: 40px;
+  }
+  .fact {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+  }
+  .fact-value { font-size: 22px; font-weight: 700; color: var(--text-strong); letter-spacing: -0.02em; }
+  .fact-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-top: 6px; }
 
-        .subtitle {
-            font-size: 1.1rem;
-            color: #888;
-        }
+  /* bitmovin */
+  .bitmovin-card { border-left: 3px solid var(--blue); }
+  .bitmovin-card h2 { font-size: 22px; }
+  .bitmovin-card p { color: var(--muted); margin-top: 12px; max-width: 62ch; }
+  .bitmovin-card .btn { margin-top: 20px; }
 
-        .auth-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+  /* SPV block — raised, accent-railed, roomy */
+  .spv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .spv-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent); border-radius: var(--radius);
+    padding: 24px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+  }
+  .spv-card-top { display: flex; gap: 8px; margin-bottom: 14px; }
+  .spv-name { font-size: 19px; }
+  .spv-name a { text-decoration: none; }
+  .spv-name a:hover { color: var(--accent); }
+  .spv-blurb { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .spv-role { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 12px; }
+  .spv-meta { margin-top: 16px; }
 
-        .auth-avatar { width: 28px; height: 28px; border-radius: 50%; }
-        .auth-name { font-size: 13px; color: #888; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .auth-btn { font-size: 13px; padding: 6px 14px; border-radius: 8px; border: 1px solid #333; background: #141414; color: #888; cursor: pointer; text-decoration: none; transition: all 0.15s; }
-        .auth-btn:hover { color: #fff; border-color: #555; }
+  /* Angel grid — recessed, flat, denser. The contrast with .spv-card is
+     deliberate and carried by elevation + density + rail, not colour alone. */
+  .angel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .angel-tile {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+  }
+  html.light-mode .angel-tile { background: var(--surface-hover); }
+  .angel-tile.is-past { opacity: .7; }
+  .angel-name { font-size: 15px; font-weight: 600; }
+  .angel-name a { text-decoration: none; }
+  .angel-name a:hover { text-decoration: underline; }
+  .angel-blurb { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .angel-meta { margin-top: 10px; }
+  .count { color: var(--muted); font-weight: 400; }
 
-        .projects {
-            display: grid;
-            gap: 16px;
-        }
+  /* incubator */
+  .cohorts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  .cohort {
+    background: var(--bg); border: 1px solid var(--border);
+    border-top: 3px solid var(--accent); border-radius: var(--radius);
+    padding: 24px; height: 100%; display: flex; flex-direction: column;
+  }
+  html.light-mode .cohort { background: var(--surface); }
+  .cohort-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .cohort-head h3 { font-size: 18px; }
+  .cohort-period { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .cohort-theme { margin-top: 14px; font-size: 15px; }
+  .cohort-focus { margin-top: 16px; }
+  .cohort-highlights { margin-top: 16px; padding-left: 18px; font-size: 14px; color: var(--muted); }
+  .cohort-highlights li { margin-top: 6px; }
+  .cohort-highlights li::marker { color: var(--accent); }
+  .cohort-foot { margin-top: auto; padding-top: 20px; display: flex; align-items: baseline; gap: 8px; }
+  .cohort-teams { font-size: 26px; font-weight: 700; color: var(--accent); }
+  .cohort-teams-label { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .cohort-link { margin-left: auto; font-size: 14px; color: var(--muted); }
 
-        .project {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 24px;
-            background: #141414;
-            border: 1px solid #222;
-            border-radius: 12px;
-            text-decoration: none;
-            color: inherit;
-            transition: border-color 0.2s, background 0.2s, transform 0.15s;
-        }
+  /* thesis + contact */
+  .thesis-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start; }
+  .thesis ul { list-style: none; }
+  .thesis li { position: relative; padding-left: 22px; margin-top: 10px; }
+  .thesis li::before { content: "→"; position: absolute; left: 0; color: var(--green); }
+  .thesis-facts { margin-top: 28px; font-family: var(--mono); font-size: 13px; }
+  .thesis-facts div { display: flex; gap: 12px; padding: 7px 0; border-top: 1px solid var(--border); }
+  .thesis-facts dt { color: var(--muted); min-width: 90px; }
+  .contact-card { border-left: 3px solid var(--green); }
+  .contact-card p { color: var(--muted); font-size: 14px; margin-top: 12px; }
+  .contact-card .btn { margin-top: 4px; }
+  .anti { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .anti .eyebrow { margin-bottom: 8px; }
+  .anti ul { list-style: none; }
+  .anti li { position: relative; padding-left: 18px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .anti li::before { content: "×"; position: absolute; left: 0; color: var(--muted); }
 
-        .project:hover {
-            border-color: #444;
-            background: #1a1a1a;
-            transform: translateY(-1px);
-        }
+  @media (max-width: 800px) {
+    .cohorts { grid-template-columns: 1fr; }
+    .thesis-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .hero { padding-block: 56px 40px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  }
+{% endblock %}
 
-        .project-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
+{% block content %}
 
-        .project-info {
-            flex: 1;
-            min-width: 0;
-        }
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>{{ profile.name }}</h1>
+      <div class="hero-role">{{ profile.role }}{% if profile.location %} · {{ profile.location }}{% endif %}</div>
+      <p class="hero-tagline">{{ profile.tagline }}</p>
+      <div class="hero-cta">
+        <a class="btn primary" href="#contact">Get in touch</a>
+        {% for link in profile.links %}
+        <a class="btn" href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {# Portrait slot: drop static/site/stefan.jpg in and uncomment.
+    <img class="hero-portrait" src="/static/site/stefan.jpg" alt="{{ profile.name }}">
+    #}
+  </div>
+</section>
 
-        .project-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 4px;
-        }
+{% if profile.bio %}
+<section class="bio">
+  <div class="wrap">
+    {% for para in profile.bio %}<p>{{ para }}</p>{% endfor %}
+    {% if profile.facts %}
+    <div class="facts">
+      {% for value, label in profile.facts %}
+      <div class="fact">
+        <div class="fact-value">{{ value }}</div>
+        <div class="fact-label">{{ label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
 
-        .project-desc {
-            font-size: 0.9rem;
-            color: #888;
-            line-height: 1.4;
-        }
+{% if bitmovin %}
+<section>
+  <div class="wrap">
+    <div class="card bitmovin-card">
+      <div class="eyebrow">The day job</div>
+      <h2>{{ bitmovin.name }}</h2>
+      <p>{{ bitmovin.blurb }}</p>
+      {% if bitmovin.url %}
+      <a class="btn" href="{{ bitmovin.url }}" target="_blank" rel="noopener">bitmovin.com →</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
-        .project-url {
-            font-size: 0.8rem;
-            color: #555;
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            flex-shrink: 0;
-        }
+{% if spv_companies %}
+<section id="investing">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Angel investing</div>
+      <h2>Rounds I lead</h2>
+      <p>In a small number of companies I lead the round myself and bring other
+         investors in through an SPV — a deeper commitment than a normal angel
+         cheque, and usually a seat at the table.</p>
+    </div>
+    <div class="spv-grid">
+      {% for c in spv_companies %}{{ m.spv_card(c) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
-        .project:hover .project-url {
-            color: #777;
-        }
+{% if angel_companies %}
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Angel portfolio <span class="count">· {{ angel_companies|length }}</span></h2>
+      <p>Direct investments, typically pre-seed and seed.</p>
+    </div>
+    <div class="angel-grid">
+      {% for c in angel_companies %}{{ m.angel_tile(c) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
-        .status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+{% if incubator and incubator.cohorts %}
+<section id="incubator" class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">{{ incubator.tagline }}</div>
+      <h2>{{ incubator.name }}</h2>
+      <p>{{ incubator.description }}</p>
+    </div>
+    <div class="cohorts">
+      {% for k in incubator.cohorts %}{{ m.cohort_card(k, loop.index) }}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 
-        .status.live { background: #22c55e; box-shadow: 0 0 6px #22c55e66; }
-        .status.offline { background: #555; }
-
-        footer {
-            margin-top: 56px;
-            padding-top: 24px;
-            border-top: 1px solid #1a1a1a;
-            text-align: center;
-            color: #444;
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 600px) {
-            .container { padding: 40px 16px; }
-            header { flex-direction: column; align-items: flex-start; gap: 16px; }
-            .header-left h1 { font-size: 1.8rem; }
-            .project { padding: 18px; gap: 14px; }
-            .project-url { display: none; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="header-left">
-                <h1>Stefan Lederer</h1>
-                <p class="subtitle">Projects hosted on slederer.com</p>
-            </div>
-            <div class="auth-area">
-                {% if user %}
-                    {% if user.picture %}<img class="auth-avatar" src="{{ user.picture }}" alt="">{% endif %}
-                    <span class="auth-name">{{ user.name or user.email }}</span>
-                    <a class="auth-btn" href="/auth/logout">Logout</a>
-                {% else %}
-                    <a class="auth-btn" href="/auth/login">Login with Google</a>
-                {% endif %}
-            </div>
-        </header>
-
-        <div class="projects" id="projects">
-            <a href="https://oni.slederer.com" class="project" data-host="oni.slederer.com">
-                <div class="project-icon" style="background: #f9731622; color: #f97316;">
-                    <span>&#128049;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">OnlyCat Dashboard</div>
-                    <div class="project-desc">Real-time cat activity monitoring, analytics, trip tracking, and smart door controls for Oni.</div>
-                </div>
-                <span class="project-url">oni.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://streaming.slederer.com" class="project" data-host="streaming.slederer.com">
-                <div class="project-icon" style="background: #8b5cf622; color: #8b5cf6;">
-                    <span>&#127916;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">Streaming Finder</div>
-                    <div class="project-desc">Search and discover where movies and TV shows are available to stream.</div>
-                </div>
-                <span class="project-url">streaming.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://stream.slederer.com" class="project" data-host="stream.slederer.com">
-                <div class="project-icon" style="background: #6366f122; color: #6366f1;">
-                    <span>&#127902;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">Streaming Service Demo</div>
-                    <div class="project-desc">Interactive demo of a streaming service platform with content browsing and playback.</div>
-                </div>
-                <span class="project-url">stream.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://crm.slederer.com" class="project" data-host="crm.slederer.com">
-                <div class="project-icon" style="background: #3b82f622; color: #3b82f6;">
-                    <span>&#128188;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">Bitmovin CRM</div>
-                    <div class="project-desc">Customer relationship management dashboard for Bitmovin.</div>
-                </div>
-                <span class="project-url">crm.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://tracker.slederer.com" class="project" data-host="tracker.slederer.com">
-                <div class="project-icon" style="background: #f59e0b22; color: #f59e0b;">
-                    <span>&#128640;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">YC Startup Tracker</div>
-                    <div class="project-desc">Track and analyze Y Combinator startups, funding rounds, and trends.</div>
-                </div>
-                <span class="project-url">tracker.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://trading.slederer.com" class="project" data-host="trading.slederer.com">
-                <div class="project-icon" style="background: #10b98122; color: #10b981;">
-                    <span>&#128200;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">Trading Dashboard</div>
-                    <div class="project-desc">Market data visualization and trading analytics platform.</div>
-                </div>
-                <span class="project-url">trading.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://ads.slederer.com" class="project" data-host="ads.slederer.com">
-                <div class="project-icon" style="background: #f4364c22; color: #f4364c;">
-                    <span>&#128226;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">AI Localized Ads</div>
-                    <div class="project-desc">AI-powered localized advertising service with dynamic content targeting.</div>
-                </div>
-                <span class="project-url">ads.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://ctv.slederer.com" class="project" data-host="ctv.slederer.com">
-                <div class="project-icon" style="background: #ec489922; color: #ec4899;">
-                    <span>&#128250;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">CTV Analytics</div>
-                    <div class="project-desc">Connected TV advertising and performance analytics dashboard.</div>
-                </div>
-                <span class="project-url">ctv.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://intel.slederer.com" class="project" data-host="intel.slederer.com">
-                <div class="project-icon" style="background: #0ea5e922; color: #0ea5e9;">
-                    <span>&#128269;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">Encoding Intel</div>
-                    <div class="project-desc">Video encoding intelligence and competitive analysis platform.</div>
-                </div>
-                <span class="project-url">intel.slederer.com</span>
-                <div class="status"></div>
-            </a>
-
-            <a href="https://security.slederer.com" class="project" data-host="security.slederer.com">
-                <div class="project-icon" style="background: #ef444422; color: #ef4444;">
-                    <span>&#128274;</span>
-                </div>
-                <div class="project-info">
-                    <div class="project-name">Security Monitor</div>
-                    <div class="project-desc">Security monitoring and vulnerability scanning dashboard.</div>
-                </div>
-                <span class="project-url">security.slederer.com</span>
-                <div class="status"></div>
-            </a>
-        </div>
-
-        <footer>
-            <p>slederer.com</p>
-        </footer>
+{% if thesis %}
+<section id="contact">
+  <div class="wrap thesis-grid">
+    <div class="thesis">
+      <div class="eyebrow">For founders</div>
+      <h2>{{ thesis.headline }}</h2>
+      {% if thesis.bullets %}
+      <ul>{% for b in thesis.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+      {% endif %}
+      <dl class="thesis-facts">
+        {% if thesis.check_size %}<div><dt>Cheque</dt><dd>{{ thesis.check_size }}</dd></div>{% endif %}
+        {% if thesis.stages %}<div><dt>Stage</dt><dd>{{ thesis.stages|join(", ") }}</dd></div>{% endif %}
+        {% if thesis.geos %}<div><dt>Geography</dt><dd>{{ thesis.geos|join(", ") }}</dd></div>{% endif %}
+      </dl>
     </div>
 
-    <script>
-        document.querySelectorAll('.project').forEach(el => {
-            const host = el.dataset.host;
-            const statusDot = el.querySelector('.status');
-            fetch('https://' + host + '/', { mode: 'no-cors', signal: AbortSignal.timeout(4000) })
-                .then(() => { statusDot.classList.add('live'); })
-                .catch(() => { statusDot.classList.add('offline'); });
-        });
-    </script>
-</body>
-</html>
+    <div class="card contact-card">
+      <div class="eyebrow">Get in touch</div>
+      {% if profile.contact_email %}
+      <a class="btn primary" href="mailto:{{ profile.contact_email }}">Email me</a>
+      {% else %}
+      {# No public address set yet — fall back to the first profile link. #}
+      {% if profile.links %}
+      <a class="btn primary" href="{{ profile.links[0].url }}" target="_blank" rel="noopener">
+        Reach me on {{ profile.links[0].label }}
+      </a>
+      {% endif %}
+      {% endif %}
+      {% if thesis.how_to_reach %}<p>{{ thesis.how_to_reach }}</p>{% endif %}
+      {% if thesis.anti_bullets %}
+      <div class="anti">
+        <div class="eyebrow">Probably not a fit</div>
+        <ul>{% for b in thesis.anti_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block og %}
+{{ super() }}
+<script type="application/ld+json">{{ profile.json_ld() | tojson }}</script>
+{% endblock %}

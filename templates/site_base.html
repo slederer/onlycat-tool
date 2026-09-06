@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Stefan Lederer{% endblock %}</title>
+<meta name="description" content="{% block description %}Stefan Lederer — CEO and co-founder of Bitmovin, and angel investor in early-stage technical founders.{% endblock %}">
+<link rel="canonical" href="https://slederer.com{{ request.url.path }}">
+
+<link rel="icon" href="/static/site/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/site/apple-touch-icon.png">
+<meta name="theme-color" content="#0f1117">
+
+{% block og %}
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Stefan Lederer">
+<meta property="og:title" content="Stefan Lederer — CEO &amp; Co-founder, Bitmovin">
+<meta property="og:description" content="Building video infrastructure for the internet. Angel investor in early-stage technical founders.">
+<meta property="og:url" content="https://slederer.com{{ request.url.path }}">
+<meta property="og:image" content="https://slederer.com/static/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Stefan Lederer — CEO &amp; Co-founder, Bitmovin">
+<meta name="twitter:description" content="Building video infrastructure for the internet. Angel investor in early-stage technical founders.">
+<meta name="twitter:image" content="https://slederer.com/static/site/og.png">
+{% endblock %}
+
+{# Runs before first paint so there is no dark->light flash. #}
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('site_theme');
+      var light = saved ? saved === 'light'
+                        : window.matchMedia('(prefers-color-scheme: light)').matches;
+      if (light) document.documentElement.classList.add('light-mode');
+    } catch (e) {}
+  })();
+</script>
+
+<style>
+  :root {
+    /* Same values as templates/dashboard.html so the two properties read as one system. */
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface-hover: #1f2231;
+    --border: #2a2d3a;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --green: #22c55e;  --green-dim: #16352a;
+    --red: #ef4444;    --red-dim: #351616;
+    --yellow: #eab308; --yellow-dim: #352a16;
+    --blue: #3b82f6;   --blue-dim: #162035;
+    --purple: #a855f7; --purple-dim: #1e1635;
+    --orange: #f97316; --orange-dim: #351f0a;
+    --cyan: #06b6d4;   --cyan-dim: #0a2a35;
+    --pink: #ec4899;   --pink-dim: #35162a;
+    --indigo: #6366f1; --indigo-dim: #1a1c3a;
+
+    --text-strong: #ffffff;
+    --border-strong: #3a3e4f;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --maxw: 960px;
+    --shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    --mono: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+  }
+  html.light-mode {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-hover: #f0f0f2;
+    --border: #e0e0e5;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --text-strong: #0b0b14;
+    --border-strong: #c8c8d0;
+    --green-dim: #dcfce7; --red-dim: #fee2e2; --yellow-dim: #fef9c3;
+    --blue-dim: #dbeafe;  --purple-dim: #f3e8ff; --orange-dim: #ffedd5;
+    --cyan-dim: #cffafe;  --pink-dim: #fce7f3;  --indigo-dim: #e0e7ff;
+    --shadow: 0 8px 24px rgba(0, 0, 0, .08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  h1, h2, h3 { color: var(--text-strong); letter-spacing: -0.02em; line-height: 1.2; }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  section { padding-block: 80px; }
+  section + section { border-top: 1px solid var(--border); }
+  .band { background: var(--surface); border-block: 1px solid var(--border); }
+  .band + section { border-top: none; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  }
+  .section-head { margin-bottom: 32px; }
+  .section-head h2 { font-size: 26px; }
+  .section-head p { color: var(--muted); margin-top: 10px; max-width: 60ch; }
+
+  /* --- nav --- */
+  .nav {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .wordmark { font-weight: 700; color: var(--text-strong); text-decoration: none; letter-spacing: -0.02em; }
+  .nav-links { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .nav-links a:hover { color: var(--text); }
+  .theme-toggle {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    width: 30px; height: 30px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 14px; line-height: 1;
+  }
+  .theme-toggle:hover { border-color: var(--border-strong); color: var(--text); }
+  .nav-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .nav-user img { width: 24px; height: 24px; border-radius: 50%; }
+
+  /* --- shared bits --- */
+  .chip {
+    display: inline-block; padding: 3px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: .02em;
+    background: var(--border); color: var(--muted);
+  }
+  .chip.accent { background: var(--chip-bg); color: var(--chip-fg); }
+  /* Light-mode -dim backgrounds are near-white, so accent text on them falls
+     below readable contrast (--yellow on --yellow-dim is ~1.6:1). Use body text. */
+  html.light-mode .chip.accent { color: var(--text); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+  }
+
+  .btn {
+    display: inline-block; padding: 10px 18px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--border); color: var(--text);
+    transition: border-color .15s, background .15s;
+  }
+  .btn:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn.primary:hover { opacity: .9; background: var(--blue); }
+
+  /* --- footer --- */
+  footer { border-top: 1px solid var(--border); padding-block: 40px; }
+  .footer-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: 0 24px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px;
+  }
+  .footer-links { display: flex; flex-wrap: wrap; gap: 18px; }
+  .footer-inner a { color: var(--muted); text-decoration: none; font-size: 14px; }
+  .footer-inner a:hover { color: var(--text); }
+  .footer-copy { margin-left: auto; color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 720px) {
+    section { padding-block: 56px; }
+    .nav-links { gap: 14px; }
+    .nav-links .nav-anchor { display: none; }
+    .footer-copy { margin-left: 0; }
+  }
+
+  {% block page_styles %}{% endblock %}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="wordmark">Stefan Lederer</a>
+    <div class="nav-links">
+      {% block nav_links %}{% endblock %}
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle colour theme">◐</button>
+      {# Logged-out visitors see no login button: this is a public page and the
+         OAuth callback is e-mail gated, so a stranger clicking it would just
+         hit "access denied". /auth/login is still reachable directly. #}
+      {% if user %}
+      <span class="nav-user">
+        {% if user.picture %}<img src="{{ user.picture }}" alt="">{% endif %}
+        <a href="/auth/logout">Log out</a>
+      </span>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      {% for link in profile.links %}
+      <a href="{{ link.url }}" rel="me noopener" target="_blank">{{ link.label }}</a>
+      {% endfor %}
+      <a href="/projects">Side projects →</a>
+    </div>
+    <div class="footer-copy">© {{ year }} {{ profile.name }}</div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var light = document.documentElement.classList.toggle('light-mode');
+      try { localStorage.setItem('site_theme', light ? 'light' : 'dark'); } catch (e) {}
+    });
+  })();
+</script>
+</body>
+</html>
