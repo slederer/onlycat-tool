@@ -97,12 +97,17 @@
 {# The products a cohort shipped, listed under the cohort cards. #}
 {% macro cohort_products(k) %}
 <div class="cohort-products" style="--accent: var(--{{ k.accent }});">
-  <div class="eyebrow">{{ k.projects|length }} products from {{ k.name }}</div>
+  <div class="eyebrow">
+    Projects from {{ k.name }}
+    {%- if k.projects_total and k.projects_total > k.projects|length %}
+    <span class="partial">· {{ k.projects|length }} of {{ k.projects_total }} shown</span>
+    {%- endif %}
+  </div>
   <div class="product-grid">
     {% for p in k.projects %}
     <div class="product">
       <div class="product-name">{{ p.name }}</div>
-      <div class="product-blurb">{{ p.blurb }}</div>
+      {% if p.blurb %}<div class="product-blurb">{{ p.blurb }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>

@@ -362,8 +362,13 @@ class TestPublicSite:
 
     @pytest.mark.asyncio
     async def test_homepage_lists_incubator_products(self, site_client):
+        import html
+
         import content
         resp = await site_client.get("/")
         for cohort in content.INCUBATOR.cohorts:
             for project in cohort.projects:
-                assert project.name in resp.text, f"{project.name} missing from page"
+                # Jinja autoescapes, so "A & B" renders as "A &amp; B".
+                assert html.escape(project.name) in resp.text, (
+                    f"{project.name} missing from page"
+                )

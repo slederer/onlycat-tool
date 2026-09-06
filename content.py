@@ -54,9 +54,9 @@ class Company:
 
 @dataclass(frozen=True)
 class CohortProject:
-    """One product built during a cohort."""
+    """One product built during a cohort. Blurb optional — name-only is fine."""
     name: str
-    blurb: str
+    blurb: str = ""
 
 
 @dataclass(frozen=True)
@@ -70,6 +70,9 @@ class Cohort:
     focus_areas: tuple[str, ...] = ()
     highlights: tuple[str, ...] = ()
     projects: tuple[CohortProject, ...] = ()
+    # How many projects the cohort actually ran. If it exceeds len(projects),
+    # the page says "N of M shown" rather than implying the list is complete.
+    projects_total: int | None = None
     accent: str = "cyan"
     url: str = ""
 
@@ -268,11 +271,11 @@ PORTFOLIO: tuple[Company, ...] = (
 # BITMOVIN AI INCUBATOR
 #
 # Cohort 2 is sourced from the Demo Day overview and the Klagenfurt press
-# release (Sept 2026). Cohort 1 is thin because all I have is "9 people, 9
-# projects in 2025".
+# release (Sept 2026); cohort 1 from Stefan directly.
 #
-# TODO(stefan): fill in cohort 1 — dates, what the nine projects were, and
-# anything that came out of it. It currently reads much lighter than 2026.
+# Cohort 1 lists 6 of its 9 projects (projects_total=9), so the page says
+# "6 of 9 shown" instead of implying the list is complete. Add the missing
+# three and the note disappears on its own.
 # ---------------------------------------------------------------------------
 
 INCUBATOR = Incubator(
@@ -287,11 +290,28 @@ INCUBATOR = Incubator(
         Cohort(
             name="Summer 2025",
             period="First run",
-            theme="The first iteration of the programme: nine people, nine projects.",
+            theme="Nine people, nine projects — eight of which ended up shipping "
+                  "inside Bitmovin products.",
             status="completed",
             people=9,
             teams=9,
             accent="cyan",
+            focus_areas=("Observability", "AI assistants", "Analytics",
+                         "Test automation"),
+            highlights=(
+                "Nine people chosen after interviewing 350 candidates across Europe.",
+                "Eight of the nine projects became features of Bitmovin products.",
+                "Shown at IBC and other industry events.",
+            ),
+            projects_total=9,
+            projects=(
+                CohortProject("Model training for observability data"),
+                CohortProject("AISA Highlight Clips"),
+                CohortProject("Personal AI assistants"),
+                CohortProject("Industry Insights Report"),
+                CohortProject("TestAutomation MCP & Support Copilot"),
+                CohortProject("Analytics Anomaly Detection"),
+            ),
         ),
         Cohort(
             name="Summer 2026",
@@ -302,6 +322,7 @@ INCUBATOR = Incubator(
             people=15,
             teams=7,
             accent="purple",
+            projects_total=7,
             focus_areas=("Streaming", "Observability", "Advertising",
                          "Video workflows", "AI tooling"),
             highlights=(

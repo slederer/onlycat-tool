@@ -168,7 +168,6 @@ class TestCohortProjects:
     )
     def test_project_fields(self, project):
         assert project.name.strip()
-        assert project.blurb.strip()
         assert len(project.blurb) <= content.MAX_BLURB
 
     def test_no_duplicate_product_names(self):
@@ -179,3 +178,13 @@ class TestCohortProjects:
         for k in content.INCUBATOR.cohorts:
             if k.people and k.teams:
                 assert k.people >= k.teams, f"{k.name}: fewer people than teams?"
+
+
+    def test_projects_total_is_not_less_than_what_is_listed(self):
+        """Guards the "N of M shown" note against claiming a nonsense total."""
+        for k in content.INCUBATOR.cohorts:
+            if k.projects_total is not None:
+                assert k.projects_total >= len(k.projects), (
+                    f"{k.name}: projects_total={k.projects_total} but "
+                    f"{len(k.projects)} are listed"
+                )
