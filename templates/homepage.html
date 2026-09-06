@@ -100,7 +100,25 @@
   .cohort-foot { margin-top: auto; padding-top: 20px; display: flex; align-items: baseline; gap: 8px; }
   .cohort-teams { font-size: 26px; font-weight: 700; color: var(--accent); }
   .cohort-teams-label { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .cohort-stat { font-size: 13px; color: var(--muted); }
+  .cohort-stat b { font-size: 22px; font-weight: 700; color: var(--accent); margin-right: 3px; }
+  .cohort-stat + .cohort-stat { margin-left: 16px; }
   .cohort-link { margin-left: auto; font-size: 14px; color: var(--muted); }
+
+  /* Products shipped by a cohort — a compact grid under the two cards. */
+  .cohort-products { margin-top: 32px; }
+  .product-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px; margin-top: 12px; align-items: start;
+  }
+  .product {
+    background: var(--bg); border: 1px solid var(--border);
+    border-left: 2px solid var(--accent); border-radius: var(--radius-sm);
+    padding: 12px 14px;
+  }
+  html.light-mode .product { background: var(--surface); }
+  .product-name { font-size: 14px; font-weight: 600; color: var(--text-strong); }
+  .product-blurb { font-size: 13px; color: var(--muted); margin-top: 3px; }
 
   /* thesis + contact */
   .thesis-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start; }
@@ -225,6 +243,7 @@
     <div class="cohorts">
       {% for k in incubator.cohorts %}{{ m.cohort_card(k, loop.index) }}{% endfor %}
     </div>
+    {% for k in incubator.cohorts if k.projects %}{{ m.cohort_products(k) }}{% endfor %}
   </div>
 </section>
 {% endif %}

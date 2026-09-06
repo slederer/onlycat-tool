@@ -359,3 +359,11 @@ class TestPublicSite:
     async def test_projects_404_on_unknown_host(self, client):
         resp = await client.get("/projects")
         assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_homepage_lists_incubator_products(self, site_client):
+        import content
+        resp = await site_client.get("/")
+        for cohort in content.INCUBATOR.cohorts:
+            for project in cohort.projects:
+                assert project.name in resp.text, f"{project.name} missing from page"

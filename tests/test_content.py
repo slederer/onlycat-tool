@@ -154,3 +154,28 @@ class TestPageContext:
     def test_no_key_is_none(self):
         for key, value in content.page_context().items():
             assert value is not None, f"page_context()[{key!r}] is None"
+
+
+class TestCohortProjects:
+    def test_second_cohort_shipped_seven_products(self):
+        second = content.INCUBATOR.cohorts[1]
+        assert len(second.projects) == 7
+
+    @pytest.mark.parametrize(
+        "project",
+        [p for k in content.INCUBATOR.cohorts for p in k.projects],
+        ids=lambda p: p.name,
+    )
+    def test_project_fields(self, project):
+        assert project.name.strip()
+        assert project.blurb.strip()
+        assert len(project.blurb) <= content.MAX_BLURB
+
+    def test_no_duplicate_product_names(self):
+        names = [p.name for k in content.INCUBATOR.cohorts for p in k.projects]
+        assert len(set(names)) == len(names)
+
+    def test_cohort_headcount_is_at_least_team_count(self):
+        for k in content.INCUBATOR.cohorts:
+            if k.people and k.teams:
+                assert k.people >= k.teams, f"{k.name}: fewer people than teams?"

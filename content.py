@@ -53,14 +53,23 @@ class Company:
 
 
 @dataclass(frozen=True)
+class CohortProject:
+    """One product built during a cohort."""
+    name: str
+    blurb: str
+
+
+@dataclass(frozen=True)
 class Cohort:
     name: str
-    period: str                 # "Spring 2025"
+    period: str                 # "Ten weeks"
     theme: str                  # one sentence
     status: str = "completed"   # see COHORT_STATUSES
+    people: int | None = None
     teams: int | None = None
     focus_areas: tuple[str, ...] = ()
     highlights: tuple[str, ...] = ()
+    projects: tuple[CohortProject, ...] = ()
     accent: str = "cyan"
     url: str = ""
 
@@ -170,8 +179,7 @@ PROFILE = Profile(
              show_in_hero=False),
         Link("Bitmovin", "https://bitmovin.com", show_in_hero=False),
     ),
-    # TODO(stefan): set the address you actually want public here.
-    contact_email="",
+    contact_email="stefan.lederer@bitmovin.com",
 )
 
 
@@ -259,41 +267,56 @@ PORTFOLIO: tuple[Company, ...] = (
 # ---------------------------------------------------------------------------
 # BITMOVIN AI INCUBATOR
 #
-# TODO(stefan): both cohorts below are PLACEHOLDERS. Replace with the real
-# iterations — name, period, theme, how many teams, and 2-4 highlights each.
+# Cohort 2 is sourced from the Demo Day overview and the Klagenfurt press
+# release (Sept 2026). Cohort 1 is thin because all I have is "9 people, 9
+# projects in 2025".
+#
+# TODO(stefan): fill in cohort 1 — dates, what the nine projects were, and
+# anything that came out of it. It currently reads much lighter than 2026.
 # ---------------------------------------------------------------------------
 
 INCUBATOR = Incubator(
     name="Bitmovin AI Incubator",
-    tagline="Two iterations of building AI products inside Bitmovin.",
+    tagline="Two iterations, Vienna and Klagenfurt",
     description=(
-        "An internal incubator that gives small teams a fixed window, a budget and "
-        "real customer access to take an AI idea from a hypothesis to something "
-        "shippable. We have run it twice so far."
+        "A programme that gives small teams ten weeks, real customers and a budget "
+        "to take an AI idea from a hypothesis to a working product. We have run it "
+        "twice; after the second cohort it became a permanent part of Bitmovin."
     ),
     cohorts=(
         Cohort(
-            name="PLACEHOLDER — Iteration 1 name",
-            period="PLACEHOLDER — e.g. Spring 2025",
-            theme="PLACEHOLDER — one sentence on what this iteration focused on.",
+            name="Summer 2025",
+            period="First run",
+            theme="The first iteration of the programme: nine people, nine projects.",
             status="completed",
+            people=9,
+            teams=9,
             accent="cyan",
-            focus_areas=("PLACEHOLDER", "PLACEHOLDER"),
-            highlights=(
-                "PLACEHOLDER — what came out of it.",
-                "PLACEHOLDER — a second outcome.",
-            ),
         ),
         Cohort(
-            name="PLACEHOLDER — Iteration 2 name",
-            period="PLACEHOLDER — e.g. Autumn 2025",
-            theme="PLACEHOLDER — one sentence on what changed the second time.",
+            name="Summer 2026",
+            period="Ten weeks",
+            theme="Fifteen interns, selected from 500 European applicants, shipping "
+                  "seven products in ten weeks.",
             status="completed",
+            people=15,
+            teams=7,
             accent="purple",
-            focus_areas=("PLACEHOLDER", "PLACEHOLDER"),
+            focus_areas=("Streaming", "Observability", "Advertising",
+                         "Video workflows", "AI tooling"),
             highlights=(
-                "PLACEHOLDER — what came out of it.",
-                "PLACEHOLDER — a second outcome.",
+                "Teams demoed to real customers within four weeks and signed first test users.",
+                "The programme is now permanent.",
+            ),
+            projects=(
+                CohortProject("Quicly", "Multiview live streaming on Media over QUIC."),
+                CohortProject("Kairos", "Automatic highlight clipping for live sport."),
+                CohortProject("End-to-End Observability",
+                              "Per-segment quality scoring and self-healing encodings."),
+                CohortProject("Davy", "Advertising observability, live in the dashboard."),
+                CohortProject("govideo", "Browser-native live streaming you control by typing."),
+                CohortProject("Talecut", "GPU-accelerated vertical reframing with subject detection."),
+                CohortProject("Context Goblin", "AI code review with specialised agents."),
             ),
         ),
     ),

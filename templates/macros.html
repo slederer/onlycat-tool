@@ -73,7 +73,8 @@
   </ul>
   {% endif %}
   <div class="cohort-foot">
-    {% if k.teams %}<span class="cohort-teams">{{ k.teams }}</span> <span class="cohort-teams-label">teams</span>{% endif %}
+    {% if k.people %}<span class="cohort-stat"><b>{{ k.people }}</b> people</span>{% endif %}
+    {% if k.teams %}<span class="cohort-stat"><b>{{ k.teams }}</b> teams</span>{% endif %}
     {% if k.url %}<a class="cohort-link" href="{{ k.url }}" target="_blank" rel="noopener">Read more →</a>{% endif %}
   </div>
 </article>
@@ -90,4 +91,20 @@
   </span>
   <span class="project-host">{{ p.host }}</span>
 </a>
+{% endmacro %}
+
+
+{# The products a cohort shipped, listed under the cohort cards. #}
+{% macro cohort_products(k) %}
+<div class="cohort-products" style="--accent: var(--{{ k.accent }});">
+  <div class="eyebrow">{{ k.projects|length }} products from {{ k.name }}</div>
+  <div class="product-grid">
+    {% for p in k.projects %}
+    <div class="product">
+      <div class="product-name">{{ p.name }}</div>
+      <div class="product-blurb">{{ p.blurb }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 {% endmacro %}
