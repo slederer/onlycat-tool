@@ -12,161 +12,132 @@
 
 {% block page_styles %}
   /* hero */
-  .hero { padding-block: 88px 96px; }
-  .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 60px; align-items: center; }
-  .hero h1 { font-size: clamp(2.6rem, 5.6vw, 4rem); }
-  .hero-role {
-    font-size: 12px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 20px;
+  .hero { border-top: 0; padding-block: 92px 76px; }
+  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: 56px; align-items: start; }
+  .hero h1 { font-size: clamp(2.8rem, 6vw, 4.2rem); }
+  .hero-role { color: var(--muted); margin-top: 14px; font-size: 17px; }
+  .hero-tagline { font-size: 20px; line-height: 1.5; margin-top: 26px; max-width: 34ch; }
+  .hero-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .hero-portrait {
+    width: 200px; height: 244px; object-fit: cover; object-position: center 22%;
+    border-radius: var(--r); border: 1px solid var(--border);
   }
-  .hero-tagline { font-size: 19px; line-height: 1.6; margin-top: 24px; max-width: 42ch; color: var(--muted); }
-  .hero-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
-  .hero-figure { overflow: hidden; }
-  .hero-figure img { width: 100%; display: block; }
 
-  /* a bitmovin-style stat strip under the hero */
   .statline {
-    margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border);
-    font-size: 12px; font-weight: 600; letter-spacing: .13em;
+    margin-top: 52px; padding-top: 22px; border-top: 1px solid var(--border);
+    font-size: 12px; font-weight: 600; letter-spacing: .12em;
     text-transform: uppercase; color: var(--faint);
   }
 
   /* about */
   .bio p + p { margin-top: 16px; }
-  .bio p { max-width: 62ch; color: var(--muted); }
+  .bio p { max-width: 60ch; }
   .research { margin-top: 22px; font-size: 15px; color: var(--muted); }
   .research a { color: var(--blue); text-decoration: none; font-weight: 500; }
   .research a:hover { text-decoration: underline; }
 
-  .facts { margin-top: 36px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
-  .fact { padding: 20px; }
-  .fact-value { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; color: var(--text-strong); }
-  .fact-label {
-    margin-top: 8px; font-size: 11px; font-weight: 600; letter-spacing: .11em;
-    text-transform: uppercase; color: var(--faint);
+  .facts { margin-top: 34px; border-top: 1px solid var(--border); }
+  .fact {
+    display: grid; grid-template-columns: 190px 1fr; gap: 20px;
+    padding: 11px 0; border-bottom: 1px solid var(--border);
   }
+  .fact-value { font-size: 20px; font-weight: 700; letter-spacing: -0.025em; color: var(--text-strong); }
+  .fact-label { color: var(--muted); font-size: 15px; align-self: center; }
 
-  /* company */
-  .bitmovin p { max-width: 58ch; color: var(--muted); margin-top: 12px; }
-  .bitmovin .btn { margin-top: 24px; }
+  /* bitmovin */
+  .bitmovin p { max-width: 56ch; color: var(--muted); margin-top: 10px; }
+  .bitmovin .btn { margin-top: 18px; }
 
   /* rounds I lead */
-  /* 240px so all three fit one row inside the gutter layout; 280 wrapped 2+1 */
-  .spv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 28px; }
-  .spv-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: var(--r);
-    border-top: 3px solid var(--accent); padding: 24px; transition: border-color .15s;
-  }
-  .spv-card:hover { border-color: var(--border-strong); border-top-color: var(--accent); }
-  .spv-name { font-size: 20px; }
+  .spv-grid { display: grid; gap: 1px; background: var(--border); border-block: 1px solid var(--border); }
+  .spv-card { background: var(--bg); padding: 22px 0 22px 20px; border-left: 2px solid var(--accent); }
+  .spv-name { font-size: 22px; }
   .spv-name a { text-decoration: none; }
-  .spv-blurb { margin-top: 9px; color: var(--muted); font-size: 15px; }
-  .spv-foot { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
-  .spv-role {
-    font-size: 11px; font-weight: 600; letter-spacing: .11em;
-    text-transform: uppercase; color: var(--accent);
-  }
+  .spv-name a:hover { border-bottom: 1px solid currentColor; }
+  .spv-blurb { margin-top: 6px; color: var(--muted); max-width: 52ch; }
+  .spv-foot { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
+  .spv-role { font-size: 13px; color: var(--accent); }
 
-  /* portfolio */
+  /* angel list: rows, not cards */
   .angel-grid {
-    margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr;
-    column-gap: 40px; border-top: 1px solid var(--border);
+    margin-top: 4px; display: grid; grid-template-columns: 1fr 1fr;
+    column-gap: 44px; border-top: 1px solid var(--border);
   }
   .angel-tile {
-    display: grid; grid-template-columns: 1fr auto; gap: 3px 14px;
-    padding: 14px 0; border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 14px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
     text-decoration: none; color: inherit; align-items: baseline;
   }
   a.angel-tile:hover .co-name { color: var(--blue); }
   .co-name { font-weight: 600; color: var(--text-strong); }
-  .co-sector { font-size: 11px; font-weight: 600; letter-spacing: .1em;
-               text-transform: uppercase; color: var(--faint);
-               text-align: right; white-space: nowrap; }
+  .co-sector { font-size: 12px; color: var(--faint); text-align: right; white-space: nowrap; }
   .co-desc { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
 
   /* incubator */
-  .cohorts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
-  .cohort {
-    background: var(--panel); border: 1px solid var(--border); border-radius: var(--r);
-    border-top: 3px solid var(--accent); padding: 26px;
-  }
+  .cohorts { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 8px; }
+  .cohort { border-top: 2px solid var(--accent); padding-top: 16px; }
   .cohort h3 { font-size: 22px; }
-  .cohort-meta {
-    font-size: 11px; font-weight: 600; letter-spacing: .11em;
-    text-transform: uppercase; color: var(--accent); margin-top: 9px;
-  }
-  .cohort-theme { margin-top: 15px; color: var(--muted); }
-  .cohort-highlights { margin-top: 16px; padding-left: 17px; color: var(--muted); font-size: 15px; }
-  .cohort-highlights li { margin-top: 6px; }
-  .cohort-highlights li::marker { color: var(--accent); }
+  .cohort-meta { font-size: 13px; color: var(--faint); margin-top: 5px; }
+  .cohort-theme { margin-top: 12px; }
+  .cohort-highlights { margin-top: 14px; padding-left: 17px; color: var(--muted); font-size: 15px; }
+  .cohort-highlights li { margin-top: 5px; }
 
-  .cohort-products { margin-top: 32px; }
+  .cohort-products { margin-top: 34px; }
   .products-head {
-    font-size: 11px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase;
-    color: var(--accent); padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent); padding-bottom: 8px; border-bottom: 1px solid var(--border);
   }
-  .products-head .partial { color: var(--faint); }
-  .products-head .partial::before { content: " / "; }
+  .products-head .partial { color: var(--faint); letter-spacing: .04em; }
+  .products-head .partial::before { content: " · "; }
   .product-list { list-style: none; }
+  /* 300px so the longest 2025 names ("TestAutomation MCP & Support Copilot")
+     stay on one line; those entries have no blurb to fill the second column. */
   .product-list li {
     display: grid; grid-template-columns: 300px 1fr; gap: 18px;
-    padding: 12px 0; border-bottom: 1px solid var(--border);
+    padding: 10px 0; border-bottom: 1px solid var(--border);
   }
   .product-name { font-weight: 600; color: var(--text-strong); }
   .product-blurb { color: var(--muted); font-size: 15px; }
 
-  .incubator-photos { margin-top: 34px; }
-  .photo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .incubator-photos { margin-top: 36px; }
+  .photo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .photo-row img {
-    width: 100%; height: 250px; object-fit: cover; display: block;
+    width: 100%; height: 240px; object-fit: cover; display: block;
     border-radius: var(--r); border: 1px solid var(--border);
   }
-  .incubator-photos figcaption {
-    margin-top: 12px; font-size: 11px; font-weight: 600; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--faint);
-  }
+  .incubator-photos figcaption { margin-top: 10px; font-size: 13px; color: var(--faint); }
 
   /* off the clock */
-  .offduty-line { font-size: 26px; line-height: 1.3; max-width: 24ch;
-                  font-weight: 700; letter-spacing: -0.03em; color: var(--text-strong); }
-  .offduty-list { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
-  .offduty-list span {
-    padding: 9px 18px; border: 1px solid var(--border); border-radius: var(--r);
-    background: var(--panel); font-size: 15px; color: var(--muted);
-  }
+  .offduty-line { font-size: 20px; line-height: 1.5; max-width: 44ch; }
+  .offduty-list { margin-top: 14px; font-size: 15px; color: var(--muted); }
 
   /* contact */
-  .thesis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .thesis, .contact { padding: 28px; }
-  .sectors-line { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-  .sectors-line span {
-    padding: 7px 14px; border-radius: var(--r); font-size: 12px; font-weight: 600;
-    border: 1px solid currentColor;
-  }
+  .thesis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  .sectors-line { font-size: 17px; margin-bottom: 20px; }
+  .sectors-line b { font-weight: 600; color: var(--text-strong); }
   .thesis ul, .anti ul { list-style: none; }
-  .thesis li { padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
-  .thesis dl { margin-top: 22px; font-size: 14px; }
-  .thesis dl div { display: flex; gap: 14px; padding: 6px 0; }
-  .thesis dt { color: var(--faint); min-width: 96px; font-size: 11px; font-weight: 600;
-               letter-spacing: .11em; text-transform: uppercase; padding-top: 4px; }
-  .thesis dd { color: var(--muted); }
-  .contact-email { font-size: 20px; font-weight: 700; letter-spacing: -0.025em; }
+  .thesis li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .thesis dl { margin-top: 22px; font-size: 14px; color: var(--muted); }
+  .thesis dl div { display: flex; gap: 14px; padding: 5px 0; }
+  .thesis dt { color: var(--faint); min-width: 90px; }
+  .contact-email { font-size: 21px; font-weight: 700; letter-spacing: -0.025em; }
   .contact-email a { text-decoration: none; color: var(--blue); }
   .contact-email a:hover { text-decoration: underline; }
-  .contact p { color: var(--muted); margin-top: 14px; font-size: 15px; }
-  .anti { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
-  .anti-head { font-size: 11px; font-weight: 600; letter-spacing: .12em;
-               text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
-  .anti li { font-size: 14px; color: var(--muted); padding: 4px 0; }
+  .contact p { color: var(--muted); margin-top: 14px; max-width: 46ch; }
+  .anti { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .anti-head { font-size: 13px; color: var(--faint); margin-bottom: 6px; }
+  .anti li { font-size: 14px; color: var(--muted); padding: 3px 0; }
 
   @media (max-width: 900px) {
     .angel-grid { grid-template-columns: 1fr; }
-    .cohorts, .thesis-grid { grid-template-columns: 1fr; }
+    .cohorts, .thesis-grid { grid-template-columns: 1fr; gap: 28px; }
     .product-list li { grid-template-columns: 1fr; gap: 2px; }
   }
-  @media (max-width: 800px) {
-    .hero { padding-block: 44px 56px; }
-    .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+  @media (max-width: 780px) {
+    .hero { padding-block: 48px 40px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+    .hero-portrait { width: 150px; height: 180px; }
+    .fact { grid-template-columns: 1fr; gap: 2px; }
     .photo-row { grid-template-columns: 1fr; }
     .photo-row img { height: 200px; }
   }
@@ -177,8 +148,8 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <div class="hero-role">{{ profile.role }}</div>
       <h1>{{ profile.name }}</h1>
+      <div class="hero-role">{{ profile.role }}</div>
       <p class="hero-tagline">{{ profile.tagline }}</p>
       <div class="hero-links">
         <a class="btn primary" href="#contact">Get in touch</a>
@@ -189,11 +160,11 @@
       </div>
     </div>
     {% if profile.portrait %}
-    <figure class="hero-figure panel">
-      <img src="{{ profile.portrait }}" alt="{{ profile.name }}" loading="eager">
-    </figure>
+    <img class="hero-portrait" src="{{ profile.portrait }}" alt="{{ profile.name }}"
+         width="200" height="244" loading="eager">
     {% endif %}
   </div>
+  {# bitmovin.com runs an uppercase stat line under its hero; counted from data #}
   <div class="wrap">
     <div class="statline">
       {{ angel_companies|length }} angel investments &nbsp;/&nbsp;
@@ -218,7 +189,7 @@
       {% if profile.facts %}
       <div class="facts">
         {% for value, label in profile.facts %}
-        <div class="fact panel">
+        <div class="fact">
           <div class="fact-value">{{ value }}</div>
           <div class="fact-label">{{ label }}</div>
         </div>
@@ -307,9 +278,9 @@
     <div class="label">Off the clock</div>
     <div>
       {% if profile.hobbies_intro %}<p class="offduty-line">{{ profile.hobbies_intro }}</p>{% endif %}
-      <div class="offduty-list">
-        {% for h in profile.hobbies %}<span>{{ h.name }}</span>{% endfor %}
-      </div>
+      <p class="offduty-list">
+        {% for h in profile.hobbies %}{{ h.name }}{% if not loop.last %} &middot; {% endif %}{% endfor %}
+      </p>
     </div>
   </div>
 </section>
@@ -320,11 +291,11 @@
   <div class="wrap row">
     <div class="label">For founders</div>
     <div class="thesis-grid">
-      <div class="thesis panel">
+      <div class="thesis">
         {% if thesis.sectors %}
-        <div class="sectors-line">
-          {% for label, accent in thesis.sectors %}<span style="color: var(--{{ accent }})">{{ label }}</span>{% endfor %}
-        </div>
+        <p class="sectors-line">I invest in
+          {% for label, accent in thesis.sectors %}<b style="color: var(--{{ accent }})">{{ label }}</b>{% if loop.revindex == 2 %} and {% elif not loop.last %}, {% endif %}{% endfor %}.
+        </p>
         {% endif %}
         <h2>{{ thesis.headline }}</h2>
         {% if thesis.bullets %}
@@ -336,7 +307,7 @@
         </dl>
       </div>
 
-      <div class="contact panel">
+      <div class="contact">
         {% if profile.contact_email %}
         <div class="contact-email"><a href="mailto:{{ profile.contact_email }}">{{ profile.contact_email }}</a></div>
         {% elif profile.links %}

@@ -41,12 +41,10 @@
 
 <style>
   :root {
-    /* Neutral black, the way bitmovin.com sits. No colour cast in the base. */
     --bg: #000000;
-    --bg-2: #0a0a0b;
-    --panel: #101012;
-    --panel-2: #17171a;
-    --border: #232327;
+    --bg-soft: #0a0a0b;
+    --surface: #101012;
+    --border: #222226;
     --border-strong: #3a3a41;
     --text: #ffffff;
     --text-strong: #ffffff;
@@ -63,10 +61,9 @@
     --yellow: #d4ab3e;
     --red: #e05555;
     --indigo: #6d7cf0;
-    --lime: #9ad14a;
 
-    --maxw: 1140px;
-    --gutter: 176px;
+    --maxw: 1060px;
+    --gutter: 170px;
     --r: 8px;
     --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
             "Helvetica Neue", Arial, sans-serif;
@@ -74,15 +71,14 @@
   }
   html.light-mode {
     --bg: #ffffff;
-    --bg-2: #f7f7f8;
-    --panel: #ffffff;
-    --panel-2: #f2f2f4;
-    --border: #e2e2e6;
-    --border-strong: #b8b8c0;
+    --bg-soft: #f7f7f8;
+    --surface: #ffffff;
+    --border: #e3e3e7;
+    --border-strong: #b4b4bc;
     --text: #0a0a0b;
     --text-strong: #000000;
     --muted: #55555f;
-    --faint: #86868f;
+    --faint: #85858e;
 
     --blue: #1c50d8;
     --violet: #5b3fd6;
@@ -94,7 +90,6 @@
     --yellow: #8a6d18;
     --red: #c03535;
     --indigo: #4553c9;
-    --lime: #5f8218;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -104,54 +99,56 @@
     background: var(--bg);
     color: var(--text);
     font-size: 16px;
-    line-height: 1.6;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; }
-  h1, h2, h3 {
-    font-weight: 700; line-height: 1.08; letter-spacing: -0.03em;
-    color: var(--text-strong);
-  }
+  h1, h2, h3 { font-weight: 700; line-height: 1.08;
+               letter-spacing: -0.03em; color: var(--text-strong); }
 
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 32px; }
 
-  section { padding-block: 92px; }
-  section + section { border-top: 1px solid var(--border); }
-  .row { display: grid; grid-template-columns: var(--gutter) 1fr; gap: 44px; }
+  /* Every section is a labelled row: a small label in the left gutter, the
+     content beside it. Replaces stacked eyebrow headings. */
+  section { padding-block: 72px; border-top: 1px solid var(--border); }
+  .row { display: grid; grid-template-columns: var(--gutter) 1fr; gap: 40px; }
   .label {
-    font-size: 11px; font-weight: 600; letter-spacing: .13em;
-    text-transform: uppercase; color: var(--faint); padding-top: 10px;
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--faint); padding-top: 6px;
   }
-  .lede { font-size: 18px; line-height: 1.6; max-width: 56ch; color: var(--muted); }
-  h2 { font-size: clamp(1.8rem, 3.2vw, 2.5rem); margin-bottom: 20px; }
+  .lede { font-size: 19px; line-height: 1.55; max-width: 54ch; }
+  h2 { font-size: 30px; margin-bottom: 18px; }
 
-  /* --- nav: full width, flat, like bitmovin.com --- */
-  .nav { border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 30; }
+  /* --- nav --- */
+  .nav { border-bottom: 1px solid var(--border); }
   .nav-inner {
-    max-width: var(--maxw); margin: 0 auto; padding: 18px 32px;
-    display: flex; align-items: center; gap: 30px;
+    max-width: var(--maxw); margin: 0 auto; padding: 20px 32px;
+    display: flex; align-items: baseline; gap: 24px;
   }
   .wordmark {
     font-weight: 700; font-size: 16px; letter-spacing: -0.02em;
     color: var(--text-strong); text-decoration: none;
   }
-  .nav-links { margin-left: auto; display: flex; align-items: center; gap: 26px; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 15px; }
-  .nav-links a:hover { color: var(--text); }
+  .nav-links { margin-left: auto; display: flex; align-items: baseline; gap: 24px; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 14px;
+    padding-bottom: 2px; border-bottom: 1px solid transparent;
+  }
+  .nav-links a:hover { color: var(--text); border-bottom-color: var(--border-strong); }
   .theme-toggle {
     background: none; border: 0; color: var(--faint); cursor: pointer;
-    font-size: 15px; font-family: inherit; padding: 0;
+    font-size: 13px; padding: 0; font-family: inherit;
   }
   .theme-toggle:hover { color: var(--text); }
-  .nav-user { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+  .nav-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
   .nav-user img { width: 22px; height: 22px; border-radius: 50%; }
 
   /* --- shared --- */
-  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--r); }
-  .meta { font-size: 13px; color: var(--faint); }
-  .meta span + span::before { content: " / "; }
+  .meta {
+    font-size: 13px; color: var(--faint);
+  }
+  .meta span + span::before { content: " · "; }
 
-  /* Bitmovin's buttons: rounded rectangles, solid blue primary, outlined rest. */
   .btn {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 11px 20px; border-radius: var(--r);
@@ -159,27 +156,28 @@
     border: 1px solid var(--border-strong);
     transition: background .15s, border-color .15s;
   }
-  .btn:hover { background: var(--panel-2); border-color: var(--text); }
+  .btn:hover { background: var(--surface); border-color: var(--text); }
   .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
   .btn.primary:hover { filter: brightness(1.12); background: var(--blue); }
-  .btn.violet { border-color: var(--violet); color: var(--text); }
-  .btn.violet:hover { background: color-mix(in srgb, var(--violet) 16%, transparent); border-color: var(--violet); }
+  .btn.violet { border-color: var(--violet); }
+  .btn.violet:hover { background: color-mix(in srgb, var(--violet) 16%, transparent);
+                      border-color: var(--violet); }
 
   /* --- footer --- */
-  footer { border-top: 1px solid var(--border); padding-block: 40px; }
+  footer { border-top: 1px solid var(--border); padding-block: 36px; }
   .footer-inner {
     max-width: var(--maxw); margin: 0 auto; padding: 0 32px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 26px;
   }
   .footer-links { display: flex; flex-wrap: wrap; gap: 26px; }
-  .footer-inner a { color: var(--muted); text-decoration: none; font-size: 15px; }
+  .footer-inner a { color: var(--muted); text-decoration: none; font-size: 14px; }
   .footer-inner a:hover { color: var(--text); }
-  .footer-copy { margin-left: auto; color: var(--faint); font-size: 14px; }
+  .footer-copy { margin-left: auto; color: var(--faint); font-size: 13px; }
 
-  @media (max-width: 800px) {
-    .wrap, .nav-inner, .footer-inner { padding-inline: 20px; }
-    section { padding-block: 58px; }
-    .row { grid-template-columns: 1fr; gap: 16px; }
+  @media (max-width: 780px) {
+    .wrap, .nav-inner, .footer-inner { padding-inline: 22px; }
+    section { padding-block: 52px; }
+    .row { grid-template-columns: 1fr; gap: 14px; }
     .label { padding-top: 0; }
     .nav-links { gap: 16px; }
     .nav-links .nav-anchor { display: none; }
