@@ -41,6 +41,10 @@ EDITABLE = (
     # 1 when the date is a placeholder rather than something Stefan supplied.
     # Kept as real state instead of inferred from a magic string in `notes`.
     "date_inferred",
+    # When the company last wrote to Stefan. Silence is the earliest signal a
+    # company is dying — they stop sending updates long before they admit it —
+    # so this is tracked separately from when *he* last edited the row.
+    "last_heard_on", "last_heard_from", "last_heard_subject", "last_heard_thread",
 )
 
 _NUMERIC = ("amount", "entry_valuation", "current_value", "realized")
@@ -74,6 +78,10 @@ class PortfolioStore:
                 status TEXT DEFAULT 'unknown',
                 notes TEXT,
                 date_inferred INTEGER DEFAULT 0,
+                last_heard_on TEXT,
+                last_heard_from TEXT,
+                last_heard_subject TEXT,
+                last_heard_thread TEXT,
                 updated_at TEXT
             )
         """)
@@ -89,7 +97,13 @@ class PortfolioStore:
         """
         async with self._db.execute("PRAGMA table_info(investments)") as cur:
             have = {r[1] for r in await cur.fetchall()}
-        for col, ddl in (("date_inferred", "INTEGER DEFAULT 0"),):
+        for col, ddl in (
+            ("date_inferred", "INTEGER DEFAULT 0"),
+            ("last_heard_on", "TEXT"),
+            ("last_heard_from", "TEXT"),
+            ("last_heard_subject", "TEXT"),
+            ("last_heard_thread", "TEXT"),
+        ):
             if col not in have:
                 await self._db.execute(f"ALTER TABLE investments ADD COLUMN {col} {ddl}")
                 logger.info("migrated: added investments.%s", col)
@@ -249,6 +263,36 @@ def summarise(companies, rows: dict[str, dict]) -> dict:
 
     inferred_dates = sum(1 for c in tracked if rows[c.name].get("date_inferred"))
 
+    # --- how long since each company last made contact ---
+    silence, never_heard = [], []
+    for c in companies:
+        heard = rows.get(c.name, {}).get("last_heard_on")
+        if not heard:
+            never_heard.append(c.name)
+            continue
+        try:
+            days = (now.date() - datetime.fromisoformat(heard).date()).days
+        except ValueError:
+            never_heard.append(c.name)
+            continue
+        silence.append({"company": c.name, "days": days,
+                        "subject": rows[c.name].get("last_heard_subject") or "",
+                        "thread": rows[c.name].get("last_heard_thread") or ""})
+    silence.sort(key=lambda s: -s["days"])
+
+    # Buckets, not a mean: one company silent for three years would drag an
+    # average and hide that most are in touch.
+    def in_range(lo, hi):
+        return sum(1 for s in silence if lo <= s["days"] < hi)
+
+    silence_buckets = {
+        "under_3m": in_range(0, 90),
+        "3_to_6m": in_range(90, 180),
+        "6_to_12m": in_range(180, 365),
+        "over_12m": in_range(365, 10**6),
+        "never": len(never_heard),
+    }
+
     return {
         "counts": {
             "total": total,
@@ -293,4 +337,9 @@ def summarise(companies, rows: dict[str, dict]) -> dict:
         },
         "status_mix": status_mix,
         "stale": stale,
+        "silence": silence,
+        "silence_buckets": silence_buckets,
+        # "Never heard" means no message was matched — which can also mean the
+        # company's sending domain was never searched. Not proof of silence.
+        "never_heard": never_heard,
     }

@@ -292,3 +292,79 @@ class TestInferredDatesStayPrivate:
         guessed = {r[0] for r in import_portfolio.ROWS if r[3]}
         assert "GuardAero" in guessed, "its 2026 was interpolated, not given"
         assert "Mistral" not in guessed, "Apr.26 was given"
+
+
+class TestSilenceTracking:
+    """Silence is the earliest warning an angel position gives."""
+
+    async def test_last_heard_round_trips(self, store):
+        await store.upsert("Acme", {
+            "last_heard_on": "2026-01-15", "last_heard_from": "f@acme.com",
+            "last_heard_subject": "Q4 update", "last_heard_thread": "abc123",
+        })
+        row = await store.get("Acme")
+        assert row["last_heard_on"] == "2026-01-15"
+        assert row["last_heard_thread"] == "abc123"
+
+    def test_never_heard_is_separate_from_silent(self):
+        """No match may mean an unsearched domain, not a quiet company."""
+        s = summarise([co("A"), co("B")], {"A": {"last_heard_on": "2026-09-01"}})
+        assert s["never_heard"] == ["B"]
+        assert s["silence_buckets"]["never"] == 1
+
+    def test_silence_is_bucketed_not_averaged(self):
+        today = datetime.now(timezone.utc).date()
+
+        def ago(days):
+            return (today - timedelta(days=days)).isoformat()
+
+        s = summarise(
+            [co("Fresh"), co("Slipping"), co("Worrying"), co("Gone")],
+            {"Fresh": {"last_heard_on": ago(10)},
+             "Slipping": {"last_heard_on": ago(120)},
+             "Worrying": {"last_heard_on": ago(250)},
+             "Gone": {"last_heard_on": ago(500)}},
+        )
+        b = s["silence_buckets"]
+        assert (b["under_3m"], b["3_to_6m"], b["6_to_12m"], b["over_12m"]) == (1, 1, 1, 1)
+
+    def test_silence_is_sorted_quietest_first(self):
+        today = datetime.now(timezone.utc).date()
+        s = summarise(
+            [co("A"), co("B")],
+            {"A": {"last_heard_on": (today - timedelta(days=10)).isoformat()},
+             "B": {"last_heard_on": (today - timedelta(days=300)).isoformat()}},
+        )
+        assert [x["company"] for x in s["silence"]] == ["B", "A"]
+
+    def test_bad_last_heard_date_counts_as_never_not_a_crash(self):
+        s = summarise([co("A")], {"A": {"last_heard_on": "sometime"}})
+        assert s["never_heard"] == ["A"]
+
+    def test_contact_dates_never_reach_the_public_page(self):
+        out = public_overlay({"Acme": {
+            "last_heard_on": "2026-09-01", "last_heard_from": "f@acme.com",
+            "last_heard_subject": "Q3", "status": "active",
+        }})
+        assert set(out["Acme"]) == {"status", "stage", "year"}
+
+
+class TestGmailScanFile:
+    def test_scan_reconciles_with_the_site(self):
+        import json
+
+        root = Path(__file__).resolve().parent.parent
+        sys.path.insert(0, str(root / "scripts"))
+        import import_gmail_scan
+
+        scan = json.loads((root / "scripts" / "gmail_scan_2026_09_20.json").read_text())
+        assert import_gmail_scan.check(scan) == []
+
+    def test_scan_is_a_subset_not_a_claim_about_everyone(self):
+        """A company missing from the scan must not be written as 'silent'."""
+        import json
+
+        root = Path(__file__).resolve().parent.parent
+        scan = json.loads((root / "scripts" / "gmail_scan_2026_09_20.json").read_text())
+        known = {c.name for c in (*content.PORTFOLIO, content.BITMOVIN)}
+        assert set(scan["companies"]) < known, "scan should cover only what matched"

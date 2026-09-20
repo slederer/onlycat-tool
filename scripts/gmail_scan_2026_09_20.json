@@ -1,0 +1,43 @@
+{
+  "_comment": [
+    "Snapshot of the last message received FROM each portfolio company, from a",
+    "Gmail sweep on 2026-09-20. Matched on sender domain, which is far more",
+    "reliable than company name in the subject line.",
+    "",
+    "'from' is the sender address, 'subject' the thread subject, 'thread' the",
+    "Gmail thread id (open with https://mail.google.com/mail/u/0/#all/<thread>).",
+    "",
+    "Only messages written by a human at the company count. Marketing blasts and",
+    "product newsletters are not 'hearing from' a company in the sense that",
+    "matters here, so they are excluded even when more recent.",
+    "",
+    "Companies absent from this file produced no match. That is NOT proof of",
+    "silence: it may mean their sending domain was not among the ones searched.",
+    "They are recorded as unmatched, never as silent."
+  ],
+  "scanned_on": "2026-09-20",
+  "companies": {
+    "Screenpipe":   {"date": "2026-09-20", "from": "louis@hey.screenpi.pe",    "subject": "(recent, unread)",                                  "thread": "1a0be4f23b63bd93"},
+    "Kickscale":    {"date": "2026-09-14", "from": "gerald.zankl@kickscale.com","subject": "Kickscale Investor Update | August 2026",          "thread": "1a0a16a7710b00c3"},
+    "Oden.io":      {"date": "2026-09-08", "from": "willem.sundblad@oden.io",  "subject": "Re: Oden Investor update - Internal round coming up","thread": "19fafacd11695846"},
+    "Invofox":      {"date": "2026-09-08", "from": "alberto@invofox.com",      "subject": "Re: How is it going?",                              "thread": "19fc710a9f1ba984"},
+    "HumanLayer":   {"date": "2026-09-08", "from": "dexter@humanlayer.dev",    "subject": "Re: Talk at our AI Internship Incubator",           "thread": "19f0e5d54ca1e96d"},
+    "Golpo":        {"date": "2026-09-02", "from": "founders@golpoai.com",     "subject": "Golpo Investor Update: August 2026",                "thread": "1a0641d74846a9e8"},
+    "Pally":        {"date": "2026-09-02", "from": "investors@getpally.com",   "subject": "Pally Investor Update | Aug-26",                    "thread": "1a063bd9e006d0e6"},
+    "Salvy":        {"date": "2026-09-01", "from": "artur@salvy.com.br",       "subject": "Salvy - Investor Update Aug/26",                    "thread": "1a05e340051a9d38"},
+    "Hyprnote":     {"date": "2026-09-01", "from": "john@fastrepl.com",        "subject": "Re: Fastrepl Investor Update",                      "thread": "19fbc32e932a2c44"},
+    "0.email":      {"date": "2026-09-01", "from": "nizzy@orchid.ai",          "subject": "August Investor Update",                            "thread": "1a05d4c27840bd90"},
+    "Upflow":       {"date": "2026-09-01", "from": "alexandre@upflow.io",      "subject": "Upflow - FRM Launch today",                         "thread": "1a05d5ef5ee07f12"},
+    "AiSDR":        {"date": "2026-08-31", "from": "yz@aisdr.com",             "subject": "AiSDR - Investor update August 2026",               "thread": "1a058f536780fc29"},
+    "Trace":        {"date": "2026-08-08", "from": "tim@trace.so",             "subject": "Trace Investor Update: July 2026",                  "thread": "19fe0a357ee0fa04"},
+    "HockeyStack":  {"date": "2026-08-03", "from": "bugra@hockeystack.com",    "subject": "Re: How is it going?",                              "thread": "19fc71160a1a30d6"},
+    "Rewbi":        {"date": "2026-07-28", "from": "thomas@rewbi.com",         "subject": "Rewbi Investor Update Q2 2026",                     "thread": "19fa9dec1bde64f8"},
+    "Earendil":     {"date": "2026-07-21", "from": "colin@earendil.com",       "subject": "Earendil Investor Update [Q2 2026]",                "thread": "19f84f86dc9ad4a2"},
+    "Splash Inc.":  {"date": "2026-07-06", "from": "ivan@splash9.com",         "subject": "Splash Industries Q2 2026 Investor update",         "thread": "19f34d48f686aabc"},
+    "Rownd":        {"date": "2026-06-24", "from": "robert@email.rownd.io",    "subject": "Rownd authentication is sunsetting",                "thread": "19efb6dfa2e508a8"},
+    "Waydev":       {"date": "2026-05-17", "from": "alex@waydev.co",           "subject": "\"The new\" Waydev, big PIVOT! Q1 2026 update",     "thread": "19e3539d7cd4756c"},
+    "GlassKube":    {"date": "2026-04-27", "from": "lw@glasskube.com",         "subject": "Re: (PMF update)",                                  "thread": "19dca6e969603e36"},
+    "Ozeki":        {"date": "2025-11-09", "from": "ken@ozeki.ai",             "subject": "Re: Intro to YC",                                   "thread": "19a646acfda3ef69"},
+    "Onboard.io":   {"date": "2025-07-21", "from": "jeff@onboard.io",          "subject": "(investor update)",                                 "thread": "1982e2a1954e3d83"}
+  }
+}

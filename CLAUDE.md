@@ -54,6 +54,16 @@ EXTRA_HOMEPAGE_HOSTS=localhost uv run main.py
 
 Tracking data lives in the `investments` table in the same SQLite DB (`DB_PATH`), keyed by the company name in `content.PORTFOLIO`. Renaming a company in `content.py` orphans its row, so rename in both places.
 
+The tracker also records **when each company last wrote to Stefan** (`last_heard_on`), separately from when he last edited the row. Silence is the earliest warning an angel position gives — companies stop sending updates long before they admit trouble — so `/admin` buckets the portfolio by how long it has been quiet and can sort quietest-first.
+
+**There is no live Gmail sync**, and adding one is not a config tweak: the app's Google OAuth requests only `openid email profile` with `access_type=online`, so it has neither a Gmail scope nor a refresh token to act with later. Contact data is produced by Claude sweeping the mailbox in a session, written to `scripts/gmail_scan_<date>.json`, and loaded with:
+
+```bash
+uv run python scripts/import_gmail_scan.py scripts/gmail_scan_2026_09_20.json [--dry-run]
+```
+
+A company absent from a scan is recorded as *unmatched*, never as *silent* — it may simply send from a domain the sweep did not search.
+
 ## Deployment
 
 Dockerized for Fly.io. Uses a persistent volume mounted at `/data` for the SQLite database.

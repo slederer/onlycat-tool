@@ -56,7 +56,7 @@
                 border-radius: var(--r); }
   /* Wide enough that every column keeps its declared width instead of being
      squeezed; .table-wrap scrolls horizontally rather than truncating a cheque. */
-  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 1400px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 1500px; }
   th { text-align: left; font-size: 11px; text-transform: uppercase;
        letter-spacing: 0.06em; color: var(--faint); font-weight: 500;
        padding: 10px 8px; border-bottom: 1px solid var(--border);
@@ -75,6 +75,11 @@
   /* A placeholder date should look unlike a real one at a glance. */
   input.guessed { border-style: dashed; border-color: var(--orange); color: var(--muted); }
   .guessed-tag { color: var(--orange); }
+  .w-heard { width: 96px; }
+  .heard { text-align: right; font-variant-numeric: tabular-nums; }
+  .heard-link { text-decoration: none; }
+  .heard-link:hover { text-decoration: underline; }
+  .warn-text { color: var(--orange); }
 
   .btn { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border-strong);
          border-radius: 6px; padding: 7px 14px; font: inherit; font-size: 13px;
@@ -127,8 +132,8 @@
     <section class="panel">
       <h2>Status</h2>
       <div id="status-mix"></div>
-      <h2 style="margin-top:18px">Not updated recently</h2>
-      <div id="stale"></div>
+      <h2 style="margin-top:18px">Silence</h2>
+      <div id="silence"></div>
     </section>
   </div>
 
@@ -136,6 +141,9 @@
     <input type="search" id="filter" placeholder="Filter by name or sector…" autocomplete="off">
     <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap">
       <input type="checkbox" id="only-untracked" style="width:auto"> Only untracked
+    </label>
+    <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap">
+      <input type="checkbox" id="sort-silence" style="width:auto"> Quietest first
     </label>
     <span class="saving" id="saving"></span>
     <button class="btn btn-primary" id="save" disabled>Save changes</button>
@@ -149,7 +157,8 @@
           <th class="w-sel">Currency</th><th class="w-sel">Instrument</th>
           <th class="w-sel">Round</th><th class="w-num num">Entry val.</th>
           <th class="w-num num">Value now</th><th class="w-num num">Realized</th>
-          <th class="num">Multiple</th><th class="w-sel">Status</th><th>Notes</th>
+          <th class="num">Multiple</th><th class="w-sel">Status</th>
+          <th class="w-heard">Last heard</th><th>Notes</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -242,10 +251,22 @@ function renderAnalytics(a) {
     .map(([k, v]) => `<div class="bar-row"><span>${esc(k)}</span>
        <span class="bar-pct">${v}</span></div>`).join("") || empty();
 
-  $("stale").innerHTML = a.stale.length
-    ? a.stale.slice(0, 8).map(s => `<div class="bar-row"><span>${esc(s.company)}</span>
-        <span class="bar-pct">${Math.floor(s.days / 30)} mo</span></div>`).join("")
-    : `<p class="dim" style="font-size:13px">Nothing stale.</p>`;
+  const b = a.silence_buckets || {};
+  const buckets = [
+    ["In touch (< 3mo)", b.under_3m, "var(--green)"],
+    ["3-6 months", b["3_to_6m"], "var(--yellow)"],
+    ["6-12 months", b["6_to_12m"], "var(--orange)"],
+    ["Over a year", b.over_12m, "var(--red)"],
+    ["No message found", b.never, "var(--faint)"],
+  ];
+  $("silence").innerHTML = buckets.map(([label, n, colour]) => `
+    <div class="bar-row"><span style="color:${colour}">${esc(label)}</span>
+      <span class="bar-pct">${n ?? 0}</span></div>`).join("") +
+    ((a.silence || []).length
+      ? `<p class="dim" style="font-size:12px;margin-top:10px">Quietest: ` +
+        a.silence.slice(0, 3).map(s =>
+          `${esc(s.company)} (${Math.floor(s.days / 30)}mo)`).join(", ") + `</p>`
+      : "");
 }
 
 const empty = () => `<p class="dim" style="font-size:13px">No data yet.</p>`;
@@ -281,15 +302,39 @@ function multiple(c) {
          (atPar ? `<span class="co-sub">at cost</span>` : "");
 }
 
+/* How long since the company last wrote, coloured by how worrying that is.
+   Silence is the earliest warning an angel position gets. */
+function lastHeard(c) {
+  if (!c.last_heard_on) return `<span class="dim">—</span>`;
+  const days = Math.floor((Date.now() - new Date(c.last_heard_on)) / 86400000);
+  const months = Math.floor(days / 30);
+  const cls = days >= 365 ? "down" : days >= 180 ? "warn-text" : days >= 90 ? "" : "up";
+  const label = months < 1 ? `${days}d` : `${months}mo`;
+  const title = `${esc(c.last_heard_on)} — ${esc(c.last_heard_subject || "")}`;
+  const body = `<span class="${cls}" title="${title}">${label}</span>`;
+  return c.last_heard_thread
+    ? `<a href="https://mail.google.com/mail/u/0/#all/${esc(c.last_heard_thread)}"
+          target="_blank" rel="noopener" class="heard-link">${body}</a>`
+    : body;
+}
+
 function renderRows() {
   const q = $("filter").value.trim().toLowerCase();
   const onlyUntracked = $("only-untracked").checked;
 
-  const visible = companies.filter(c => {
+  let visible = companies.filter(c => {
     if (onlyUntracked && c.tracked) return false;
     if (!q) return true;
     return (c.name + " " + (c.sector || "")).toLowerCase().includes(q);
   });
+
+  if ($("sort-silence").checked) {
+    // Never-heard sorts to the very top: no contact at all is the loudest
+    // version of the signal, not a missing value to push to the bottom.
+    const age = (c) => c.last_heard_on
+      ? (Date.now() - new Date(c.last_heard_on)) / 86400000 : Infinity;
+    visible = [...visible].sort((a, b) => age(b) - age(a));
+  }
 
   $("rows").innerHTML = visible.map(c => {
     const d = dirty.get(c.name) || {};
@@ -313,6 +358,7 @@ function renderRows() {
       <td><input type="number" step="any" min="0" class="num" data-co="${esc(c.name)}" data-f="realized" value="${esc(v("realized"))}"></td>
       <td class="num">${multiple(merged)}</td>
       <td>${sel(c.name, "status", status, STATUSES.filter(s => s !== "unknown"), "unknown")}</td>
+      <td class="heard">${lastHeard(merged)}</td>
       <td><input type="text" data-co="${esc(c.name)}" data-f="notes" value="${esc(v("notes"))}" placeholder="…"></td>
     </tr>`;
   }).join("") || `<tr><td colspan="12" class="dim" style="padding:20px">No companies match.</td></tr>`;
@@ -390,6 +436,7 @@ $("save").addEventListener("click", async () => {
 
 $("filter").addEventListener("input", renderRows);
 $("only-untracked").addEventListener("change", renderRows);
+$("sort-silence").addEventListener("change", renderRows);
 
 window.addEventListener("beforeunload", (e) => {
   if (dirty.size) { e.preventDefault(); e.returnValue = ""; }
