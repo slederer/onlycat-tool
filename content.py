@@ -258,10 +258,8 @@ BITMOVIN = Company(
 # best known first. Move a line to move a company on the page.
 #
 # TODO(stefan): the blurbs are DRAFTED from each company's own site or press
-# coverage and need your eye. Still no blurb: Rewbi (stealth, deliberate),
-# Statewide (could not identify it; the name is too generic to search), and
-# Axelrod + Verdict Machine (added 2026-09-20, nothing findable under either
-# name — send me a line each and I will fill them in).
+# coverage and need your eye. Still no blurb: Rewbi (stealth, deliberate) and
+# Statewide (could not identify it; the name is too generic to search).
 # ---------------------------------------------------------------------------
 
 PORTFOLIO: tuple[Company, ...] = (
@@ -348,8 +346,10 @@ PORTFOLIO: tuple[Company, ...] = (
             url="https://github.com/screenpipe/screenpipe", sector="AI infra", accent="purple"),
     Company("Effractor", "AI-native offensive security that chains the exploits scanners miss.",
             url="https://effractor.com", sector="Security", accent="red"),
-    Company("Axelrod", "", accent="orange"),
-    Company("Verdict Machine", "", accent="green"),
+    Company("Axelrod", "Autonomous agents that run hotel front- and back-of-house operations.",
+            url="https://axelrodlabs.com", sector="Hospitality", accent="orange"),
+    Company("Verdict Machine", "AI security for banks' blockchain and digital-asset operations.",
+            url="https://verdictmachine.com", sector="Security", accent="green"),
 )
 
 
