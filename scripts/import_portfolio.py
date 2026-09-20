@@ -87,6 +87,10 @@ ALIASES = {"Hypernote": "Hyprnote"}
 
 INFERRED_NOTE = "date inferred — amount is Stefan's, date is a placeholder"
 
+# An inferred date is also flagged in its own column so `public_overlay` can
+# withhold it from the site. A guessed year must not appear on slederer.com as
+# though Stefan had stated it.
+
 
 def known_names() -> set[str]:
     return {c.name for c in (*content.PORTFOLIO, content.BITMOVIN)}
@@ -136,6 +140,7 @@ async def main(dry_run: bool):
                 "currency": "USD",
                 "invested_on": date,
                 "notes": INFERRED_NOTE if is_inferred else "",
+                "date_inferred": 1 if is_inferred else 0,
                 # No status: Stefan gave money and dates, not outcomes.
             })
         rows = await store.get_all()

@@ -38,6 +38,9 @@ STALE_AFTER_DAYS = 180
 EDITABLE = (
     "invested_on", "amount", "currency", "instrument", "round_stage",
     "entry_valuation", "current_value", "realized", "status", "notes",
+    # 1 when the date is a placeholder rather than something Stefan supplied.
+    # Kept as real state instead of inferred from a magic string in `notes`.
+    "date_inferred",
 )
 
 _NUMERIC = ("amount", "entry_valuation", "current_value", "realized")
@@ -70,11 +73,26 @@ class PortfolioStore:
                 realized REAL,
                 status TEXT DEFAULT 'unknown',
                 notes TEXT,
+                date_inferred INTEGER DEFAULT 0,
                 updated_at TEXT
             )
         """)
+        await self._migrate()
         await self._db.commit()
         logger.info("Portfolio store opened: %s", self._db_path)
+
+    async def _migrate(self):
+        """Add columns introduced after the table was first created.
+
+        SQLite has no "ADD COLUMN IF NOT EXISTS", and the table already exists
+        in production, so check before altering.
+        """
+        async with self._db.execute("PRAGMA table_info(investments)") as cur:
+            have = {r[1] for r in await cur.fetchall()}
+        for col, ddl in (("date_inferred", "INTEGER DEFAULT 0"),):
+            if col not in have:
+                await self._db.execute(f"ALTER TABLE investments ADD COLUMN {col} {ddl}")
+                logger.info("migrated: added investments.%s", col)
 
     async def close(self):
         if self._db:
@@ -103,6 +121,8 @@ class PortfolioStore:
         for k in _NUMERIC:
             if k in clean:
                 clean[k] = _as_float(clean[k])
+        if "date_inferred" in clean:
+            clean["date_inferred"] = 1 if clean["date_inferred"] in (1, "1", True, "true") else 0
         if clean.get("status") not in (None, *STATUSES):
             raise ValueError(f"unknown status: {clean['status']!r}")
         clean["updated_at"] = _utcnow()
@@ -143,7 +163,10 @@ def public_overlay(rows: dict[str, dict]) -> dict[str, dict]:
     out = {}
     for name, r in rows.items():
         year = None
-        if r.get("invested_on"):
+        # An inferred date is a working placeholder, not a fact about the
+        # company. It may drive the private analytics; it must never be
+        # published as though Stefan had stated it.
+        if r.get("invested_on") and not r.get("date_inferred"):
             year = str(r["invested_on"])[:4]
         out[name] = {
             "status": r.get("status") or "unknown",
@@ -224,6 +247,8 @@ def summarise(companies, rows: dict[str, dict]) -> dict:
             stale.append({"company": c.name, "days": age})
     stale.sort(key=lambda s: -s["days"])
 
+    inferred_dates = sum(1 for c in tracked if rows[c.name].get("date_inferred"))
+
     return {
         "counts": {
             "total": total,
@@ -231,6 +256,9 @@ def summarise(companies, rows: dict[str, dict]) -> dict:
             "with_amount": len(cost_rows),
             "with_mark": len(valued),
             "untracked": total - len(tracked),
+            # Placeholder dates. They drive the vintage chart but are withheld
+            # from the public page, so it is worth knowing how many remain.
+            "inferred_dates": inferred_dates,
         },
         "coverage": {
             # The number that decides whether anything below is trustworthy.

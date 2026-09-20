@@ -236,3 +236,59 @@ class TestImportScript:
 
         assert any(r[3] for r in import_portfolio.ROWS), "nothing flagged as inferred"
         assert "inferred" in import_portfolio.INFERRED_NOTE
+
+
+class TestInferredDatesStayPrivate:
+    """A guessed date drives the private charts but must never be published."""
+
+    def test_inferred_date_yields_no_public_year(self):
+        out = public_overlay({"Acme": {"invested_on": "2026-03-01", "date_inferred": 1}})
+        assert out["Acme"]["year"] is None
+
+    def test_given_date_still_yields_a_year(self):
+        out = public_overlay({"Acme": {"invested_on": "2026-03-01", "date_inferred": 0}})
+        assert out["Acme"]["year"] == 2026
+
+    def test_missing_flag_is_treated_as_given(self):
+        """Rows written before the column existed are Stefan's own data."""
+        out = public_overlay({"Acme": {"invested_on": "2021-05-01"}})
+        assert out["Acme"]["year"] == 2021
+
+    async def test_flag_persists_and_is_coerced_to_an_int(self, store):
+        await store.upsert("Acme", {"invested_on": "2025-01-01", "date_inferred": "1"})
+        assert (await store.get("Acme"))["date_inferred"] == 1
+        await store.upsert("Acme", {"date_inferred": 0})
+        assert (await store.get("Acme"))["date_inferred"] == 0
+
+    def test_summary_counts_placeholder_dates(self):
+        s = summarise(
+            [co("A"), co("B")],
+            {"A": {"amount": 1, "date_inferred": 1}, "B": {"amount": 1}},
+        )
+        assert s["counts"]["inferred_dates"] == 1
+
+    async def test_migration_adds_the_column_to_an_existing_table(self, tmp_path):
+        """The production table predates this column."""
+        import aiosqlite
+
+        db = tmp_path / "old.db"
+        async with aiosqlite.connect(db) as c:
+            await c.execute(
+                "CREATE TABLE investments (company TEXT PRIMARY KEY, amount REAL)")
+            await c.execute("INSERT INTO investments VALUES ('Acme', 100)")
+            await c.commit()
+
+        s = PortfolioStore(db)
+        await s.open()
+        row = await s.get("Acme")
+        await s.close()
+        assert row["amount"] == 100, "migration must not lose existing data"
+        assert "date_inferred" in row
+
+    def test_import_marks_every_guessed_date(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+        import import_portfolio
+
+        guessed = {r[0] for r in import_portfolio.ROWS if r[3]}
+        assert "GuardAero" in guessed, "its 2026 was interpolated, not given"
+        assert "Mistral" not in guessed, "Apr.26 was given"

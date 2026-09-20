@@ -72,6 +72,10 @@
   .row-dead { opacity: 0.45; }
   .row-dirty td { background: color-mix(in srgb, var(--blue) 8%, transparent); }
 
+  /* A placeholder date should look unlike a real one at a glance. */
+  input.guessed { border-style: dashed; border-color: var(--orange); color: var(--muted); }
+  .guessed-tag { color: var(--orange); }
+
   .btn { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border-strong);
          border-radius: 6px; padding: 7px 14px; font: inherit; font-size: 13px;
          cursor: pointer; white-space: nowrap; }
@@ -215,6 +219,8 @@ function renderAnalytics(a) {
     ["Realized", money(m.realized), m.dpi == null ? "—" : `${m.dpi.toFixed(2)}× DPI`],
     ["TVPI", m.tvpi == null ? "—" : m.tvpi.toFixed(2) + "×", "recorded positions only"],
     ["Tracked", `${c.tracked}/${c.total}`, `${c.untracked} untouched`],
+    ["Guessed dates", String(c.inferred_dates ?? 0),
+     "withheld from the public page"],
   ].map(([l, v, n]) => `<div class="stat">
       <div class="stat-label">${esc(l)}</div>
       <div class="stat-value${thin}">${esc(v)}</div>
@@ -294,7 +300,10 @@ function renderRows() {
     const merged = {...c, ...d};
     return `<tr class="${cls}" data-row="${esc(c.name)}">
       <td class="co">${esc(c.name)}<span class="co-sub">${esc(c.sector || "—")}${c.spv ? " · SPV" : ""}</span></td>
-      <td><input type="date" data-co="${esc(c.name)}" data-f="invested_on" value="${esc(v("invested_on"))}"></td>
+      <td><input type="date" data-co="${esc(c.name)}" data-f="invested_on" value="${esc(v("invested_on"))}"
+            class="${merged.date_inferred ? "guessed" : ""}"
+            title="${merged.date_inferred ? "Guessed — not shown on the public page until you confirm it" : ""}">
+          ${merged.date_inferred ? '<span class="co-sub guessed-tag">guessed</span>' : ""}</td>
       <td><input type="number" step="any" min="0" class="num" data-co="${esc(c.name)}" data-f="amount" value="${esc(v("amount"))}"></td>
       <td>${sel(c.name, "currency", v("currency"), ["USD", "EUR", "GBP"], "—")}</td>
       <td>${sel(c.name, "instrument", v("instrument"), INSTRUMENTS, "—")}</td>
@@ -316,6 +325,14 @@ document.addEventListener("input", (e) => {
   if (!el.dataset || !el.dataset.co) return;
   const entry = dirty.get(el.dataset.co) || {};
   entry[el.dataset.f] = el.value;
+  // Typing a date by hand is Stefan asserting it, so it stops being a guess
+  // and becomes publishable.
+  if (el.dataset.f === "invested_on") {
+    entry.date_inferred = 0;
+    el.classList.remove("guessed");
+    const tag = el.parentElement.querySelector(".guessed-tag");
+    if (tag) tag.remove();
+  }
   dirty.set(el.dataset.co, entry);
   markDirty();
   if (el.dataset.f === "current_value" || el.dataset.f === "realized" ||
