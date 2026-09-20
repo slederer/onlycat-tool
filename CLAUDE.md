@@ -29,7 +29,8 @@ uv sync
 - **`onlycat_client.py`** — Legacy persistent Socket.IO client (kept for reference). The app now uses `sync.py` for periodic batch syncing instead.
 - **`event_store.py`** — SQLite-backed storage for events, devices, pets, and sync metadata. DB path configurable via `DB_PATH` env var.
 - **`templates/dashboard.html`** — Single Jinja2 template with inline CSS/JS. Receives initial state server-rendered, then updates live via browser WebSocket.
-- **`content.py`** — All content for the personal site at slederer.com (bio, angel portfolio, SPV-led rounds, AI Incubator cohorts, side projects). This is the only file to edit when that content changes; `tests/test_content.py` validates it.
+- **`content.py`** — All *public* content for the personal site at slederer.com (bio, angel portfolio, SPV-led rounds, AI Incubator cohorts, side projects). This is the only file to edit when that content changes; `tests/test_content.py` validates it.
+- **`portfolio_store.py`** — SQLite-backed *private* investment tracking (cheque, date, instrument, marks, status) joined to `content.PORTFOLIO` by company name, plus the analytics behind `/admin`. `public_overlay()` is deliberately the only path from private data to the public page, and it passes just status/round/year — never money.
 - **`templates/site_base.html`, `macros.html`, `homepage.html`, `projects.html`** — The personal site. `site_base.html` holds the shared design tokens (same palette as the dashboard) and light/dark handling.
 
 ### Two sites, one app
@@ -38,14 +39,20 @@ The app serves two properties, branching on the `Host` header:
 
 | Host | Serves |
 |---|---|
-| `slederer.com`, `www.slederer.com` | Personal site (`/` and `/projects`) |
+| `slederer.com`, `www.slederer.com` | Personal site (`/`, `/projects`, `/admin`) |
 | anything else (e.g. `oni.slederer.com`) | OnlyCat dashboard |
 
-`is_homepage_host()` / `require_homepage_host()` in `main.py` gate this; `/projects` returns 404 on the dashboard host. To preview the personal site locally:
+`is_homepage_host()` / `require_homepage_host()` in `main.py` gate this; `/projects` and `/admin` return 404 on the dashboard host. To preview the personal site locally:
 
 ```bash
 EXTRA_HOMEPAGE_HOSTS=localhost uv run main.py
 ```
+
+### Portfolio tracker
+
+`/admin` is the private portfolio tracker: personal-site host only, behind Google OAuth, and further restricted to `ALLOWED_EMAILS` by `require_admin()`. It records what was invested and what it is worth, computes exposure/concentration/TVPI, and feeds `status` back to the public page so companies stop being listed as `active` forever. Every figure reports its own coverage — a TVPI over a third of the book is labelled as such rather than printed as a portfolio return.
+
+Tracking data lives in the `investments` table in the same SQLite DB (`DB_PATH`), keyed by the company name in `content.PORTFOLIO`. Renaming a company in `content.py` orphans its row, so rename in both places.
 
 ## Deployment
 

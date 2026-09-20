@@ -2,6 +2,7 @@
 
 import asyncio
 import csv
+import dataclasses
 import io
 import json
 import logging
@@ -30,6 +31,8 @@ from itsdangerous import URLSafeTimedSerializer
 import content
 from commands import set_transit_policy
 from event_store import EventStore
+import portfolio_store
+from portfolio_store import PortfolioStore
 from mcp_server import mcp as mcp_server, set_store as mcp_set_store
 from sync import run_sync
 
@@ -79,6 +82,17 @@ def require_auth(request: Request) -> dict:
 def raise_unauthorized():
     raise HTTPException(status_code=401, detail="Login required")
 
+
+def safe_next(value: str | None) -> str:
+    """Reduce a post-login redirect target to a same-site absolute path.
+
+    Anything else — a full URL, a protocol-relative "//evil.com", a path that
+    is not rooted — is dropped and the caller falls back to "/".
+    """
+    if not value or not value.startswith("/") or value.startswith("//"):
+        return ""
+    return value
+
 CLASSIFICATION = {
     0: "Unknown", 1: "Clear", 2: "Suspicious", 3: "Contraband",
     4: "Human Activity", 10: "Remote Unlock",
@@ -90,6 +104,7 @@ RECENT_EVENTS_LIMIT = 50
 
 # Global state
 store = EventStore()
+portfolio = PortfolioStore()
 browser_clients: set[WebSocket] = set()
 sync_lock = asyncio.Lock()
 
@@ -835,10 +850,12 @@ async def sync_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await store.open()
+    await portfolio.open()
     mcp_set_store(store)
     task = asyncio.create_task(sync_loop())
     yield
     task.cancel()
+    await portfolio.close()
     await store.close()
 
 
@@ -865,6 +882,12 @@ async def auth_login(request: Request):
         "access_type": "online",
         "prompt": "select_account",
     }
+    # Round-trip where the user was heading. Google echoes `state` back to us
+    # verbatim, so it is attacker-controllable — safe_next() keeps it to a
+    # same-site path and stops it being used as an open redirect.
+    nxt = safe_next(request.query_params.get("next"))
+    if nxt:
+        params["state"] = nxt
     return RedirectResponse(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
 
 
@@ -909,7 +932,7 @@ async def auth_callback(request: Request):
         "picture": userinfo.get("picture", ""),
     }
     cookie_value = signer.dumps(session_data)
-    response = RedirectResponse("/")
+    response = RedirectResponse(safe_next(request.query_params.get("state")) or "/")
     response.set_cookie(
         "session", cookie_value,
         httponly=True, samesite="lax", max_age=86400 * 30,
@@ -970,12 +993,48 @@ def site_context(request: Request) -> dict:
     }
 
 
+async def portfolio_page_context() -> dict:
+    """content.page_context(), with company status/stage/year from the tracker.
+
+    content.py hardcodes status="active" for every company, which is how the
+    public page came to claim all of them were alive. Where the tracker knows
+    better, it wins. Only the three fields in `public_overlay` cross over —
+    cheques and valuations stay in the admin area.
+    """
+    ctx = content.page_context()
+    try:
+        overlay = portfolio_store.public_overlay(await portfolio.get_all())
+    except Exception:
+        logger.exception("portfolio overlay failed; serving content.py as-is")
+        return ctx
+
+    def apply(companies):
+        out = []
+        for c in companies:
+            o = overlay.get(c.name)
+            if not o:
+                out.append(c)
+                continue
+            out.append(dataclasses.replace(
+                c,
+                status=o["status"] if o["status"] != "unknown" else c.status,
+                stage=o["stage"] or c.stage,
+                year=o["year"] or c.year,
+            ))
+        return tuple(out)
+
+    for key in ("spv_companies", "angel_companies"):
+        if key in ctx:
+            ctx[key] = apply(ctx[key])
+    return ctx
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     if is_homepage_host(request):
         return templates.TemplateResponse(
             "homepage.html",
-            {**site_context(request), **content.page_context()},
+            {**site_context(request), **await portfolio_page_context()},
         )
     state = await build_state()
     return templates.TemplateResponse(
@@ -991,6 +1050,92 @@ async def projects_page(request: Request):
         "projects.html",
         {**site_context(request), "projects": content.PROJECTS},
     )
+
+
+# --- Portfolio admin (personal site only, owner only) ---
+
+def require_admin(request: Request) -> dict:
+    """Owner-only gate for the tracker.
+
+    Stricter than require_auth: ALLOWED_EMAILS is the allowlist for the whole
+    site, and this data is Stefan's alone. If the allowlist is somehow empty we
+    refuse rather than fall open.
+    """
+    require_homepage_host(request)
+    user = require_auth(request)
+    allowed = [e.lower() for e in ALLOWED_EMAILS]
+    if not allowed or (user.get("email") or "").lower() not in allowed:
+        raise HTTPException(status_code=403, detail="Not your portfolio")
+    return user
+
+
+def _all_companies():
+    """Every company the tracker can hold a row for, Bitmovin included."""
+    return (*content.PORTFOLIO, content.BITMOVIN)
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    require_homepage_host(request)
+    if not get_user(request):
+        return RedirectResponse("/auth/login?next=/admin", status_code=302)
+    require_admin(request)
+    return templates.TemplateResponse(
+        "admin.html",
+        {**site_context(request), "statuses": portfolio_store.STATUSES,
+         "instruments": portfolio_store.INSTRUMENTS, "stages": portfolio_store.STAGES},
+    )
+
+
+@app.get("/api/admin/portfolio")
+async def admin_portfolio(request: Request):
+    """Public facts from content.py joined to private tracking rows."""
+    require_admin(request)
+    rows = await portfolio.get_all()
+    return {
+        "companies": [
+            {
+                "name": c.name,
+                "sector": c.sector,
+                "blurb": c.blurb,
+                "url": c.url,
+                "spv": c.spv,
+                "tracked": c.name in rows,
+                **{k: rows.get(c.name, {}).get(k) for k in
+                   (*portfolio_store.EDITABLE, "updated_at")},
+            }
+            for c in _all_companies()
+        ],
+    }
+
+
+@app.put("/api/admin/portfolio/{company}")
+async def admin_portfolio_save(company: str, request: Request):
+    require_admin(request)
+    known = {c.name for c in _all_companies()}
+    if company not in known:
+        raise HTTPException(status_code=404, detail=f"No such company: {company}")
+    body = await request.json()
+    try:
+        row = await portfolio.upsert(company, body)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return row
+
+
+@app.delete("/api/admin/portfolio/{company}")
+async def admin_portfolio_clear(company: str, request: Request):
+    """Clear tracking data. The company stays on the public site."""
+    require_admin(request)
+    await portfolio.delete(company)
+    return {"ok": True, "company": company}
+
+
+@app.get("/api/admin/analytics")
+async def admin_analytics(request: Request):
+    require_admin(request)
+    rows = await portfolio.get_all()
+    return portfolio_store.summarise(_all_companies(), rows)
 
 
 # Canonical origin for the personal site. The apex, matching the <link rel=
