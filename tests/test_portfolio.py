@@ -5,7 +5,9 @@ here: a wrong TVPI is worse than no TVPI, because it looks authoritative.
 """
 
 import dataclasses
+import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 import pytest_asyncio
@@ -205,3 +207,32 @@ class TestAgainstRealContent:
         updated = dataclasses.replace(c, status=o["status"], stage=o["stage"], year=o["year"])
         assert updated.status == "exited"
         assert updated.name == c.name
+
+
+class TestImportScript:
+    """The import table must stay in sync with content.py.
+
+    Renaming a company on the site would otherwise orphan its tracking row
+    silently — the row stays, keyed to a name nothing joins to any more.
+    """
+
+    def test_import_table_reconciles_with_the_site(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+        import import_portfolio
+
+        assert import_portfolio.check() == []
+
+    def test_every_row_has_a_date_and_amount(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+        import import_portfolio
+
+        for name, amount, date, _ in import_portfolio.ROWS:
+            assert amount > 0, name
+            assert date and len(date) == 10, name
+
+    def test_inferred_rows_are_marked_so_they_can_be_corrected(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+        import import_portfolio
+
+        assert any(r[3] for r in import_portfolio.ROWS), "nothing flagged as inferred"
+        assert "inferred" in import_portfolio.INFERRED_NOTE
