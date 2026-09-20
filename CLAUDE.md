@@ -64,6 +64,23 @@ uv run python scripts/import_gmail_scan.py scripts/gmail_scan_2026_09_20.json [-
 
 A company absent from a scan is recorded as *unmatched*, never as *silent* — it may simply send from a domain the sweep did not search.
 
+### Signals: what the companies reported
+
+`portfolio_signals.py` holds what founders said, as opposed to what Stefan knows first-hand: ARR/MRR over time, runway, burn, headcount, plus events (raises, layoffs, pivots) and the intros they asked for. Loaded the same snapshot way:
+
+```bash
+uv run python scripts/import_signals.py scripts/signals_2026_09_20.json [--dry-run]
+```
+
+Rules that matter when adding to it:
+
+- **Every number must cite its Gmail thread.** The importer refuses a metric or event with no `source_thread`. Provenance is the only defence against a figure that was extracted wrong, and the UI links each one back to the email.
+- **Never mix monthly and annual magnitudes.** Report what the founder reported (`arr`, `mrr`, or `revenue_month`); `trajectory()` annualises for the chart.
+- **No FX conversion.** Kickscale reports EUR, the rest USD; converting would invent precision.
+- **`shutdown` means the company is winding up.** Retiring a product line is a `pivot` — conflating them once ranked Rownd as the most distressed company in the book the same month it won a $2.5M USAF contract.
+
+`triage()` ranks companies by silence, distance from peak revenue, runway and events. It returns the *reasons* alongside each score; the UI always renders them, because an unexplained number is one nobody can argue with or trust.
+
 ## Deployment
 
 Dockerized for Fly.io. Uses a persistent volume mounted at `/data` for the SQLite database.

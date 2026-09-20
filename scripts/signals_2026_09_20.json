@@ -1,0 +1,85 @@
+{
+  "_comment": [
+    "Metrics, events and asks EXTRACTED from founder update emails on 2026-09-20.",
+    "",
+    "Every figure is a number a founder wrote in an email, not a calculation of",
+    "mine, and every row carries the Gmail thread it came from so it can be",
+    "checked in one click. Where a founder reported monthly revenue rather than",
+    "ARR, it is stored as revenue_month and annualised only for the trajectory",
+    "chart — never silently mixed into an ARR series.",
+    "",
+    "Currency is as reported. Kickscale reports in EUR; the rest in USD. No FX",
+    "conversion is applied anywhere: converting would invent precision.",
+    "",
+    "'shutdown' means THE COMPANY is shutting down. Retiring a product line is",
+    "part of a pivot, not a shutdown — mixing the two ranked Rownd as the most",
+    "distressed company in the book when it had just won a $2.5M USAF contract."
+  ],
+  "extracted_on": "2026-09-20",
+
+  "metrics": [
+    {"company": "Kickscale", "as_of": "2026-01-01", "arr": 905000,  "currency": "EUR", "note": "+4% MoM, MAU 1732", "source_thread": "19cd196d6c703342", "source_subject": "Kickscale Investor Update | January 2026"},
+    {"company": "Kickscale", "as_of": "2026-03-01", "arr": 1020000, "currency": "EUR", "note": "+13% MoM, MAU 1845", "source_thread": "19d8bc23c9cd71b7", "source_subject": "Kickscale Investor Update | March 2026"},
+    {"company": "Kickscale", "as_of": "2026-04-01", "arr": 1110000, "currency": "EUR", "note": "+9% MoM, WAU 1185", "source_thread": "19dfb5cbc07b94de", "source_subject": "Kickscale Investor Update | April 2026"},
+    {"company": "Kickscale", "as_of": "2026-05-01", "arr": 1140000, "currency": "EUR", "note": "+2% MoM, MAU 1917", "source_thread": "19eaae51148ba8e9", "source_subject": "Kickscale Investor Update | Mai 2026"},
+    {"company": "Kickscale", "as_of": "2026-07-01", "arr": 1210000, "currency": "EUR", "note": "+1% MoM, MAU 2261", "source_thread": "19feaec63b01b696", "source_subject": "Kickscale Investor Update | July 2026"},
+    {"company": "Kickscale", "as_of": "2026-08-01", "arr": 1280000, "currency": "EUR", "note": "+5.7% MoM, MAU 2263", "source_thread": "1a0a16a7710b00c3", "source_subject": "Kickscale Investor Update | August 2026"},
+
+    {"company": "AiSDR", "as_of": "2026-03-01", "arr": 3540000, "note": "+2.34%, below $3.8M goal", "source_thread": "19d44c76c83eb19a", "source_subject": "AiSDR - Investor update March 2026"},
+    {"company": "AiSDR", "as_of": "2026-04-01", "arr": 3600000, "note": "+0.88%, below $3.8M goal", "source_thread": "19ddf88050f150b2", "source_subject": "AiSDR - Investor update April 2026"},
+    {"company": "AiSDR", "as_of": "2026-05-01", "arr": 3300000, "note": "-7.17%; churned 40 (-$614k)", "source_thread": "19e74cc94451555f", "source_subject": "AiSDR - Investor update May 2026"},
+    {"company": "AiSDR", "as_of": "2026-06-01", "arr": 2900000, "note": "-10.3%; churned 41 (-$654k)", "source_thread": "19f19c072a0a7701", "source_subject": "AiSDR - Investor update June 2026"},
+    {"company": "AiSDR", "as_of": "2026-07-01", "arr": 2400000, "note": "-17%; third down month", "source_thread": "19fb96d9a2183ce8", "source_subject": "AiSDR - Investor update July 2026"},
+    {"company": "AiSDR", "as_of": "2026-08-01", "arr": 2300000, "note": "-3.2%; fourth down month", "source_thread": "1a058f536780fc29", "source_subject": "AiSDR - Investor update August 2026"},
+
+    {"company": "Golpo", "as_of": "2026-02-01", "revenue_month": 100000, "mrr": 74000, "note": "total revenue $443K to date", "source_thread": "19cb689e2dd406a3", "source_subject": "Golpo Investor Update - February 2026"},
+    {"company": "Golpo", "as_of": "2026-03-01", "revenue_month": 97500,  "note": "total revenue $541K to date", "source_thread": "19d4c8b090639a19", "source_subject": "Golpo Investor Update - March 2026"},
+    {"company": "Golpo", "as_of": "2026-04-01", "revenue_month": 85500,  "note": "total revenue $627K to date", "source_thread": "19df1e2b40cee78a", "source_subject": "Golpo Investor Update - April 2026"},
+    {"company": "Golpo", "as_of": "2026-05-01", "revenue_month": 113676, "source_thread": "19e89e82afc7f133", "source_subject": "Golpo Investor Update - May 2026"},
+    {"company": "Golpo", "as_of": "2026-06-01", "revenue_month": 118667, "source_thread": "19f26398d9423b1f", "source_subject": "Golpo Investor Update: June 2026"},
+    {"company": "Golpo", "as_of": "2026-07-01", "revenue_month": 111488, "source_thread": "19fc9422161b0dee", "source_subject": "Golpo Investor Update: July 2026"},
+    {"company": "Golpo", "as_of": "2026-08-01", "revenue_month": 104662, "source_thread": "1a0641d74846a9e8", "source_subject": "Golpo Investor Update: August 2026"},
+
+    {"company": "Trace", "as_of": "2026-03-01", "mrr": 21000, "cash": 2600000, "burn_monthly": 56000, "customers": 46, "note": "MRR fell $36k -> $21k; 43 startups + 3 mid-market", "source_thread": "19d52249b556f850", "source_subject": "Trace Investor Update: March 2026"},
+    {"company": "Trace", "as_of": "2026-07-01", "mrr": 24000, "cash": 2600000, "burn_monthly": 31000, "customers": 4, "runway_months": 48, "note": "repositioned to 4 mid-market accounts; burn nearly halved", "source_thread": "19fe0a357ee0fa04", "source_subject": "Trace Investor Update: July 2026"},
+
+    {"company": "HockeyStack", "as_of": "2025-12-01", "arr": 11029688, "customers": 265, "runway_months": 16, "note": "+152% YoY", "source_thread": "19b99216b15b68b3", "source_subject": "HockeyStack 2025 Recap"},
+    {"company": "HockeyStack", "as_of": "2026-02-01", "arr": 12063866, "note": "+$419,379 MoM", "source_thread": "19cd3cdbc39443c7", "source_subject": "HockeyStack Investor Update - February 2026"},
+    {"company": "HockeyStack", "as_of": "2026-08-01", "headcount": 37, "cash": 18500000, "note": "restructured from 94 FTE to 37; turning the corner on profitability", "source_thread": "19fc71160a1a30d6", "source_subject": "Re: How is it going?"},
+
+    {"company": "Waydev", "as_of": "2025-12-01", "arr": 1249103, "customers": 13, "note": "+$350,961 new revenue in Q4", "source_thread": "19b3c735eaf9417f", "source_subject": "Waydev Q4"},
+
+    {"company": "Salvy", "as_of": "2026-06-01", "arr": 4000000, "note": "crossed $4M ARR", "source_thread": "19f1f8b770760a57", "source_subject": "Salvy - Investor Update Jun/26"},
+    {"company": "Salvy", "as_of": "2026-08-01", "arr": 5000000, "note": "record new-business month", "source_thread": "1a05e340051a9d38", "source_subject": "Salvy - Investor Update Aug/26"},
+
+    {"company": "0.email", "as_of": "2026-08-01", "mrr": 6500, "note": "44.8% monthly retention; now operating as Orchid", "source_thread": "1a05d4c27840bd90", "source_subject": "August Investor Update"},
+
+    {"company": "Upflow", "as_of": "2025-12-01", "arr": 10000000, "note": "crossed $10m incl. gross payments revenue, 35 staff", "source_thread": "19c2fecc6f3a9e57", "source_subject": "Upflow Investor Reporting - Q4 2025"}
+  ],
+
+  "events": [
+    {"company": "AiSDR",       "occurred_on": "2026-08-01", "kind": "decline",   "summary": "Fourth consecutive down month; ARR $3.6M (Apr) to $2.3M", "source_thread": "1a058f536780fc29"},
+    {"company": "HockeyStack", "occurred_on": "2026-08-01", "kind": "layoff",    "summary": "Headcount cut from 94 to 37, with more planned", "source_thread": "19fc71160a1a30d6"},
+    {"company": "Invofox",     "occurred_on": "2026-08-01", "kind": "layoff",    "summary": "Layoffs; growth below plan and burn starting to hurt", "source_thread": "19fc710a9f1ba984"},
+    {"company": "HockeyStack", "occurred_on": "2026-04-01", "kind": "raise",     "summary": "New round announced alongside Revenue Agents launch", "source_thread": "19d91c440c9a47ac"},
+    {"company": "Pally",       "occurred_on": "2026-08-01", "kind": "raise",     "summary": "Fundraise announced with Business Insider", "source_thread": "19fca1e1f32f707f"},
+    {"company": "Oden.io",     "occurred_on": "2026-09-01", "kind": "raise",     "summary": "Internal round ~$7M; Stefan committed pro-rata (~$1,800)", "source_thread": "19fafacd11695846"},
+    {"company": "Kickscale",   "occurred_on": "2026-07-01", "kind": "offer",     "summary": "Efficy offered EUR 5M; rejected as below the EUR 10M floor", "source_thread": "19f5a8ac220f5d39"},
+    {"company": "Waydev",      "occurred_on": "2026-05-01", "kind": "pivot",     "summary": "Rebuilt the product from scratch; 'bet the company'", "source_thread": "19e3539d7cd4756c"},
+    {"company": "Rownd",       "occurred_on": "2026-03-01", "kind": "pivot",     "summary": "Exited auth for Edge AI defence; $2.5M USAF contract + $10M agreed, old product sunset 31 Jul 2026", "source_thread": "19d180f114c13b80"},
+    {"company": "0.email",     "occurred_on": "2026-09-01", "kind": "pivot",     "summary": "Now operating as Orchid; AI agents in messaging channels", "source_thread": "1a05d4c27840bd90"},
+    {"company": "Trace",       "occurred_on": "2026-07-01", "kind": "pivot",     "summary": "From 43 startup accounts to 4 mid-market; burn halved", "source_thread": "19fe0a357ee0fa04"},
+    {"company": "GlassKube",   "occurred_on": "2026-04-01", "kind": "decline",   "summary": "Still searching for product-market fit", "source_thread": "19dca6e969603e36"},
+    {"company": "Salvy",       "occurred_on": "2026-08-01", "kind": "milestone", "summary": "Reached $5M ARR; record new-business month", "source_thread": "1a05e340051a9d38"},
+    {"company": "Upflow",      "occurred_on": "2026-09-01", "kind": "milestone", "summary": "Rebranded and launched the FRM category", "source_thread": "1a05d5ef5ee07f12"},
+    {"company": "Kickscale",   "occurred_on": "2026-08-01", "kind": "milestone", "summary": "EUR 1.28M ARR, pushing for EUR 2M", "source_thread": "1a0a16a7710b00c3"}
+  ],
+
+  "asks": [
+    {"company": "HockeyStack", "asked_on": "2026-03-01", "ask": "Intros to sales leaders at 100+ employee B2B companies", "source_thread": "19cd3cdbc39443c7"},
+    {"company": "Kickscale",   "asked_on": "2026-09-01", "ask": "Pipeline intros; pushing toward EUR 2M ARR", "source_thread": "1a0a16a7710b00c3"},
+    {"company": "Oden.io",     "asked_on": "2026-09-01", "ask": "Confirm pro-rata participation in the internal round", "source_thread": "19fafacd11695846"},
+    {"company": "Pally",       "asked_on": "2026-09-01", "ask": "Support with the launch and fundraise announcement", "source_thread": "1a063bd9e006d0e6"},
+    {"company": "Upflow",      "asked_on": "2026-09-01", "ask": "Like/share the FRM launch; Bitmovin is re-evaluating Upflow", "source_thread": "19f69e3647e01beb"}
+  ]
+}

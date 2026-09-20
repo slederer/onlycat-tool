@@ -31,7 +31,9 @@ from itsdangerous import URLSafeTimedSerializer
 import content
 from commands import set_transit_policy
 from event_store import EventStore
+import portfolio_signals
 import portfolio_store
+from portfolio_signals import SignalStore
 from portfolio_store import PortfolioStore
 from mcp_server import mcp as mcp_server, set_store as mcp_set_store
 from sync import run_sync
@@ -105,6 +107,7 @@ RECENT_EVENTS_LIMIT = 50
 # Global state
 store = EventStore()
 portfolio = PortfolioStore()
+signals = SignalStore(portfolio_store.DB_PATH)
 browser_clients: set[WebSocket] = set()
 sync_lock = asyncio.Lock()
 
@@ -851,10 +854,12 @@ async def sync_loop():
 async def lifespan(app: FastAPI):
     await store.open()
     await portfolio.open()
+    await signals.open()
     mcp_set_store(store)
     task = asyncio.create_task(sync_loop())
     yield
     task.cancel()
+    await signals.close()
     await portfolio.close()
     await store.close()
 
@@ -1136,6 +1141,29 @@ async def admin_analytics(request: Request):
     require_admin(request)
     rows = await portfolio.get_all()
     return portfolio_store.summarise(_all_companies(), rows)
+
+
+@app.get("/api/admin/signals")
+async def admin_signals(request: Request):
+    """What the companies themselves reported: metrics, events, asks, triage."""
+    require_admin(request)
+    companies = _all_companies()
+    rows = await portfolio.get_all()
+    metrics = await signals.metrics()
+    events = await signals.events()
+    asks = await signals.asks()
+    return {
+        **portfolio_signals.summarise_signals(companies, metrics, events, asks),
+        "triage": portfolio_signals.triage(companies, rows, metrics, events),
+    }
+
+
+@app.post("/api/admin/asks/{company}/{asked_on}")
+async def admin_ask_answered(company: str, asked_on: str, request: Request):
+    require_admin(request)
+    body = await request.json()
+    await signals.set_ask_answered(company, asked_on, bool(body.get("answered")))
+    return {"ok": True}
 
 
 # Canonical origin for the personal site. The apex, matching the <link rel=

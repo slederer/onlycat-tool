@@ -30,8 +30,10 @@
   .warn b { color: var(--orange); }
 
   /* --- exposure bars --- */
+  /* align-items:start so a short panel keeps its own height instead of being
+     stretched to match the tall sector list beside it. */
   .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; margin: 28px 0; }
+            gap: 20px; margin: 28px 0; align-items: start; }
   .panel { border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
   .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
               color: var(--faint); margin-bottom: 14px; }
@@ -56,7 +58,7 @@
                 border-radius: var(--r); }
   /* Wide enough that every column keeps its declared width instead of being
      squeezed; .table-wrap scrolls horizontally rather than truncating a cheque. */
-  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 1500px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 1760px; }
   th { text-align: left; font-size: 11px; text-transform: uppercase;
        letter-spacing: 0.06em; color: var(--faint); font-weight: 500;
        padding: 10px 8px; border-bottom: 1px solid var(--border);
@@ -80,6 +82,43 @@
   .heard-link { text-decoration: none; }
   .heard-link:hover { text-decoration: underline; }
   .warn-text { color: var(--orange); }
+  .w-traj { width: 132px; } .w-runway { width: 86px; }
+
+  .section-h { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+               color: var(--faint); margin: 32px 0 6px; }
+  .triage-wrap { margin-bottom: 8px; }
+  .triage-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px;
+                align-items: start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .triage-row:last-child { border-bottom: 0; }
+  .triage-score { font-size: 18px; font-variant-numeric: tabular-nums; text-align: right; }
+  .triage-name { font-size: 15px; }
+  .triage-why { color: var(--muted); font-size: 13px; margin-top: 3px; line-height: 1.5; }
+  .triage-spark { padding-top: 2px; }
+
+  /* Severity bands. Always paired with the score and the written reasons, so
+     colour is never the only thing carrying the message. */
+  .sev-critical { color: var(--red); }
+  .sev-serious  { color: var(--orange); }
+  .sev-watch    { color: var(--yellow); }
+
+  .ev { display: grid; grid-template-columns: auto 1fr; gap: 10px;
+        padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ev:last-child { border-bottom: 0; }
+  .ev-kind { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+             white-space: nowrap; padding-top: 2px; }
+  .ev-co { color: var(--text); }
+  .ev-sum { color: var(--muted); }
+  .tone-good { color: var(--green); } .tone-warning { color: var(--yellow); }
+  .tone-serious { color: var(--orange); } .tone-critical { color: var(--red); }
+  .tone-neutral { color: var(--faint); }
+
+  .ask { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0;
+         border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ask:last-child { border-bottom: 0; }
+  .ask input { width: auto; margin-top: 3px; }
+  .ask-co { color: var(--text); } .ask-text { color: var(--muted); }
+  .spark { display: block; }
+  .spark-delta { font-size: 11px; font-variant-numeric: tabular-nums; }
 
   .btn { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border-strong);
          border-radius: 6px; padding: 7px 14px; font: inherit; font-size: 13px;
@@ -137,6 +176,26 @@
     </section>
   </div>
 
+  <section class="triage-wrap" id="triage-wrap" hidden>
+    <h2 class="section-h">Needs attention</h2>
+    <p class="admin-sub" style="margin-top:0">
+      Ranked by silence, distance from peak revenue, runway and reported events.
+      Every score shows the reasons that earned it — disagree with them freely.
+    </p>
+    <div id="triage"></div>
+  </section>
+
+  <div class="panels">
+    <section class="panel">
+      <h2>Recent events</h2>
+      <div id="events"></div>
+    </section>
+    <section class="panel">
+      <h2>Open asks</h2>
+      <div id="asks"></div>
+    </section>
+  </div>
+
   <div class="toolbar">
     <input type="search" id="filter" placeholder="Filter by name or sector…" autocomplete="off">
     <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap">
@@ -158,7 +217,8 @@
           <th class="w-sel">Round</th><th class="w-num num">Entry val.</th>
           <th class="w-num num">Value now</th><th class="w-num num">Realized</th>
           <th class="num">Multiple</th><th class="w-sel">Status</th>
-          <th class="w-heard">Last heard</th><th>Notes</th>
+          <th class="w-heard">Last heard</th><th class="w-traj">Trajectory</th>
+          <th class="w-runway num">Runway</th><th>Notes</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -181,24 +241,113 @@ const FIELDS = ["invested_on", "amount", "currency", "instrument", "round_stage"
                 "entry_valuation", "current_value", "realized", "status", "notes"];
 
 let companies = [];
+let signals = {};          // trajectories, events, asks, triage
 const dirty = new Map();   // name -> {field: value}
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => (
   {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-const money = (n, cur) => n == null ? "—" :
-  new Intl.NumberFormat("en-US", {style:"currency", currency: cur || "USD",
-    maximumFractionDigits: 0}).format(n);
-
 async function load() {
-  const [p, a] = await Promise.all([
+  const [p, a, sig] = await Promise.all([
     fetch("/api/admin/portfolio").then(r => r.json()),
     fetch("/api/admin/analytics").then(r => r.json()),
+    fetch("/api/admin/signals").then(r => r.json()),
   ]);
   companies = p.companies;
+  signals = sig;
   renderAnalytics(a);
+  renderSignals(sig);
   renderRows();
+}
+
+/* ---------- what the companies reported ---------- */
+
+const money = (n, cur) => n == null ? "—" :
+  new Intl.NumberFormat("en-US", {style: "currency", currency: cur || "USD",
+    notation: Math.abs(n) >= 1e6 ? "compact" : "standard",
+    maximumFractionDigits: Math.abs(n) >= 1e6 ? 2 : 0}).format(n);
+
+/* A single-series trajectory. No legend and no axes: the row names the company
+   and the delta beside it carries the meaning, so the line only has to show
+   shape. Colour repeats what the delta already says in words. */
+function sparkline(name) {
+  const t = (signals.trajectories || {})[name];
+  if (!t || t.points.length < 2) return `<span class="dim">—</span>`;
+
+  const vals = t.points.map(p => p.value);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = hi - lo || 1;
+  const W = 78, H = 20, pad = 2;
+  const x = (i) => pad + i * (W - 2 * pad) / (vals.length - 1);
+  const y = (v) => H - pad - ((v - lo) / span) * (H - 2 * pad);
+  const d = vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+
+  const off = t.off_peak_pct;
+  const down = t.past_peak && off !== null && off <= -5;
+  const colour = down ? "var(--red)" : "var(--green)";
+  const delta = off === null ? ""
+    : (t.past_peak ? `${off.toFixed(0)}%` : `+${(t.since_first_pct ?? 0).toFixed(0)}%`);
+  const title = `${t.months} points, ${t.points[0].as_of.slice(0,7)} to ` +
+                `${t.points.at(-1).as_of.slice(0,7)}; latest ${money(t.latest, t.currency)}` +
+                (t.past_peak ? `, peak ${t.peak_as_of.slice(0,7)}` : "");
+
+  return `<span title="${esc(title)}" style="display:flex;gap:6px;align-items:center">
+    <svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+      <path d="${d}" fill="none" stroke="${colour}" stroke-width="2"
+            stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${x(vals.length - 1).toFixed(1)}" cy="${y(vals.at(-1)).toFixed(1)}"
+              r="2.5" fill="${colour}"/>
+    </svg>
+    <span class="spark-delta ${down ? "down" : "up"}">${esc(delta)}</span>
+  </span>`;
+}
+
+function runwayCell(name) {
+  const r = (signals.runways || []).find(x => x.company === name);
+  if (!r) return `<span class="dim">—</span>`;
+  const cls = r.months < 6 ? "down" : r.months < 12 ? "warn-text" : "";
+  return `<span class="${cls}" title="as of ${esc(r.as_of.slice(0,7))}">${Math.round(r.months)} mo</span>`;
+}
+
+function renderSignals(s) {
+  const t = s.triage || [];
+  $("triage-wrap").hidden = t.length === 0;
+  $("triage").innerHTML = t.slice(0, 8).map(x => {
+    const sev = x.score >= 45 ? "sev-critical" : x.score >= 25 ? "sev-serious" : "sev-watch";
+    return `<div class="triage-row">
+      <div class="triage-score ${sev}">${x.score}</div>
+      <div>
+        <div class="triage-name">${esc(x.company)}${x.amount
+          ? ` <span class="dim" style="font-size:12px">${esc(money(x.amount))}</span>` : ""}</div>
+        <div class="triage-why">${x.reasons.map(esc).join(" · ")}</div>
+      </div>
+      <div class="triage-spark">${sparkline(x.company)}</div>
+    </div>`;
+  }).join("");
+
+  const kinds = s.event_kinds || {};
+  $("events").innerHTML = (s.events || []).slice(0, 12).map(e => {
+    const k = kinds[e.kind] || {label: e.kind, tone: "neutral"};
+    const link = e.source_thread
+      ? `https://mail.google.com/mail/u/0/#all/${esc(e.source_thread)}` : "";
+    const body = `<div><span class="ev-co">${esc(e.company)}</span>
+        <span class="ev-sum">— ${esc(e.summary)}</span></div>`;
+    return `<div class="ev">
+      <span class="ev-kind tone-${esc(k.tone)}">${esc(k.label)}</span>
+      ${link ? `<a href="${link}" target="_blank" rel="noopener"
+                  style="text-decoration:none">${body}</a>` : body}
+    </div>`;
+  }).join("") || empty();
+
+  const open = s.open_asks || [];
+  $("asks").innerHTML = open.length
+    ? open.map(a => `<label class="ask">
+        <input type="checkbox" data-ask-co="${esc(a.company)}" data-ask-on="${esc(a.asked_on)}">
+        <span><span class="ask-co">${esc(a.company)}</span>
+          <span class="ask-text">— ${esc(a.ask)}</span></span>
+      </label>`).join("")
+    : `<p class="dim" style="font-size:13px">Nothing outstanding.</p>`;
 }
 
 /* ---------- analytics ---------- */
@@ -359,6 +508,8 @@ function renderRows() {
       <td class="num">${multiple(merged)}</td>
       <td>${sel(c.name, "status", status, STATUSES.filter(s => s !== "unknown"), "unknown")}</td>
       <td class="heard">${lastHeard(merged)}</td>
+      <td class="traj">${sparkline(c.name)}</td>
+      <td class="num">${runwayCell(c.name)}</td>
       <td><input type="text" data-co="${esc(c.name)}" data-f="notes" value="${esc(v("notes"))}" placeholder="…"></td>
     </tr>`;
   }).join("") || `<tr><td colspan="12" class="dim" style="padding:20px">No companies match.</td></tr>`;
@@ -432,6 +583,20 @@ $("save").addEventListener("click", async () => {
   $("saving").textContent = "Saved";
   await load();
   setTimeout(() => { if (!dirty.size) $("saving").textContent = ""; }, 2000);
+});
+
+document.addEventListener("change", async (e) => {
+  const el = e.target;
+  if (!el.dataset || !el.dataset.askCo) return;
+  // Optimistic: tick it, then persist. A failed write puts the tick back so the
+  // list never quietly disagrees with the database.
+  const row = el.closest(".ask");
+  row.style.opacity = "0.5";
+  const r = await fetch(
+    `/api/admin/asks/${encodeURIComponent(el.dataset.askCo)}/${encodeURIComponent(el.dataset.askOn)}`,
+    {method: "POST", headers: {"Content-Type": "application/json"},
+     body: JSON.stringify({answered: el.checked})});
+  if (r.ok) { await load(); } else { el.checked = !el.checked; row.style.opacity = "1"; }
 });
 
 $("filter").addEventListener("input", renderRows);
