@@ -1038,12 +1038,12 @@ async def portfolio_page_context() -> dict:
 async def dashboard(request: Request):
     if is_homepage_host(request):
         return templates.TemplateResponse(
-            "homepage.html",
+            request, "homepage.html",
             {**site_context(request), **await portfolio_page_context()},
         )
     state = await build_state()
     return templates.TemplateResponse(
-        "dashboard.html",
+        request, "dashboard.html",
         {"request": request, "initial_state": state, "user": get_user(request)},
     )
 
@@ -1052,7 +1052,7 @@ async def dashboard(request: Request):
 async def projects_page(request: Request):
     require_homepage_host(request)
     return templates.TemplateResponse(
-        "projects.html",
+        request, "projects.html",
         {**site_context(request), "projects": content.PROJECTS},
     )
 
@@ -1086,7 +1086,7 @@ async def admin_page(request: Request):
         return RedirectResponse("/auth/login?next=/admin", status_code=302)
     require_admin(request)
     return templates.TemplateResponse(
-        "admin.html",
+        request, "admin.html",
         {**site_context(request), "statuses": portfolio_store.STATUSES,
          "instruments": portfolio_store.INSTRUMENTS, "stages": portfolio_store.STAGES},
     )
@@ -1337,7 +1337,7 @@ async def share_page(request: Request):
     """Public read-only dashboard."""
     state = await build_state()
     return templates.TemplateResponse(
-        "share.html",
+        request, "share.html",
         {"request": request, "initial_state": state},
     )
 
