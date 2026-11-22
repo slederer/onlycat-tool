@@ -91,7 +91,7 @@ ssh -i ~/Downloads/onlycats.pem ec2-user@13.59.224.218 \
 curl -s https://slederer.com/ | grep mailto   # verify
 ```
 
-Email: `stefan@slederer.com` forwards to Gmail via Cloudflare Email Routing (configured in Cloudflare, not in this repo).
+Email: `requests@slederer.com` (shown on site) and `stefan@slederer.com` forward to Gmail via Cloudflare Email Routing (configured in Cloudflare, not in this repo).
 
 ## OnlyCat Cloud API
 

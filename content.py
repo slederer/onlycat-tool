@@ -226,7 +226,7 @@ PROFILE = Profile(
         Hobby("Sailing", "\u26F5", accent="cyan"),
         Hobby("Running", "\U0001F3C3", accent="green"),
     ),
-    contact_email="stefan@slederer.com",
+    contact_email="requests@slederer.com",
 )
 
 
