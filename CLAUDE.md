@@ -83,17 +83,15 @@ Rules that matter when adding to it:
 
 ## Deployment
 
-Dockerized for Fly.io. Uses a persistent volume mounted at `/data` for the SQLite database.
+Production runs on EC2 `i-059c9a5411e34d874` (us-east-2, `13.59.224.218`, user `ec2-user`, key `~/Downloads/onlycats.pem`) via `docker compose` (services `onlycat`, `nginx`, `certbot`). `fly.toml` is unused.
 
 ```bash
-# Deploy to Fly.io
-fly launch          # first time
-fly deploy          # subsequent deploys
-fly secrets set ONLYCAT_TOKEN=your-token
-
-# Create the persistent volume (first time)
-fly volumes create onlycat_data --region ewr --size 1
+ssh -i ~/Downloads/onlycats.pem ec2-user@13.59.224.218 \
+  'cd ~/onlycat-tool && git pull --ff-only && docker compose up -d --build onlycat'
+curl -s https://slederer.com/ | grep mailto   # verify
 ```
+
+Email: `stefan@slederer.com` forwards to Gmail via Cloudflare Email Routing (configured in Cloudflare, not in this repo).
 
 ## OnlyCat Cloud API
 
