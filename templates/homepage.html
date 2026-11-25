@@ -81,6 +81,20 @@
   .co-desc { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
 
   /* incubator */
+  .next-round {
+    margin: 22px 0 30px; padding: 16px 20px; border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--green) 45%, transparent);
+    background: color-mix(in srgb, var(--green) 9%, transparent);
+  }
+  .next-round-head {
+    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--green);
+  }
+  .next-round p { margin-top: 6px; }
+  .next-round-links { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; }
+  .next-round-links a { color: var(--text-strong); font-weight: 600; text-decoration: none;
+                        border-bottom: 1px solid color-mix(in srgb, var(--green) 60%, transparent); }
+  .next-round-links a:hover { color: var(--green); }
   .cohorts { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 8px; }
   .cohort { border-top: 2px solid var(--accent); padding-top: 16px; }
   .cohort h3 { font-size: 22px; }
@@ -260,6 +274,17 @@
     <div>
       <h2>{{ incubator.name }}</h2>
       <p class="lede">{{ incubator.description }}</p>
+      {% if incubator.next_round %}
+      <aside class="next-round">
+        <div class="next-round-head">{{ incubator.next_round }}</div>
+        <p>{{ incubator.next_round_text }}</p>
+        {% if incubator.next_round_links %}
+        <div class="next-round-links">
+          {% for l in incubator.next_round_links %}<a href="{{ l.url }}" target="_blank" rel="noopener">{{ l.label }} &rarr;</a>{% endfor %}
+        </div>
+        {% endif %}
+      </aside>
+      {% endif %}
       <div class="cohorts">
         {% for k in incubator.cohorts %}{{ m.cohort_card(k, loop.index) }}{% endfor %}
       </div>

@@ -100,6 +100,10 @@ class Incubator:
     cohorts: tuple[Cohort, ...] = ()
     photos: tuple[Photo, ...] = ()
     photo_caption: str = ""
+    # The next round, when applications are open. "" hides the callout.
+    next_round: str = ""
+    next_round_text: str = ""
+    next_round_links: tuple[Link, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -381,6 +385,15 @@ INCUBATOR = Incubator(
               "The Quicly team presenting to a seated audience at the Demo Day."),
     ),
     photo_caption="Demo Day, Summer 2026",
+    next_round="Summer 2027: applications open",
+    next_round_text=(
+        "A paid ten-week internship starting 28 June 2027 in Vienna, Klagenfurt "
+        "or Berlin. Small teams build real products with AI and video."
+    ),
+    next_round_links=(
+        Link("Software engineering track", "https://bitmovin.com/careers/8916523002"),
+        Link("Open AI track", "https://bitmovin.com/careers/8916614002"),
+    ),
     cohorts=(
         Cohort(
             name="Summer 2025",

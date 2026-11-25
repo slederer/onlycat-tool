@@ -1048,12 +1048,69 @@ async def dashboard(request: Request):
     )
 
 
+# --- Side-project status ---
+#
+# /projects labels each tile "Login" or "Offline" from a live probe, so the
+# list never has to be pruned when something is down: the label says so, and
+# it clears itself once the host is back. Probes run in the background and
+# the page renders whatever is cached, so a dead host never slows the page.
+
+PROJECT_STATUS_TTL = 600  # seconds
+_project_status: dict[str, str] = {}
+_project_status_at = 0.0
+_project_status_task: asyncio.Task | None = None
+
+_LOGIN_HINTS = ("login", "signin", "sign_in", "/auth", "cloudflareaccess.com",
+                "accounts.google.com")
+
+
+def classify_probe(status_code: int | None, location: str = "") -> str:
+    """public / private / offline from one unauthenticated GET."""
+    if status_code is None or status_code >= 500:
+        return "offline"
+    if status_code in (401, 403):
+        return "private"
+    if 300 <= status_code < 400 and any(h in location.lower() for h in _LOGIN_HINTS):
+        return "private"
+    return "public"
+
+
+async def _probe(client: httpx.AsyncClient, host: str) -> str:
+    try:
+        r = await client.get(f"https://{host}/")
+        return classify_probe(r.status_code, r.headers.get("location", ""))
+    except httpx.HTTPError:
+        return "offline"
+
+
+async def _refresh_project_status():
+    global _project_status, _project_status_at
+    async with httpx.AsyncClient(timeout=6, follow_redirects=False) as client:
+        hosts = [p.host for p in content.PROJECTS]
+        results = await asyncio.gather(*(_probe(client, h) for h in hosts))
+    _project_status = dict(zip(hosts, results))
+    _project_status_at = asyncio.get_running_loop().time()
+
+
+def project_status() -> dict[str, str]:
+    """Cached statuses; kicks off a background refresh when stale."""
+    global _project_status_task
+    if os.environ.get("PROJECT_STATUS_PROBE", "1") == "0":
+        return _project_status
+    now = asyncio.get_running_loop().time()
+    stale = not _project_status_at or now - _project_status_at > PROJECT_STATUS_TTL
+    if stale and (_project_status_task is None or _project_status_task.done()):
+        _project_status_task = asyncio.create_task(_refresh_project_status())
+    return _project_status
+
+
 @app.get("/projects", response_class=HTMLResponse)
 async def projects_page(request: Request):
     require_homepage_host(request)
     return templates.TemplateResponse(
         request, "projects.html",
-        {**site_context(request), "projects": content.PROJECTS},
+        {**site_context(request), "projects": content.PROJECTS,
+         "project_status": project_status()},
     )
 
 

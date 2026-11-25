@@ -454,3 +454,44 @@ class TestPublicSite:
     async def test_sitemap_404s_on_the_dashboard_host(self, oni_client):
         resp = await oni_client.get("/sitemap.xml")
         assert resp.status_code == 404
+
+
+class TestProjectStatus:
+    @pytest.mark.parametrize("code,location,expected", [
+        (200, "", "public"),
+        (None, "", "offline"),
+        (502, "", "offline"),
+        (401, "", "private"),
+        (403, "", "private"),
+        (307, "https://tracker.slederer.com/login?next=%2F", "private"),
+        (302, "https://x.cloudflareaccess.com/cdn-cgi/access/login/y", "private"),
+        (302, "https://accounts.google.com/o/oauth2/v2/auth?x=1", "private"),
+        (301, "https://www.example.com/", "public"),
+    ])
+    def test_classify_probe(self, code, location, expected):
+        import main
+        assert main.classify_probe(code, location) == expected
+
+    @pytest.mark.asyncio
+    async def test_badges_render_but_projects_stay_listed(self, site_client, monkeypatch):
+        """A down or gated host is labelled, never dropped from the list."""
+        import content, main
+        hosts = [p.host for p in content.PROJECTS]
+        monkeypatch.setattr(main, "_project_status",
+                            {hosts[0]: "offline", hosts[1]: "private"})
+        resp = await site_client.get("/projects")
+        assert "proj-badge-offline" in resp.text
+        assert "proj-badge-private" in resp.text
+        for p in content.PROJECTS:
+            assert p.href in resp.text
+
+
+class TestIncubatorNextRound:
+    @pytest.mark.asyncio
+    async def test_open_applications_callout(self, site_client):
+        import content
+        inc = content.INCUBATOR
+        resp = await site_client.get("/")
+        assert inc.next_round in resp.text
+        for link in inc.next_round_links:
+            assert link.url in resp.text
