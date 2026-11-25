@@ -302,13 +302,13 @@ PORTFOLIO: tuple[Company, ...] = (
     Company("Cosmic JS", "Headless CMS for content-driven applications.",
             sector="Dev tools", accent="cyan"),
     Company("Reflect", "No-code automated browser testing.",
-            sector="Dev tools", accent="purple"),
+            sector="Dev tools", status="exited", accent="purple"),
     Company("Onboard.io", "Customer onboarding for B2B software teams.",
             sector="SaaS", accent="blue"),
     Company("Kickscale", "AI meeting intelligence for sales teams.",
             sector="Sales", accent="orange"),
     Company("Hilos", "WhatsApp automation for customer conversations.",
-            sector="SaaS", accent="green"),
+            sector="SaaS", status="exited", accent="green"),
     Company("Rownd", "Drop-in authentication and user onboarding.",
             sector="Dev tools", accent="blue"),
     Company("Golpo", "Turns documents and prompts into whiteboard animation videos.",
@@ -322,7 +322,7 @@ PORTFOLIO: tuple[Company, ...] = (
     Company("Pally", "AI assistant over text that remembers your life and follows up.",
             url="https://pally.com", sector="AI", accent="pink"),
     Company("HumanLayer", "Human-in-the-loop approvals for AI agents.",
-            sector="AI infra", accent="orange"),
+            sector="AI infra", status="exited", accent="orange"),
     Company("GlassKube", "Open-source package manager for Kubernetes.",
             sector="Dev tools", accent="green"),
     Company("Promptless", "Keeps product documentation up to date automatically.",
@@ -350,6 +350,8 @@ PORTFOLIO: tuple[Company, ...] = (
             url="https://axelrodlabs.com", sector="Hospitality", accent="orange"),
     Company("Verdict Machine", "AI security for banks' blockchain and digital-asset operations.",
             url="https://verdictmachine.com", sector="Security", accent="green"),
+    Company("Northscope", "AI agents for controlling and accounting in European industry.",
+            url="https://northscope.at", sector="Fintech", accent="blue"),
 )
 
 

@@ -80,6 +80,9 @@ ROWS = [
     ("Verdict Machine",     5000,  "2026-09-01", True),
     ("Screenpipe",         10000,  "2026-09-01", True),
     ("Effractor",          10000,  "2026-09-01", True),
+    # EUR 10,000 convertible loan (Maetch VC-led pre-seed), CLA dated
+    # 12 Nov 2026. Stored as currency EUR in production; this table is USD-only.
+    ("Northscope",         10000,  "2026-11-01", False),
 ]
 
 # Stefan's spelling -> the site's. Keeps his list pasteable as-is.
