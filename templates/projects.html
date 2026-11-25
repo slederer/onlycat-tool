@@ -34,6 +34,9 @@
   .proj-badge-private { color: var(--muted); }
   .proj-badge-offline { color: var(--red); background: color-mix(in srgb, var(--red) 10%, transparent); }
   .project-host { font-family: var(--mono); font-size: 12px; color: var(--faint); text-align: right; }
+  .group-head { margin-top: 48px; font-size: 22px; }
+  .group-intro { margin: 6px 0 14px; color: var(--muted); }
+  div.project:hover .project-name { color: inherit; }
   .back { display: inline-block; margin-bottom: 26px; color: var(--muted);
           text-decoration: none; font-size: 14px; }
   .back:hover { color: var(--text); }
@@ -53,8 +56,18 @@
       <p class="lede">Things I build on the side to try an idea out. Each one runs
          on its own subdomain. Some are half finished and a few are probably down.</p>
       <div class="projects">
-        {% for p in projects %}{{ m.project_row(p, project_status) }}{% endfor %}
+        {% for p in projects if not p.group %}{{ m.project_row(p, project_status) }}{% endfor %}
       </div>
+      {% for key, (heading, intro) in project_groups.items() %}
+      {% set members = projects|selectattr("group", "equalto", key)|list %}
+      {% if members %}
+      <h2 class="group-head" id="{{ key }}">{{ heading }}</h2>
+      <p class="group-intro">{{ intro }}</p>
+      <div class="projects">
+        {% for p in members %}{{ m.project_row(p, project_status) }}{% endfor %}
+      </div>
+      {% endif %}
+      {% endfor %}
     </div>
   </div>
 </section>

@@ -82,9 +82,9 @@
 
 {# Row on /projects. #}
 {% macro project_row(p, status=None) %}
-<a class="project" href="{{ p.href }}" target="_blank" rel="noopener">
+{% if p.href %}<a class="project" href="{{ p.href }}" target="_blank" rel="noopener">{% else %}<div class="project">{% endif %}
   <span class="project-name">{{ p.name }}{% set st = (status or {}).get(p.host) %}{% if st in ("private", "offline") %}<span class="proj-badge proj-badge-{{ st }}">{{ "Login" if st == "private" else "Offline" }}</span>{% endif %}</span>
   <span class="project-desc">{{ p.description }}</span>
-  <span class="project-host">{{ p.host }}</span>
-</a>
+  <span class="project-host">{{ p.host or "no public page" }}</span>
+{% if p.href %}</a>{% else %}</div>{% endif %}
 {% endmacro %}

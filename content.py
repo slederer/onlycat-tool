@@ -110,13 +110,14 @@ class Incubator:
 class Project:
     name: str
     description: str
-    host: str                   # bare hostname, no scheme
+    host: str                   # bare hostname, no scheme; "" renders an unlinked tile
     emoji: str
     accent: str = "blue"
+    group: str = ""             # "" = main list; see PROJECT_GROUPS
 
     @property
     def href(self) -> str:
-        return f"https://{self.host}"
+        return f"https://{self.host}" if self.host else ""
 
 
 @dataclass(frozen=True)
@@ -489,6 +490,12 @@ THESIS = Thesis(
 # SIDE PROJECTS, shown at /projects rather than the homepage
 # ---------------------------------------------------------------------------
 
+# Sections below the main list on /projects, in display order: group -> (heading, intro).
+PROJECT_GROUPS: dict[str, tuple[str, str]] = {
+    "hackathon": ("Hackathon",
+                  "Quick experiments with AI and video, built during a hackathon."),
+}
+
 PROJECTS: tuple[Project, ...] = (
     Project("OnlyCat Dashboard", "Real-time cat activity monitoring, analytics and "
             "smart door controls for Oni.", "oni.slederer.com", "\U0001F431", "orange"),
@@ -507,14 +514,17 @@ PROJECTS: tuple[Project, ...] = (
     Project("Austria Energy Monitor", "Live Austrian power prices and a revenue "
             "model for grid-scale batteries.", "bess.slederer.com", "\u26A1", "yellow"),
     Project("Meeting Avatar", "An AI avatar that joins Google Meet calls, answers "
-            "questions and presents slides.", "avatar.slederer.com", "\U0001F916", "purple"),
+            "questions and presents slides.", "avatar.slederer.com", "\U0001F916", "purple", group="hackathon"),
     Project("AI Video Shootout", "Game-trailer-style videos generated across six "
-            "text-to-video models, side by side.", "video-gen.slederer.com", "\U0001F3AE", "orange"),
+            "text-to-video models, side by side.", "video-gen.slederer.com", "\U0001F3AE", "orange", group="hackathon"),
     Project("ElevenLabs \u00d7 Bitmovin", "AI dubbing, auto subtitles and audio "
             "description in a Bitmovin VOD workflow.", "elevenlabs-bitmovin.slederer.com",
-            "\U0001F399", "green"),
+            "\U0001F399", "green", group="hackathon"),
     Project("AISA Evaluation", "How Bitmovin AISA compares with Gemini, TwelveLabs "
-            "and AWS on real long-form TV.", "aisa-eval.slederer.com", "\U0001F9EA", "cyan"),
+            "and AWS on real long-form TV.", "aisa-eval.slederer.com", "\U0001F9EA", "cyan", group="hackathon"),
+    Project("x264 Speed-up", "Learned decision trees that let the x264 encoder skip "
+            "mode searches, benchmarked on an EC2 fleet.", "", "\u23E9", "red",
+            group="hackathon"),
     Project("CTV Analytics", "Connected-TV audience and inventory analytics.",
             "ctv.slederer.com", "\U0001F4FA", "pink"),
     Project("Encoding Intel", "Competitive intelligence on video encoding vendors.",

@@ -348,8 +348,10 @@ class TestPublicSite:
         resp = await site_client.get("/projects")
         assert resp.status_code == 200
         for project in content.PROJECTS:
-            assert project.name in resp.text
+            assert project.name.replace("\u00d7", "&#215;") in resp.text or project.name in resp.text
             assert project.href in resp.text
+        for heading, _ in content.PROJECT_GROUPS.values():
+            assert heading in resp.text
 
     @pytest.mark.asyncio
     async def test_projects_404_on_dashboard_host(self, oni_client):

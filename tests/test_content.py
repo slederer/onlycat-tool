@@ -89,6 +89,8 @@ class TestIncubator:
 class TestProjects:
     @pytest.mark.parametrize("project", content.PROJECTS, ids=lambda p: p.name)
     def test_host_is_a_bare_hostname(self, project):
+        if not project.host:
+            return  # unlinked tile
         assert "://" not in project.host, f"{project.name}: host must not include a scheme"
         assert not project.host.endswith("/"), f"{project.name}: host must not end with /"
         assert "." in project.host
@@ -102,11 +104,15 @@ class TestProjects:
 
     @pytest.mark.parametrize("project", content.PROJECTS, ids=lambda p: p.name)
     def test_href_is_https(self, project):
-        assert project.href == f"https://{project.host}"
+        assert project.href == (f"https://{project.host}" if project.host else "")
 
     def test_no_duplicate_hosts(self):
-        hosts = [p.host for p in content.PROJECTS]
+        hosts = [p.host for p in content.PROJECTS if p.host]
         assert len(set(hosts)) == len(hosts)
+
+    def test_groups_are_declared(self):
+        for p in content.PROJECTS:
+            assert not p.group or p.group in content.PROJECT_GROUPS, p.name
 
 
 class TestProfile:

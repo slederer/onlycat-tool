@@ -1086,7 +1086,7 @@ async def _probe(client: httpx.AsyncClient, host: str) -> str:
 async def _refresh_project_status():
     global _project_status, _project_status_at
     async with httpx.AsyncClient(timeout=6, follow_redirects=False) as client:
-        hosts = [p.host for p in content.PROJECTS]
+        hosts = [p.host for p in content.PROJECTS if p.host]
         results = await asyncio.gather(*(_probe(client, h) for h in hosts))
     _project_status = dict(zip(hosts, results))
     _project_status_at = asyncio.get_running_loop().time()
@@ -1110,6 +1110,7 @@ async def projects_page(request: Request):
     return templates.TemplateResponse(
         request, "projects.html",
         {**site_context(request), "projects": content.PROJECTS,
+         "project_groups": content.PROJECT_GROUPS,
          "project_status": project_status()},
     )
 
