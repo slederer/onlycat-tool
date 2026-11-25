@@ -479,16 +479,12 @@ PROJECTS: tuple[Project, ...] = (
             "smart door controls for Oni.", "oni.slederer.com", "\U0001F431", "orange"),
     Project("Streaming Finder", "Find where any film or series is streaming, across "
             "services and regions.", "streaming.slederer.com", "\U0001F3AC", "purple"),
-    Project("Stream Monitor", "Live monitoring and QoE metrics for streaming "
-            "endpoints.", "stream.slederer.com", "\U0001F39E", "indigo"),
-    Project("Bitmovin CRM", "Pipeline and account dashboard built on the Bitmovin "
-            "data warehouse.", "crm.slederer.com", "\U0001F4BC", "blue"),
     Project("YC Startup Tracker", "Track Y Combinator batches, funding and founder "
             "moves over time.", "tracker.slederer.com", "\U0001F680", "yellow"),
     Project("Trading Dashboard", "Portfolio tracking and strategy backtesting.",
             "trading.slederer.com", "\U0001F4C8", "green"),
-    Project("Ads Manager", "AI-generated localized ad creative across markets.",
-            "ads.slederer.com", "\U0001F4E2", "red"),
+    Project("Austria Energy Monitor", "Live Austrian power prices and a revenue "
+            "model for grid-scale batteries.", "bess.slederer.com", "\u26A1", "blue"),
     Project("CTV Analytics", "Connected-TV audience and inventory analytics.",
             "ctv.slederer.com", "\U0001F4FA", "pink"),
     Project("Encoding Intel", "Competitive intelligence on video encoding vendors.",
